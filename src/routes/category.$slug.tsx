@@ -10,7 +10,7 @@ const categoryQuery = (slug: string) =>
     queryFn: async () => {
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
       if (!cat) return null;
-      const { data: products } = await supabase.from("products").select("*").eq("category_id", cat.id);
+      const { data: products } = await supabase.from("products").select("*").eq("category_id", cat.id as string);
       return { category: cat, products: (products ?? []) as ProductCardData[] };
     },
   });

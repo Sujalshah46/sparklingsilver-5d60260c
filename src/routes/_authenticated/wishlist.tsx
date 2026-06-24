@@ -30,7 +30,7 @@ function WishlistPage() {
   });
 
   const remove = useMutation({
-    mutationFn: (id: string) => supabase.from("wishlist_items").delete().eq("id", id),
+    mutationFn: async (id: string) => { await supabase.from("wishlist_items").delete().eq("id", id); },
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["wishlist"] }); },
   });
 

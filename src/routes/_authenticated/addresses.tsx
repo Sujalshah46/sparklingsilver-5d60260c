@@ -39,7 +39,7 @@ function AddressesPage() {
   });
 
   const del = useMutation({
-    mutationFn: (id: string) => supabase.from("addresses").delete().eq("id", id),
+    mutationFn: async (id: string) => { await supabase.from("addresses").delete().eq("id", id); },
     onSuccess: () => { toast.success("Deleted"); qc.invalidateQueries({ queryKey: ["addresses"] }); },
   });
 
