@@ -35,7 +35,7 @@ function GoldRatePage() {
       <div className="space-y-6 p-4">
         <header>
           <h1 className="font-serif text-2xl font-bold">Today's Gold Rate</h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground" suppressHydrationWarning>
             Updated {today && new Date(today.rate_date).toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" })} · per gram
           </p>
         </header>
