@@ -54,13 +54,13 @@ export function TopBar({ title }: { title?: string }) {
   );
 }
 
-const tabs = [
+const tabs: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: "/catalogue", label: "Shop", icon: Search },
   { to: "/cart", label: "Cart", icon: ShoppingBag },
   { to: "/wishlist", label: "Wishlist", icon: Heart },
   { to: "/account", label: "Account", icon: UserIcon },
-] as const;
+];
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
