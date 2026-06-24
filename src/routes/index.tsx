@@ -3,7 +3,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { GoldRateStrip } from "@/components/GoldRateStrip";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
+
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { ChevronRight, MapPin, Phone } from "lucide-react";
@@ -173,7 +173,7 @@ function Home() {
         </Link>
       </section>
 
-      <WhatsAppFab />
+      
     </MobileShell>
   );
 }

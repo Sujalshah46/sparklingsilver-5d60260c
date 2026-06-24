@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { WhatsAppFab } from "@/components/WhatsAppFab";
+
 
 const productQuery = (slug: string) =>
   queryOptions({
@@ -180,7 +180,6 @@ function ProductPage() {
       </div>
 
       <div className="h-24" />
-      <WhatsAppFab message={`Hi, I'm interested in ${product.name} (${product.sku})`} />
     </MobileShell>
   );
 }
