@@ -1,0 +1,12 @@
+{
+  "name": "Sparkling Jewellers LLP",
+  "short_name": "Sparkling",
+  "description": "Where Every Piece Tells a Story",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FAF7F2",
+  "theme_color": "#6D1F2E",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+  ]
+}

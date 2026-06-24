@@ -1,0 +1,199 @@
+import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/use-auth";
+import logo from "@/assets/logo.png";
+
+const searchSchema = z.object({
+  redirect: fallback(z.string(), "/").default("/"),
+});
+
+export const Route = createFileRoute("/auth")({
+  head: () => ({
+    meta: [
+      { title: "Sign in — Sparkling Jewellers LLP" },
+      { name: "description", content: "Sign in or create an account to start shopping exquisite jewellery." },
+    ],
+  }),
+  validateSearch: zodValidator(searchSchema),
+  component: AuthPage,
+});
+
+function AuthPage() {
+  const { redirect } = useSearch({ from: "/auth" });
+  const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) navigate({ to: redirect, replace: true });
+  }, [isAuthenticated, loading, navigate, redirect]);
+
+  return (
+    <div className="min-h-screen bg-ivory">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
+        <div className="flex flex-col items-center pb-6 text-center">
+          <img src={logo} alt="Sparkling Jewellers" className="h-20 w-auto" />
+          <p className="mt-1 text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
+            Where Every Piece Tells a Story
+          </p>
+        </div>
+
+        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="signin">Sign In</TabsTrigger>
+            <TabsTrigger value="signup">Create Account</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin" className="flex-1">
+            <SignInForm redirect={redirect} />
+          </TabsContent>
+          <TabsContent value="signup" className="flex-1">
+            <SignUpForm redirect={redirect} />
+          </TabsContent>
+        </Tabs>
+
+        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
+          ← Continue browsing as guest
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function GoogleButton() {
+  const [loading, setLoading] = useState(false);
+  return (
+    <Button
+      type="button"
+      variant="outline"
+      className="w-full"
+      disabled={loading}
+      onClick={async () => {
+        setLoading(true);
+        const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+        if (result.error) {
+          toast.error("Google sign-in failed. Please try again.");
+          setLoading(false);
+          return;
+        }
+        if (result.redirected) return;
+        toast.success("Welcome to Sparkling!");
+      }}
+    >
+      <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
+        <path fill="#EA4335" d="M12 11v3.2h4.4c-.2 1.1-1.4 3.2-4.4 3.2-2.6 0-4.8-2.2-4.8-4.9s2.1-4.9 4.8-4.9c1.5 0 2.5.6 3.1 1.2l2.1-2C15.9 5.6 14.1 5 12 5c-3.9 0-7 3.1-7 7s3.1 7 7 7c4 0 6.7-2.8 6.7-6.8 0-.5-.1-.8-.1-1.2H12z"/>
+      </svg>
+      Continue with Google
+    </Button>
+  );
+}
+
+function SignInForm({ redirect }: { redirect: string }) {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    toast.success("Welcome back!");
+    navigate({ to: redirect, replace: true });
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <GoogleButton />
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="signin-email">Email</Label>
+        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="signin-password">Password</Label>
+        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} />
+      </div>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Signing in…" : "Sign In"}
+      </Button>
+    </form>
+  );
+}
+
+function SignUpForm({ redirect }: { redirect: string }) {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ full_name: "", email: "", password: "", mobile: "", city: "" });
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: form.email,
+      password: form.password,
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: { full_name: form.full_name },
+      },
+    });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    // Update profile with extra fields
+    if (data.user) {
+      await supabase.from("profiles").update({ full_name: form.full_name, mobile: form.mobile, city: form.city }).eq("id", data.user.id);
+    }
+    setLoading(false);
+    toast.success("Welcome to Sparkling Jewellers!");
+    navigate({ to: redirect, replace: true });
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="mt-6 space-y-4">
+      <GoogleButton />
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="su-name">Full name</Label>
+        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="su-email">Email</Label>
+        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="su-mobile">Mobile</Label>
+        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="su-city">City</Label>
+        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="su-password">Password</Label>
+        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" />
+      </div>
+      <Button type="submit" className="w-full" disabled={loading}>
+        {loading ? "Creating…" : "Create Account"}
+      </Button>
+    </form>
+  );
+}
