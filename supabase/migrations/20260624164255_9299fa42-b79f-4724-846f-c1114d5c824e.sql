@@ -1,0 +1,1 @@
+INSERT INTO public.categories (slug, name, sort_order) VALUES ('jewelry-sets', 'Jewelry Sets', 11) ON CONFLICT (slug) DO NOTHING;
