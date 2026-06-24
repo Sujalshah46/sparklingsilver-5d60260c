@@ -27,11 +27,48 @@ const homeQuery = queryOptions({
   },
 });
 
+const HOME_TITLE = "Sparkling Jewellers LLP — Premium Indian Jewellery";
+const HOME_DESC = "Shop 22K & 18K gold, diamond and gemstone jewellery — bridal, daily wear and festive designs with transparent pricing and BIS hallmark.";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Sparkling Jewellers LLP — Premium Indian Gold & Diamond Jewellery" },
-      { name: "description", content: "Shop exquisite 22K & 18K gold, diamond and gemstone jewellery — bridal, daily wear and festive collections." },
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESC },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESC },
+      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/" },
+      { property: "og:image", content: "https://cuddly-code-gen.lovable.app/og-home.jpg" },
+      { name: "twitter:title", content: HOME_TITLE },
+      { name: "twitter:description", content: HOME_DESC },
+    ],
+    links: [
+      { rel: "canonical", href: "https://cuddly-code-gen.lovable.app/" },
+      { rel: "preload", as: "image", href: heroBridal, fetchpriority: "high" } as unknown as { rel: string; href: string },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "JewelryStore",
+          name: "Sparkling Jewellers LLP",
+          url: "https://cuddly-code-gen.lovable.app",
+          image: "https://cuddly-code-gen.lovable.app/og-home.jpg",
+          telephone: "+91-99999-99999",
+          email: "hello@sparklingjewellers.in",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "123 Jewellers Lane, Zaveri Bazaar",
+            addressLocality: "Mumbai",
+            postalCode: "400001",
+            addressRegion: "MH",
+            addressCountry: "IN",
+          },
+          openingHours: "Mo-Sa 10:30-20:30",
+          priceRange: "₹₹₹",
+        }),
+      },
     ],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
@@ -53,6 +90,7 @@ function Home() {
   return (
     <MobileShell>
       <GoldRateStrip />
+      <h1 className="sr-only">Sparkling Jewellers — Premium Indian Gold & Diamond Jewellery</h1>
 
       {/* Hero carousel */}
       <section className="px-4 pt-4">

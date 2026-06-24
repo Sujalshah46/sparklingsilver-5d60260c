@@ -1,0 +1,30 @@
+# Sparkling Jewellers LLP
+
+> Premium Indian gold, diamond and gemstone jewellery — bridal, daily wear and festive collections, with live gold rates and BIS-hallmarked craftsmanship.
+
+Sparkling Jewellers LLP is a luxury Indian jewellery brand offering 22K and 18K gold, diamond and gemstone designs. The catalogue spans rings, necklaces, earrings, bangles, bracelets, pendants, chains, mangalsutra, anklets, kada and curated bridal sets, all with transparent pricing (gold value + making charges + 3% GST) and BIS hallmark certification.
+
+## Pages
+- [Home](/): Brand intro, featured collections, new arrivals, bestsellers.
+- [Shop the catalogue](/catalogue): Full product grid with category, purity and price filters.
+- [Today's gold rate](/gold-rate): Live 24K, 22K, 18K gold and silver rates per gram with 30-day chart.
+- [Contact](/contact): Showroom address, phone, WhatsApp and enquiry form.
+- [Search](/search): Find jewellery by name, SKU or description.
+
+## Categories
+- [Rings](/category/rings)
+- [Necklaces](/category/necklaces)
+- [Earrings](/category/earrings)
+- [Bangles](/category/bangles)
+- [Bracelets](/category/bracelets)
+- [Pendants](/category/pendants)
+- [Chains](/category/chains)
+- [Mangalsutra](/category/mangalsutra)
+- [Anklets](/category/anklets)
+- [Kada](/category/kada)
+- [Jewellery Sets](/category/jewelry-sets)
+
+## Guides
+- [How to calculate gold jewellery price in India](/blog/gold-price-calculation-guide)
+- [22K vs 18K gold — which should you buy?](/blog/22k-vs-18k-gold)
+- [BIS hallmarking and certification explained](/blog/bis-hallmarking-explained)
