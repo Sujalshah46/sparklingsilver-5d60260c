@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as GoldRateRouteImport } from './routes/gold-rate'
@@ -28,6 +29,11 @@ import { Route as AuthenticatedAccountEditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -127,6 +133,7 @@ export interface FileRoutesByFullPath {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/account-edit': typeof AuthenticatedAccountEditRoute
   '/_authenticated/addresses': typeof AuthenticatedAddressesRoute
@@ -188,6 +197,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -207,6 +217,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -227,6 +238,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/account-edit'
     | '/_authenticated/addresses'
@@ -248,12 +260,20 @@ export interface RootRouteChildren {
   GoldRateRoute: typeof GoldRateRoute
   NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CategorySlugRoute: typeof CategorySlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -426,6 +446,7 @@ const rootRouteChildren: RootRouteChildren = {
   GoldRateRoute: GoldRateRoute,
   NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   CategorySlugRoute: CategorySlugRoute,
   ProductSlugRoute: ProductSlugRoute,
 }

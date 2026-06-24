@@ -27,7 +27,7 @@ export const Route = createFileRoute("/sitemap.xml")({
 
         const [{ data: categories }, { data: products }] = await Promise.all([
           supabase.from("categories").select("slug"),
-          supabase.from("products").select("slug, updated_at").eq("is_active", true),
+          supabase.from("products").select("slug, created_at"),
         ]);
 
         const entries: SitemapEntry[] = [
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           })),
           ...(products ?? []).map((p) => ({
             path: `/product/${p.slug}`,
-            lastmod: p.updated_at ? new Date(p.updated_at).toISOString().slice(0, 10) : undefined,
+            lastmod: p.created_at ? new Date(p.created_at).toISOString().slice(0, 10) : undefined,
             changefreq: "weekly" as const,
             priority: "0.7",
           })),
