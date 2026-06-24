@@ -9,7 +9,11 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/search")({
   head: () => ({
-    meta: [{ title: "Search — Sparkling Jewellers" }, { name: "description", content: "Search jewellery designs by name, SKU or category." }],
+    meta: [
+      { title: "Search Jewellery — Sparkling Jewellers" },
+      { name: "description", content: "Search jewellery designs by name, SKU or category." },
+      { name: "robots", content: "noindex, follow" },
+    ],
   }),
   component: SearchPage,
 });

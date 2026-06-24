@@ -16,12 +16,49 @@ const categoryQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/category/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `${params.slug.charAt(0).toUpperCase() + params.slug.slice(1)} — Sparkling Jewellers` },
-      { name: "description", content: `Browse our ${params.slug} collection — premium gold and diamond jewellery.` },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const name = loaderData?.category?.name ?? params.slug;
+    const title = `${name} — Sparkling Jewellers`;
+    const desc = `Browse our ${name.toLowerCase()} collection — premium 22K & 18K gold and diamond designs with BIS hallmark.`;
+    const url = `https://cuddly-code-gen.lovable.app/category/${params.slug}`;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:url", content: url },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: loaderData
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                name: title,
+                url,
+                description: desc,
+                isPartOf: { "@type": "WebSite", name: "Sparkling Jewellers LLP", url: "https://cuddly-code-gen.lovable.app" },
+              }),
+            },
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: "Home", item: "https://cuddly-code-gen.lovable.app/" },
+                  { "@type": "ListItem", position: 2, name: "Shop", item: "https://cuddly-code-gen.lovable.app/catalogue" },
+                  { "@type": "ListItem", position: 3, name, item: url },
+                ],
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   loader: async ({ context, params }) => {
     const data = await context.queryClient.ensureQueryData(categoryQuery(params.slug));
     if (!data) throw notFound();
