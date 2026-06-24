@@ -12,9 +12,19 @@ const ratesQuery = queryOptions({
   },
 });
 
+const GR_TITLE = "Today's Gold Rate — 22K & 18K | Sparkling Jewellers";
+const GR_DESC = "Live 24K, 22K and 18K gold and silver rates per gram in India, with a 30-day price chart from Sparkling Jewellers.";
+
 export const Route = createFileRoute("/gold-rate")({
   head: () => ({
-    meta: [{ title: "Today's Gold Rate — Sparkling Jewellers" }, { name: "description", content: "Live 24K, 22K, 18K gold and silver rates in India." }],
+    meta: [
+      { title: GR_TITLE },
+      { name: "description", content: GR_DESC },
+      { property: "og:title", content: GR_TITLE },
+      { property: "og:description", content: GR_DESC },
+      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/gold-rate" },
+    ],
+    links: [{ rel: "canonical", href: "https://cuddly-code-gen.lovable.app/gold-rate" }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(ratesQuery),
   component: GoldRatePage,

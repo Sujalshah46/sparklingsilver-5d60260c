@@ -30,13 +30,58 @@ const productQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/product/$slug")({
-  head: ({ params }) => ({
-    meta: [
-      { title: `Product — Sparkling Jewellers` },
-      { name: "description", content: `View jewellery design details.` },
-      { property: "og:title", content: params.slug },
-    ],
-  }),
+  head: ({ params, loaderData }) => {
+    const p = (loaderData as { product?: { name: string; sku: string; description: string | null; price: number | string; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
+    const title = p ? `${p.name} — Sparkling Jewellers` : "Jewellery — Sparkling Jewellers";
+    const rawDesc = (p?.description ?? "").trim();
+    const desc = rawDesc
+      ? rawDesc.slice(0, 158)
+      : `Shop ${p?.name ?? "premium jewellery"} at Sparkling Jewellers. BIS hallmarked, transparent pricing.`;
+    const url = `https://cuddly-code-gen.lovable.app/product/${params.slug}`;
+    const img = p?.image_url
+      ? (p.image_url.startsWith("http") ? p.image_url : `https://cuddly-code-gen.lovable.app${p.image_url}`)
+      : "https://cuddly-code-gen.lovable.app/og-home.jpg";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: desc },
+        { property: "og:title", content: title },
+        { property: "og:description", content: desc },
+        { property: "og:type", content: "product" },
+        { property: "og:url", content: url },
+        { property: "og:image", content: img },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: desc },
+        { name: "twitter:image", content: img },
+      ],
+      links: [{ rel: "canonical", href: url }],
+      scripts: p
+        ? [
+            {
+              type: "application/ld+json",
+              children: JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: p.name,
+                sku: p.sku,
+                image: img,
+                description: rawDesc || p.name,
+                brand: { "@type": "Brand", name: "Sparkling Jewellers LLP" },
+                offers: {
+                  "@type": "Offer",
+                  url,
+                  priceCurrency: "INR",
+                  price: String(p.price),
+                  availability: p.in_stock
+                    ? "https://schema.org/InStock"
+                    : "https://schema.org/OutOfStock",
+                },
+              }),
+            },
+          ]
+        : [],
+    };
+  },
   loader: async ({ context, params }) => {
     const data = await context.queryClient.ensureQueryData(productQuery(params.slug));
     if (!data) throw notFound();
@@ -165,7 +210,7 @@ function ProductPage() {
 
       <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background/95 px-4 py-3 backdrop-blur" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <Button variant="outline" size="icon" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
+          <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
             <Heart className="h-5 w-5" />
           </Button>
           <Button variant="outline" className="h-12 flex-1" onClick={() => addToCart.mutate()}>

@@ -17,9 +17,48 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
+const CONTACT_TITLE = "Contact Sparkling Jewellers — Visit, Call, WhatsApp";
+const CONTACT_DESC = "Visit our Mumbai showroom, call +91 99999 99999, or message us on WhatsApp. Open Mon–Sat, 10:30 AM – 8:30 PM.";
+
 export const Route = createFileRoute("/contact")({
   head: () => ({
-    meta: [{ title: "Contact Us — Sparkling Jewellers" }, { name: "description", content: "Visit our store, call, or message us on WhatsApp." }],
+    meta: [
+      { title: CONTACT_TITLE },
+      { name: "description", content: CONTACT_DESC },
+      { property: "og:title", content: CONTACT_TITLE },
+      { property: "og:description", content: CONTACT_DESC },
+      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/contact" },
+    ],
+    links: [{ rel: "canonical", href: "https://cuddly-code-gen.lovable.app/contact" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "JewelryStore",
+          name: "Sparkling Jewellers LLP",
+          url: "https://cuddly-code-gen.lovable.app/contact",
+          telephone: "+91-99999-99999",
+          email: "hello@sparklingjewellers.in",
+          address: {
+            "@type": "PostalAddress",
+            streetAddress: "123 Jewellers Lane, Zaveri Bazaar",
+            addressLocality: "Mumbai",
+            postalCode: "400001",
+            addressRegion: "MH",
+            addressCountry: "IN",
+          },
+          openingHoursSpecification: [
+            {
+              "@type": "OpeningHoursSpecification",
+              dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+              opens: "10:30",
+              closes: "20:30",
+            },
+          ],
+        }),
+      },
+    ],
   }),
   component: ContactPage,
 });

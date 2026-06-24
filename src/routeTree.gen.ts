@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as GoldRateRouteImport } from './routes/gold-rate'
@@ -17,8 +18,10 @@ import { Route as CatalogueRouteImport } from './routes/catalogue'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as CategorySlugRouteImport } from './routes/category.$slug'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
 import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
@@ -28,6 +31,11 @@ import { Route as AuthenticatedAccountEditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -67,6 +75,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
@@ -75,6 +88,11 @@ const ProductSlugRoute = ProductSlugRouteImport.update({
 const CategorySlugRoute = CategorySlugRouteImport.update({
   id: '/category/$slug',
   path: '/category/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWishlistRoute = AuthenticatedWishlistRouteImport.update({
@@ -127,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -134,8 +153,10 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
 }
 export interface FileRoutesByTo {
@@ -146,6 +167,7 @@ export interface FileRoutesByTo {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -153,8 +175,10 @@ export interface FileRoutesByTo {
   '/checkout': typeof AuthenticatedCheckoutRoute
   '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
 }
 export interface FileRoutesById {
@@ -167,6 +191,7 @@ export interface FileRoutesById {
   '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/account-edit': typeof AuthenticatedAccountEditRoute
   '/_authenticated/addresses': typeof AuthenticatedAddressesRoute
@@ -174,8 +199,10 @@ export interface FileRoutesById {
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
+  '/blog/$slug': typeof BlogSlugRoute
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
 }
 export interface FileRouteTypes {
@@ -188,6 +215,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -195,8 +223,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/orders'
     | '/wishlist'
+    | '/blog/$slug'
     | '/category/$slug'
     | '/product/$slug'
+    | '/blog/'
     | '/orders/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -207,6 +237,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -214,8 +245,10 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/orders'
     | '/wishlist'
+    | '/blog/$slug'
     | '/category/$slug'
     | '/product/$slug'
+    | '/blog'
     | '/orders/$id'
   id:
     | '__root__'
@@ -227,6 +260,7 @@ export interface FileRouteTypes {
     | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/sitemap.xml'
     | '/_authenticated/account'
     | '/_authenticated/account-edit'
     | '/_authenticated/addresses'
@@ -234,8 +268,10 @@ export interface FileRouteTypes {
     | '/_authenticated/checkout'
     | '/_authenticated/orders'
     | '/_authenticated/wishlist'
+    | '/blog/$slug'
     | '/category/$slug'
     | '/product/$slug'
+    | '/blog/'
     | '/_authenticated/orders/$id'
   fileRoutesById: FileRoutesById
 }
@@ -248,12 +284,22 @@ export interface RootRouteChildren {
   GoldRateRoute: typeof GoldRateRoute
   NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  BlogSlugRoute: typeof BlogSlugRoute
   CategorySlugRoute: typeof CategorySlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -310,6 +356,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
@@ -322,6 +375,13 @@ declare module '@tanstack/react-router' {
       path: '/category/$slug'
       fullPath: '/category/$slug'
       preLoaderRoute: typeof CategorySlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/wishlist': {
@@ -426,8 +486,11 @@ const rootRouteChildren: RootRouteChildren = {
   GoldRateRoute: GoldRateRoute,
   NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
+  BlogSlugRoute: BlogSlugRoute,
   CategorySlugRoute: CategorySlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

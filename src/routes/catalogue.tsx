@@ -23,12 +23,19 @@ const catalogQuery = queryOptions({
   },
 });
 
+const CAT_TITLE = "Shop Gold & Diamond Jewellery — Sparkling Jewellers";
+const CAT_DESC = "Browse our complete collection of 22K & 18K gold and diamond jewellery. Filter by category, purity and price.";
+
 export const Route = createFileRoute("/catalogue")({
   head: () => ({
     meta: [
-      { title: "Shop Jewellery — Sparkling Jewellers" },
-      { name: "description", content: "Browse our complete collection of gold and diamond jewellery." },
+      { title: CAT_TITLE },
+      { name: "description", content: CAT_DESC },
+      { property: "og:title", content: CAT_TITLE },
+      { property: "og:description", content: CAT_DESC },
+      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/catalogue" },
     ],
+    links: [{ rel: "canonical", href: "https://cuddly-code-gen.lovable.app/catalogue" }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: Catalogue,
@@ -64,7 +71,9 @@ function Catalogue() {
 
   return (
     <MobileShell title="Shop">
-      <div className="sticky top-[57px] z-20 flex items-center justify-between gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
+      <h1 className="px-4 pt-4 font-serif text-2xl font-bold text-foreground">Shop Our Jewellery Collection</h1>
+      <p className="px-4 pt-1 text-sm text-muted-foreground">Filter by category, purity and price.</p>
+      <div className="sticky top-[57px] z-20 mt-4 flex items-center justify-between gap-2 border-b border-border bg-background/95 px-4 py-2 backdrop-blur">
         <Select value={sort} onValueChange={setSort}>
           <SelectTrigger className="h-9 w-[150px] text-xs"><SelectValue /></SelectTrigger>
           <SelectContent>
