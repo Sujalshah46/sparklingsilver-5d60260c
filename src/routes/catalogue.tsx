@@ -51,7 +51,7 @@ function Catalogue() {
 
   const products = useMemo(() => {
     let list = data.products as unknown as Row[];
-    if (categoryIds.length) list = list.filter((p) => categoryIds.includes(p.category_id));
+    if (categoryIds.length) list = list.filter((p) => p.category_id && categoryIds.includes(p.category_id));
     if (purities.length) list = list.filter((p) => purities.includes(p.purity));
     list = list.filter((p) => Number(p.price) <= maxPrice);
     switch (sort) {
