@@ -17,7 +17,8 @@ const categoryQuery = (slug: string) =>
 
 export const Route = createFileRoute("/category/$slug")({
   head: ({ params, loaderData }) => {
-    const name = loaderData?.category?.name ?? params.slug;
+    const ld = loaderData as { category?: { name: string } } | undefined;
+    const name = ld?.category?.name ?? params.slug;
     const title = `${name} — Sparkling Jewellers`;
     const desc = `Browse our ${name.toLowerCase()} collection — premium 22K & 18K gold and diamond designs with BIS hallmark.`;
     const url = `https://cuddly-code-gen.lovable.app/category/${params.slug}`;
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/category/$slug")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
-      scripts: loaderData
+      scripts: ld
         ? [
             {
               type: "application/ld+json",

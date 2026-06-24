@@ -31,7 +31,7 @@ const productQuery = (slug: string) =>
 
 export const Route = createFileRoute("/product/$slug")({
   head: ({ params, loaderData }) => {
-    const p = loaderData?.product;
+    const p = (loaderData as { product?: { name: string; sku: string; description: string | null; price: number | string; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = p ? `${p.name} — Sparkling Jewellers` : "Jewellery — Sparkling Jewellers";
     const rawDesc = (p?.description ?? "").trim();
     const desc = rawDesc
