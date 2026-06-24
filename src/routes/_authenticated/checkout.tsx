@@ -101,7 +101,7 @@ function Checkout() {
     onError: () => toast.error("Could not place order. Please try again."),
   });
 
-  if (!items || items.length === 0 && step !== "confirm") {
+  if ((!items || items.length === 0) && step !== "confirm") {
     return (
       <MobileShell title="Checkout">
         <div className="py-20 text-center">

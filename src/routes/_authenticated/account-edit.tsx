@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
@@ -15,6 +15,8 @@ export const Route = createFileRoute("/_authenticated/account-edit")({
   component: AccountEdit,
 });
 
+type BusinessType = "retailer" | "wholesaler" | "individual";
+
 function AccountEdit() {
   const { user } = useAuth();
   const qc = useQueryClient();
@@ -28,25 +30,26 @@ function AccountEdit() {
   });
 
   const [form, setForm] = useState({
-    full_name: data?.full_name ?? "",
-    mobile: data?.mobile ?? "",
-    city: data?.city ?? "",
-    business_type: (data?.business_type as "retailer" | "wholesaler" | "individual") ?? "individual",
-    business_name: data?.business_name ?? "",
-    gstin: data?.gstin ?? "",
+    full_name: "",
+    mobile: "",
+    city: "",
+    business_type: "individual" as BusinessType,
+    business_name: "",
+    gstin: "",
   });
 
-  // Sync state when data loads
-  if (data && !form.full_name && data.full_name) {
+  // Hydrate form from loaded profile (effect — never setState during render).
+  useEffect(() => {
+    if (!data) return;
     setForm({
       full_name: data.full_name ?? "",
       mobile: data.mobile ?? "",
       city: data.city ?? "",
-      business_type: (data.business_type as "retailer" | "wholesaler" | "individual") ?? "individual",
+      business_type: (data.business_type as BusinessType) ?? "individual",
       business_name: data.business_name ?? "",
       gstin: data.gstin ?? "",
     });
-  }
+  }, [data]);
 
   const save = useMutation({
     mutationFn: async () => {
@@ -63,7 +66,7 @@ function AccountEdit() {
         <Field label="Mobile"><Input value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} /></Field>
         <Field label="City"><Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} /></Field>
         <Field label="Business Type">
-          <Select value={form.business_type} onValueChange={(v) => setForm({ ...form, business_type: v as "retailer" | "wholesaler" | "individual" })}>
+          <Select value={form.business_type} onValueChange={(v) => setForm({ ...form, business_type: v as BusinessType })}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
               <SelectItem value="individual">Individual</SelectItem>
