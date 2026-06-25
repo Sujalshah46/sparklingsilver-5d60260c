@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin, Bell, Globe, HelpCircle, Info, LogOut, ChevronRight,
-  ShoppingBag, Heart, Gift, UserCog
+  ShoppingBag, Heart, Gift, UserCog, ShieldCheck
 } from "lucide-react";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "My Account — Sparkling Jewellers" }] }),
