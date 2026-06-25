@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { themeInitScript } from "@/components/ThemeToggle";
 
 function NotFoundComponent() {
   return (
@@ -92,6 +93,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.ico" },
     ],
     scripts: [
+      {
+        children: themeInitScript,
+      },
       {
         type: "application/ld+json",
         children: JSON.stringify({

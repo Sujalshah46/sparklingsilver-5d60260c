@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { ReactNode } from "react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 function CartBadge() {
   const { user } = useAuth();
@@ -41,6 +42,7 @@ export function TopBar({ title }: { title?: string }) {
           <Link to="/search" aria-label="Search" className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
             <Search className="h-5 w-5" />
           </Link>
+          <ThemeToggle />
           <Link to="/notifications" aria-label="Notifications" className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
             <Bell className="h-5 w-5" />
           </Link>
