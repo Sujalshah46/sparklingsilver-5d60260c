@@ -356,6 +356,7 @@ export type Database = {
           is_bestseller: boolean | null
           is_new: boolean | null
           is_trending: boolean | null
+          low_stock_threshold: number
           making_charge_pct: number | null
           metal: Database["public"]["Enums"]["metal_type"]
           moq: number | null
@@ -367,6 +368,7 @@ export type Database = {
           sizes: string[] | null
           sku: string
           slug: string
+          stock_quantity: number
           stone_type: string | null
           stone_weight: number | null
         }
@@ -383,6 +385,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          low_stock_threshold?: number
           making_charge_pct?: number | null
           metal?: Database["public"]["Enums"]["metal_type"]
           moq?: number | null
@@ -394,6 +397,7 @@ export type Database = {
           sizes?: string[] | null
           sku: string
           slug: string
+          stock_quantity?: number
           stone_type?: string | null
           stone_weight?: number | null
         }
@@ -410,6 +414,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          low_stock_threshold?: number
           making_charge_pct?: number | null
           metal?: Database["public"]["Enums"]["metal_type"]
           moq?: number | null
@@ -421,6 +426,7 @@ export type Database = {
           sizes?: string[] | null
           sku?: string
           slug?: string
+          stock_quantity?: number
           stone_type?: string | null
           stone_weight?: number | null
         }
@@ -506,6 +512,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          delta: number
+          id: string
+          new_qty: number
+          previous_qty: number
+          product_id: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          delta: number
+          id?: string
+          new_qty: number
+          previous_qty: number
+          product_id: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          delta?: number
+          id?: string
+          new_qty?: number
+          previous_qty?: number
+          product_id?: string
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
