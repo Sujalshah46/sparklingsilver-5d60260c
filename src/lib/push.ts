@@ -2,13 +2,14 @@
 export const VAPID_PUBLIC_KEY =
   "BGgMqdj_AJAZLGRhr5qnfKGCB25B2rrAHfrALmXd1G7tAd4D9HM5uLFQOzjYNg_WQtotQWiiU4layc6IxSD4T1s";
 
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
+function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
   const raw = atob(base64);
-  const out = new Uint8Array(raw.length);
-  for (let i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
-  return out;
+  const buf = new ArrayBuffer(raw.length);
+  const view = new Uint8Array(buf);
+  for (let i = 0; i < raw.length; i++) view[i] = raw.charCodeAt(i);
+  return buf;
 }
 
 export async function ensurePushSubscription(): Promise<PushSubscription | null> {
