@@ -37,7 +37,7 @@ function AdminDashboard() {
           .limit(5),
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("enquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
+        supabase.from("enquiries").select("id", { count: "exact", head: true }),
       ]);
 
       const rows = ordersAll.data ?? [];
