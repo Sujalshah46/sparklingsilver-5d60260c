@@ -9,7 +9,7 @@ export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: 
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
       title="Chat with us on WhatsApp"
-      className="group fixed bottom-24 right-4 z-40 grid h-13 w-13 place-items-center rounded-full bg-teal text-white shadow-[0_4px_14px_rgba(91,191,173,0.45)] ring-1 ring-black/5 transition-all duration-200 hover:scale-105 hover:bg-teal-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 sm:bottom-28 sm:right-6"
+      className="group fixed bottom-24 right-4 z-40 grid place-items-center rounded-full bg-teal text-white shadow-[0_4px_14px_rgba(91,191,173,0.45)] ring-1 ring-black/5 transition-all duration-200 hover:scale-105 hover:bg-teal-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-2 sm:bottom-28 sm:right-6"
       style={{ height: 52, width: 52 }}
     >
       <svg viewBox="0 0 32 32" className="h-6 w-6" fill="currentColor" aria-hidden="true">

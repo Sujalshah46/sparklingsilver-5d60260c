@@ -91,7 +91,7 @@ function SideMenu() {
 export function TopBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-[#E5E5E5] bg-white">
-      <div className="mx-auto flex h-13 max-w-2xl items-center justify-between px-2" style={{ height: 52 }}>
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-2" style={{ height: 52 }}>
         <SideMenu />
         <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
           Sparkling Jewellers LLP
