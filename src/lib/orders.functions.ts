@@ -104,7 +104,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         gst,
         total,
         payment_method: data.payment_method,
-        shipping_address: shipping,
+        shipping_address: shipping as never,
       })
       .select()
       .single();
