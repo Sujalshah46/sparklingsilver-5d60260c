@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/account")({
 function AccountPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
+
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -68,6 +70,13 @@ function AccountPage() {
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
           <Row icon={Info} label="About Sparkling Jewellers LLP" hint="v1.0" />
         </section>
+
+        {isAdmin && (
+          <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-burgundy bg-card">
+            <Row to="/admin" icon={ShieldCheck} label="Admin Panel" hint="Manage orders" />
+          </section>
+        )}
+
 
         <Button
           variant="outline"
