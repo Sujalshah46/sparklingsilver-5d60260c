@@ -1,8 +1,10 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { ProductCard, type ProductCardData } from "@/components/ProductCard";
+import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
+import { ChevronLeft } from "lucide-react";
+import { whatsappUrl } from "@/lib/site";
 
 const categoryQuery = (slug: string) =>
   queryOptions({
@@ -16,7 +18,7 @@ const categoryQuery = (slug: string) =>
         .select("*")
         .eq("category_id", cat.id as string)
         .limit(48);
-      return { category: cat, products: (products ?? []) as ProductCardData[] };
+      return { category: cat, products: (products ?? []) as CatalogueCardData[] };
     },
   });
 
@@ -36,33 +38,6 @@ export const Route = createFileRoute("/category/$slug")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
-      scripts: ld
-        ? [
-            {
-              type: "application/ld+json",
-              children: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "CollectionPage",
-                name: title,
-                url,
-                description: desc,
-                isPartOf: { "@type": "WebSite", name: "Sparkling Jewellers LLP", url: "https://sparkling-jewellers-llp.lovable.app" },
-              }),
-            },
-            {
-              type: "application/ld+json",
-              children: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "BreadcrumbList",
-                itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Home", item: "https://sparkling-jewellers-llp.lovable.app/" },
-                  { "@type": "ListItem", position: 2, name: "Shop", item: "https://sparkling-jewellers-llp.lovable.app/catalogue" },
-                  { "@type": "ListItem", position: 3, name, item: url },
-                ],
-              }),
-            },
-          ]
-        : [],
     };
   },
   loader: async ({ context, params }) => {
@@ -85,19 +60,43 @@ function CategoryPage() {
 
   return (
     <MobileShell title={data.category.name}>
-      <div className="px-4 pt-4">
-        <h1 className="font-serif text-2xl font-bold text-foreground">{data.category.name}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{data.products.length} designs</p>
+      <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-2 py-2">
+        <Link to="/catalogue" aria-label="Back" className="grid h-9 w-9 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+          <ChevronLeft className="h-5 w-5" />
+        </Link>
+        <h1 className="text-[16px] font-bold text-[#1A1A1A]">
+          {data.category.name} <span className="font-normal text-[#777]">({data.products.length})</span>
+        </h1>
       </div>
-      <div className="px-3 py-4">
+
+      <div className="px-2 py-3">
         {data.products.length === 0 ? (
-          <p className="py-20 text-center text-muted-foreground">No products yet in this category.</p>
+          <p className="py-20 text-center text-[#888]">No products yet in this category.</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {data.products.map((p) => <ProductCard key={p.id} p={p} />)}
+          <div className="grid grid-cols-2 gap-[2px]">
+            {data.products.map((p) => <CatalogueCard key={p.id} p={p} />)}
           </div>
         )}
       </div>
+
+      <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-[12px] font-semibold text-[#1A1A1A]">Want to view our entire range?</p>
+            <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
+          </div>
+          <a
+            href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name}.`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
+          >
+            Ask for Access
+          </a>
+        </div>
+      </div>
+
+      <div className="h-24" />
     </MobileShell>
   );
 }

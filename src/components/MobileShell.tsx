@@ -1,11 +1,13 @@
-import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Search, ShoppingBag, Heart, User as UserIcon, Bell } from "lucide-react";
-import logo from "@/assets/logo.png";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Home, Search, ShoppingBag, Menu, User as UserIcon, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import type { ReactNode } from "react";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useCartWeight } from "@/hooks/use-cart-weight";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import type { ReactNode } from "react";
 
 function CartBadge() {
   const { user } = useAuth();
@@ -22,33 +24,84 @@ function CartBadge() {
   });
   if (!data) return null;
   return (
-    <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-burgundy px-1 text-[10px] font-semibold text-ivory">
+    <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-teal px-1 text-[10px] font-semibold text-white">
       {data}
     </span>
   );
 }
 
-export function TopBar({ title }: { title?: string }) {
+const sideLinks: { to: string; label: string }[] = [
+  { to: "/", label: "Home" },
+  { to: "/catalogue", label: "Catalogue" },
+  { to: "/orders", label: "My Orders" },
+  { to: "/wishlist", label: "Wishlist" },
+  { to: "/account", label: "My Account" },
+  { to: "/gold-rate", label: "Gold Rate" },
+  { to: "/contact", label: "Contact Us" },
+  { to: "/blog", label: "Blog" },
+];
+
+function SideMenu() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const isAdmin = useIsAdmin();
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-3">
-        <Link to="/" className="flex min-w-0 items-center gap-2">
-          <img src={logo} alt="Sparkling Jewellers" className="h-9 w-auto shrink-0" />
-          {title && (
-            <span className="truncate font-serif text-base font-semibold text-foreground sm:text-lg">{title}</span>
-          )}
-        </Link>
-        <div className="flex shrink-0 items-center gap-1">
-          <Link to="/search" aria-label="Search" className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
-            <Search className="h-5 w-5" />
-          </Link>
+    <Sheet>
+      <SheetTrigger asChild>
+        <button aria-label="Open menu" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+          <Menu className="h-6 w-6" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-[78vw] max-w-[320px] p-0">
+        <div className="flex h-14 items-center justify-between border-b border-[#E5E5E5] px-4">
+          <div className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">Menu</div>
           <ThemeToggle />
-          <Link to="/notifications" aria-label="Notifications" className="grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
-            <Bell className="h-5 w-5" />
+        </div>
+        <div className="border-b border-[#E5E5E5] bg-[#F8F8F8] px-4 py-4">
+          <p className="text-[11px] uppercase tracking-wider text-[#999]">Signed in as</p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-[#1A1A1A]">{user?.email ?? "Guest"}</p>
+        </div>
+        <nav className="py-2">
+          {sideLinks.map((l) => (
+            <button
+              key={l.to}
+              onClick={() => navigate({ to: l.to })}
+              className="flex w-full items-center justify-between px-4 py-3 text-[15px] text-[#1A1A1A] hover:bg-[#F8F8F8]"
+            >
+              <span>{l.label}</span>
+              <span className="text-[#BBB]">›</span>
+            </button>
+          ))}
+          {isAdmin && (
+            <button
+              onClick={() => navigate({ to: "/admin" })}
+              className="flex w-full items-center justify-between border-t border-[#E5E5E5] px-4 py-3 text-[15px] font-semibold text-teal hover:bg-[#F8F8F8]"
+            >
+              <span>Admin Panel</span>
+              <span className="text-teal">›</span>
+            </button>
+          )}
+        </nav>
+        <p className="px-4 py-3 text-[11px] text-[#999]">v1.0.0 · Sparkling Jewellers LLP</p>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+export function TopBar() {
+  return (
+    <header className="sticky top-0 z-30 border-b border-[#E5E5E5] bg-white">
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-2" style={{ height: 52 }}>
+        <SideMenu />
+        <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
+          Sparkling Jewellers LLP
+        </Link>
+        <div className="flex shrink-0 items-center">
+          <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+            <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
           </Link>
-          <Link to="/cart" aria-label="Cart" className="relative grid h-10 w-10 place-items-center rounded-full hover:bg-secondary">
-            <ShoppingBag className="h-5 w-5" />
-            <CartBadge />
+          <Link to="/search" aria-label="Search" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+            <Search className="h-[22px] w-[22px]" strokeWidth={1.6} />
           </Link>
         </div>
       </div>
@@ -56,46 +109,56 @@ export function TopBar({ title }: { title?: string }) {
   );
 }
 
-const tabs: ReadonlyArray<{ to: string; label: string; icon: typeof Home; exact?: boolean }> = [
-  { to: "/", label: "Home", icon: Home, exact: true },
-  { to: "/catalogue", label: "Shop", icon: Search },
-  { to: "/cart", label: "Cart", icon: ShoppingBag },
-  { to: "/wishlist", label: "Wishlist", icon: Heart },
-  { to: "/account", label: "Account", icon: UserIcon },
-];
-
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const weight = useCartWeight();
+  const isActive = (to: string, exact = false) =>
+    exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
+
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto grid max-w-2xl grid-cols-5" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
-        {tabs.map((t) => {
-          const active = t.exact ? pathname === t.to : pathname.startsWith(t.to);
-          const Icon = t.icon;
-          return (
-            <Link
-              key={t.to}
-              to={t.to}
-              className={`flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-medium transition-colors ${
-                active ? "text-burgundy" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${active ? "fill-gold/20" : ""}`} strokeWidth={active ? 2.4 : 1.8} />
-              <span>{t.label}</span>
-            </Link>
-          );
-        })}
+    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
+      <div
+        className="mx-auto grid max-w-2xl grid-cols-3 items-center"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
+      >
+        <Link
+          to="/"
+          className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+            isActive("/", true) ? "text-[#1A1A1A]" : "text-[#777]"
+          }`}
+        >
+          <Home className="h-5 w-5" strokeWidth={isActive("/", true) ? 2.2 : 1.7} />
+          <span>Home</span>
+        </Link>
+        <Link
+          to="/cart"
+          className={`relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+            isActive("/cart") ? "text-[#1A1A1A]" : "text-[#777]"
+          }`}
+        >
+          <div className="relative">
+            <ShoppingBag className="h-5 w-5" strokeWidth={isActive("/cart") ? 2.2 : 1.7} />
+            <CartBadge />
+          </div>
+          <span>Cart</span>
+        </Link>
+        <div className="flex flex-col items-end justify-center pr-4 leading-none">
+          <span className="text-[18px] font-bold tabular-nums text-[#1A1A1A]">{weight.toFixed(3)}</span>
+          <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#777]">Total (g)</span>
+        </div>
       </div>
     </nav>
   );
 }
 
-export function MobileShell({ children, title, hideTopBar = false }: { children: ReactNode; title?: string; hideTopBar?: boolean }) {
+export function MobileShell({ children, hideTopBar = false }: { children: ReactNode; title?: string; hideTopBar?: boolean }) {
   return (
     <div className="min-h-screen bg-background">
-      {!hideTopBar && <TopBar title={title} />}
+      {!hideTopBar && <TopBar />}
       <main className="mx-auto max-w-2xl pb-safe-nav">{children}</main>
       <BottomNav />
     </div>
   );
 }
+
+export { X };
