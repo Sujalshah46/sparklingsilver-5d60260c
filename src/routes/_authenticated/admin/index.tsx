@@ -148,9 +148,9 @@ function AdminDashboard() {
           <h2 className="mb-2 font-serif text-sm font-semibold">Quick actions</h2>
           <div className="grid grid-cols-2 gap-2">
             <QuickAction to="/admin/orders" icon={ShoppingBag} label="Manage orders" badge={stats?.pending} />
-            <QuickAction to="/products" icon={Boxes} label="View catalogue" />
+            <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
+            <QuickAction to="/products" icon={Package} label="View catalogue" />
             <QuickAction to="/account/enquiries" icon={MessageSquare} label="Enquiries" badge={stats?.newEnquiries} />
-            <QuickAction to="/" icon={Package} label="Storefront" />
           </div>
         </div>
 
