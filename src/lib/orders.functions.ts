@@ -1,29 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-const addressSchema = z.object({
-  id: z.string().uuid().optional(),
-  recipient_name: z.string().trim().min(1).max(100),
-  mobile: z.string().trim().min(8).max(15),
-  line1: z.string().trim().min(1).max(200),
-  line2: z.string().trim().max(200).optional().nullable(),
-  city: z.string().trim().min(1).max(80),
-  state: z.string().trim().min(1).max(80),
-  pincode: z.string().trim().min(4).max(10),
-});
+import { notifyAdmins } from "./push.functions";
 
 const placeOrderInput = z.object({
-  payment_method: z.enum(["upi", "card", "netbanking", "bank-transfer", "cod"]),
-  address: addressSchema,
+  customer_name: z.string().trim().min(1).max(100),
+  customer_phone: z.string().trim().min(8).max(20),
+  customer_email: z.string().trim().email().max(200),
+  customer_address: z.string().trim().min(1).max(500),
+  customer_city: z.string().trim().min(1).max(80),
+  customer_pincode: z.string().trim().min(4).max(10),
+  customer_notes: z.string().trim().max(1000).optional().nullable(),
 });
 
 /**
- * Server-authoritative order placement.
- * - Re-reads cart_items + product prices server-side; never trusts client totals.
- * - Recomputes subtotal/gst/total.
- * - Persists shipping address (uses existing saved one if id provided).
- * - Inserts orders + order_items, clears cart, all under user RLS.
+ * Manual order placement — no payment.
+ * - Server-authoritative totals.
+ * - Status defaults to `pending`; admin accepts/rejects later.
+ * - Fans out a Web Push notification to all admins after insert.
  */
 export const placeOrder = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -31,7 +25,6 @@ export const placeOrder = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // 1. Load cart with current product prices (server-side, authoritative).
     const { data: items, error: cartErr } = await supabase
       .from("cart_items")
       .select("id, quantity, size, product:products(id, name, sku, price, image_url, in_stock)")
@@ -40,77 +33,49 @@ export const placeOrder = createServerFn({ method: "POST" })
     if (!items || items.length === 0) throw new Error("Cart is empty");
 
     type CartRow = {
-      id: string;
-      quantity: number;
-      size: string | null;
-      product: {
-        id: string;
-        name: string;
-        sku: string | null;
-        price: number | string;
-        image_url: string | null;
-        in_stock: boolean | null;
-      } | null;
+      id: string; quantity: number; size: string | null;
+      product: { id: string; name: string; sku: string | null; price: number | string; image_url: string | null; in_stock: boolean | null } | null;
     };
     const rows = items as unknown as CartRow[];
-
     for (const it of rows) {
       if (!it.product) throw new Error("A product in your cart is unavailable");
       if (it.product.in_stock === false) throw new Error(`${it.product.name} is out of stock`);
       if (!Number.isInteger(it.quantity) || it.quantity < 1) throw new Error("Invalid quantity");
     }
 
-    // 2. Recompute totals server-side.
     const subtotal = rows.reduce((s, it) => s + Number(it.product!.price) * it.quantity, 0);
     const gst = Math.round(subtotal * 0.03 * 100) / 100;
     const total = Math.round((subtotal + gst) * 100) / 100;
 
-    // 3. Resolve shipping address — either existing (owned by user) or new.
-    let shipping: Record<string, unknown> | null = null;
-    if (data.address.id) {
-      const { data: existing } = await supabase
-        .from("addresses")
-        .select("*")
-        .eq("id", data.address.id)
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (!existing) throw new Error("Address not found");
-      shipping = existing;
-    } else {
-      const { data: created, error: addrErr } = await supabase
-        .from("addresses")
-        .insert({
-          user_id: userId,
-          recipient_name: data.address.recipient_name,
-          mobile: data.address.mobile,
-          line1: data.address.line1,
-          line2: data.address.line2 ?? null,
-          city: data.address.city,
-          state: data.address.state,
-          pincode: data.address.pincode,
-        })
-        .select()
-        .single();
-      if (addrErr || !created) throw new Error(addrErr?.message ?? "Could not save address");
-      shipping = created;
-    }
+    const shipping = {
+      recipient_name: data.customer_name,
+      mobile: data.customer_phone,
+      line1: data.customer_address,
+      city: data.customer_city,
+      state: "",
+      pincode: data.customer_pincode,
+    };
 
-    // 4. Insert order with server-computed totals.
     const { data: order, error: orderErr } = await supabase
       .from("orders")
       .insert({
         user_id: userId,
-        subtotal,
-        gst,
-        total,
-        payment_method: data.payment_method,
+        subtotal, gst, total,
+        status: "pending",
+        payment_method: null,
         shipping_address: shipping as never,
+        customer_name: data.customer_name,
+        customer_phone: data.customer_phone,
+        customer_email: data.customer_email,
+        customer_address: data.customer_address,
+        customer_city: data.customer_city,
+        customer_pincode: data.customer_pincode,
+        customer_notes: data.customer_notes ?? null,
       })
       .select()
       .single();
     if (orderErr || !order) throw new Error(orderErr?.message ?? "Could not create order");
 
-    // 5. Order items at server-known unit prices.
     const { error: itemsErr } = await supabase.from("order_items").insert(
       rows.map((it) => ({
         order_id: order.id,
@@ -125,8 +90,15 @@ export const placeOrder = createServerFn({ method: "POST" })
     );
     if (itemsErr) throw new Error(itemsErr.message);
 
-    // 6. Clear cart.
     await supabase.from("cart_items").delete().eq("user_id", userId);
+
+    // Fire-and-forget push to admins
+    notifyAdmins({
+      title: "New order received",
+      body: `${data.customer_name} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
+      url: `/admin/orders/${order.id}`,
+      tag: `order-${order.id}`,
+    }).catch(() => {});
 
     return { id: order.id as string, order_no: order.order_no as string };
   });
