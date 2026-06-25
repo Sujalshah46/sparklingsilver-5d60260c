@@ -139,7 +139,7 @@ function Home() {
                 key={c.id}
                 slug={c.slug}
                 name={c.name}
-                image={resolveProductImage(`cat-${c.slug}-a.jpg`)}
+                image={resolveProductImage(c.slug === "jewelry-sets" ? "cat-necklaces-a.jpg" : `cat-${c.slug}-a.jpg`)}
                 count={count}
                 newCount={Math.max(0, Math.min(count, 24))}
               />
