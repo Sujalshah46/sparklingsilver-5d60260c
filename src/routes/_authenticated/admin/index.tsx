@@ -28,7 +28,7 @@ function AdminDashboard() {
       const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-      const [ordersAll, ordersRecent, products, customers, enquiries] = await Promise.all([
+      const [ordersAll, ordersRecent, products, customers, enquiries, inv] = await Promise.all([
         supabase.from("orders").select("id, status, total, created_at"),
         supabase
           .from("orders")
@@ -38,6 +38,7 @@ function AdminDashboard() {
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("enquiries").select("id", { count: "exact", head: true }),
+        supabase.from("products").select("stock_quantity, low_stock_threshold"),
       ]);
 
       const rows = ordersAll.data ?? [];
@@ -49,6 +50,10 @@ function AdminDashboard() {
         .filter((o) => ["accepted", "processing", "ready", "dispatched", "delivered"].includes(o.status))
         .reduce((s, o) => s + Number(o.total ?? 0), 0);
 
+      const invRows = inv.data ?? [];
+      const lowStock = invRows.filter((p) => (p.stock_quantity ?? 0) > 0 && (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0)).length;
+      const outOfStock = invRows.filter((p) => (p.stock_quantity ?? 0) === 0).length;
+
       return {
         totalOrders: rows.length,
         pending,
@@ -58,6 +63,8 @@ function AdminDashboard() {
         productCount: products.count ?? 0,
         customerCount: customers.count ?? 0,
         newEnquiries: enquiries.count ?? 0,
+        lowStock,
+        outOfStock,
         recent: ordersRecent.data ?? [],
       };
     },
