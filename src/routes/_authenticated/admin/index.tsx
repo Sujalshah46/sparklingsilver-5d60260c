@@ -113,6 +113,7 @@ function AdminDashboard() {
     { label: "Revenue · 7d", value: inr(stats?.revenue7 ?? 0), icon: IndianRupee, accent: "text-green-800 bg-green-50" },
     { label: "Total orders", value: stats?.totalOrders ?? 0, icon: Package, accent: "text-blue-800 bg-blue-50" },
     { label: "Products", value: stats?.productCount ?? 0, icon: Boxes, accent: "text-charcoal bg-gold/15" },
+    { label: "Low stock", value: (stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0), icon: AlertTriangle, accent: "text-amber-800 bg-amber-50" },
     { label: "Customers", value: stats?.customerCount ?? 0, icon: Users, accent: "text-purple-800 bg-purple-50" },
   ];
 
