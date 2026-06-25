@@ -32,6 +32,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
+import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin/orders.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -149,11 +150,17 @@ const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedOrdersRoute,
 } as any)
+const AuthenticatedAdminOrdersRoute =
+  AuthenticatedAdminOrdersRouteImport.update({
+    id: '/orders',
+    path: '/orders',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminOrdersIdRoute =
   AuthenticatedAdminOrdersIdRouteImport.update({
-    id: '/orders/$id',
-    path: '/orders/$id',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminOrdersRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -177,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
@@ -201,6 +209,7 @@ export interface FileRoutesByTo {
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
@@ -228,6 +237,7 @@ export interface FileRoutesById {
   '/category/$slug': typeof CategorySlugRoute
   '/product/$slug': typeof ProductSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
@@ -255,6 +265,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/product/$slug'
     | '/blog/'
+    | '/admin/orders'
     | '/orders/$id'
     | '/admin/'
     | '/admin/orders/$id'
@@ -279,6 +290,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/product/$slug'
     | '/blog'
+    | '/admin/orders'
     | '/orders/$id'
     | '/admin'
     | '/admin/orders/$id'
@@ -305,6 +317,7 @@ export interface FileRouteTypes {
     | '/category/$slug'
     | '/product/$slug'
     | '/blog/'
+    | '/_authenticated/admin/orders'
     | '/_authenticated/orders/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/orders/$id'
@@ -489,25 +502,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersIdRouteImport
       parentRoute: typeof AuthenticatedOrdersRoute
     }
+    '/_authenticated/admin/orders': {
+      id: '/_authenticated/admin/orders'
+      path: '/orders'
+      fullPath: '/admin/orders'
+      preLoaderRoute: typeof AuthenticatedAdminOrdersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/orders/$id': {
       id: '/_authenticated/admin/orders/$id'
-      path: '/orders/$id'
+      path: '/$id'
       fullPath: '/admin/orders/$id'
       preLoaderRoute: typeof AuthenticatedAdminOrdersIdRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
+      parentRoute: typeof AuthenticatedAdminOrdersRoute
     }
   }
 }
 
-interface AuthenticatedAdminRouteRouteChildren {
-  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+interface AuthenticatedAdminOrdersRouteChildren {
   AuthenticatedAdminOrdersIdRoute: typeof AuthenticatedAdminOrdersIdRoute
+}
+
+const AuthenticatedAdminOrdersRouteChildren: AuthenticatedAdminOrdersRouteChildren =
+  {
+    AuthenticatedAdminOrdersIdRoute: AuthenticatedAdminOrdersIdRoute,
+  }
+
+const AuthenticatedAdminOrdersRouteWithChildren =
+  AuthenticatedAdminOrdersRoute._addFileChildren(
+    AuthenticatedAdminOrdersRouteChildren,
+  )
+
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRouteWithChildren,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
-    AuthenticatedAdminOrdersIdRoute: AuthenticatedAdminOrdersIdRoute,
   }
 
 const AuthenticatedAdminRouteRouteWithChildren =
