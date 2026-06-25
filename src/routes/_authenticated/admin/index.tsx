@@ -149,6 +149,7 @@ function AdminDashboard() {
           <div className="grid grid-cols-2 gap-2">
             <QuickAction to="/admin/orders" icon={ShoppingBag} label="Manage orders" badge={stats?.pending} />
             <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
+            <QuickAction to="/admin/categories" icon={ImageIcon} label="Category images" />
             <QuickAction to="/products" icon={Package} label="View catalogue" />
             <QuickAction to="/account/enquiries" icon={MessageSquare} label="Enquiries" badge={stats?.newEnquiries} />
           </div>
