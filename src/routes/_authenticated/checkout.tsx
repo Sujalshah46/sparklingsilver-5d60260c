@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -10,225 +10,209 @@ import { placeOrder as placeOrderFn } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Sparkling Jewellers" }] }),
   component: Checkout,
 });
 
-type Step = "address" | "payment" | "confirm";
-
 function Checkout() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const navigate = useNavigate();
-  const [step, setStep] = useState<Step>("address");
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [orderNo, setOrderNo] = useState<string>("");
-  const [paymentMethod, setPaymentMethod] = useState("upi");
-  const [address, setAddress] = useState({ recipient_name: "", mobile: "", line1: "", line2: "", city: "", state: "", pincode: "" });
+  const [orderNo, setOrderNo] = useState<string | null>(null);
+  const [form, setForm] = useState({
+    customer_name: "",
+    customer_phone: "",
+    customer_email: user?.email ?? "",
+    customer_address: "",
+    customer_city: "",
+    customer_pincode: "",
+    customer_notes: "",
+  });
 
   const { data: items } = useQuery({
     queryKey: ["cart", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("cart_items").select("id, quantity, size, product:products(*)").eq("user_id", user!.id);
+      const { data } = await supabase
+        .from("cart_items")
+        .select("id, quantity, size, product:products(*)")
+        .eq("user_id", user!.id);
       return data ?? [];
     },
   });
 
-  const { data: addresses } = useQuery({
-    queryKey: ["addresses", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from("addresses").select("*").eq("user_id", user!.id).order("is_default", { ascending: false });
-      return data ?? [];
-    },
-  });
-
-  const [selectedAddrId, setSelectedAddrId] = useState<string | null>(null);
-
-  const subtotal = (items ?? []).reduce((s, it) => s + Number(it.product?.price ?? 0) * it.quantity, 0);
+  const subtotal = (items ?? []).reduce(
+    (s, it) => s + Number(it.product?.price ?? 0) * it.quantity,
+    0,
+  );
   const gst = subtotal * 0.03;
   const total = subtotal + gst;
 
   const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
-    mutationFn: async () => {
-      if (!user || !items || items.length === 0) throw new Error("empty");
-      const savedAddr = addresses?.find((a) => a.id === selectedAddrId);
-      const payload = savedAddr
-        ? {
-            payment_method: paymentMethod as "upi" | "card" | "netbanking" | "bank-transfer" | "cod",
-            address: {
-              id: savedAddr.id,
-              recipient_name: savedAddr.recipient_name,
-              mobile: savedAddr.mobile,
-              line1: savedAddr.line1,
-              line2: savedAddr.line2,
-              city: savedAddr.city,
-              state: savedAddr.state,
-              pincode: savedAddr.pincode,
-            },
-          }
-        : {
-            payment_method: paymentMethod as "upi" | "card" | "netbanking" | "bank-transfer" | "cod",
-            address,
-          };
-      return placeOrderRpc({ data: payload });
-    },
+    mutationFn: async () => placeOrderRpc({ data: form }),
     onSuccess: (order) => {
-      setOrderId(order.id);
       setOrderNo(order.order_no);
-      setStep("confirm");
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
     onError: (err: unknown) => {
-      const msg = err instanceof Error ? err.message : "Could not place order. Please try again.";
-      toast.error(msg);
+      toast.error(err instanceof Error ? err.message : "Could not place order");
     },
   });
 
-  if ((!items || items.length === 0) && step !== "confirm") {
+  if (orderNo) {
     return (
-      <MobileShell title="Checkout">
-        <div className="py-20 text-center">
-          <p className="text-muted-foreground">Your cart is empty.</p>
-          <Button asChild className="mt-4"><Link to="/catalogue">Continue Shopping</Link></Button>
+      <MobileShell title="Order Received">
+        <div className="p-6 text-center">
+          <CheckCircle2 className="mx-auto h-16 w-16 text-burgundy" />
+          <h2 className="mt-4 font-serif text-2xl font-bold">Order received!</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Order number</p>
+          <p className="font-serif text-xl font-semibold gold-text">{orderNo}</p>
+          <div className="mx-auto mt-6 max-w-sm rounded-xl border border-border bg-card p-4 text-left text-sm">
+            <div className="flex items-start gap-2">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />
+              <p>
+                Your order is <span className="font-semibold">pending review</span>. Our team
+                will contact you on the phone number provided to confirm pricing and arrange
+                payment & delivery.
+              </p>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-col gap-2">
+            <Button asChild className="bg-burgundy hover:bg-burgundy/90">
+              <Link to="/orders">View My Orders</Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/catalogue">Continue Shopping</Link>
+            </Button>
+          </div>
         </div>
       </MobileShell>
     );
   }
 
+  if (!items || items.length === 0) {
+    return (
+      <MobileShell title="Checkout">
+        <div className="py-20 text-center">
+          <p className="text-muted-foreground">Your cart is empty.</p>
+          <Button asChild className="mt-4">
+            <Link to="/catalogue">Continue Shopping</Link>
+          </Button>
+        </div>
+      </MobileShell>
+    );
+  }
+
+  const valid =
+    form.customer_name.trim() &&
+    form.customer_phone.trim().length >= 8 &&
+    /.+@.+\..+/.test(form.customer_email) &&
+    form.customer_address.trim() &&
+    form.customer_city.trim() &&
+    form.customer_pincode.trim().length >= 4;
+
   return (
-    <MobileShell title="Checkout">
-      <div className="p-4">
-        <Steps step={step} />
+    <MobileShell title="Place Order">
+      <form
+        className="space-y-5 p-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!valid) return toast.error("Please fill all required fields");
+          placeOrder.mutate();
+        }}
+      >
+        <div className="rounded-xl border border-burgundy/20 bg-burgundy/5 p-3 text-xs text-burgundy">
+          No online payment. We'll review your order and contact you to confirm
+          pricing, payment & delivery.
+        </div>
 
-        {step === "address" && (
-          <div className="mt-6 space-y-4">
-            {addresses && addresses.length > 0 && (
-              <div>
-                <Label className="font-semibold">Saved Addresses</Label>
-                <RadioGroup value={selectedAddrId ?? ""} onValueChange={setSelectedAddrId} className="mt-2 space-y-2">
-                  {addresses.map((a) => (
-                    <label key={a.id} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3 text-sm has-[:checked]:border-burgundy">
-                      <RadioGroupItem value={a.id} />
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold">{a.recipient_name} · {a.mobile}</p>
-                        <p className="text-xs text-muted-foreground">{a.line1}{a.line2 ? `, ${a.line2}` : ""}, {a.city}, {a.state} {a.pincode}</p>
-                      </div>
-                    </label>
-                  ))}
-                </RadioGroup>
-              </div>
-            )}
-            <details open={!addresses?.length}>
-              <summary className="cursor-pointer text-sm font-semibold text-burgundy">+ Add new address</summary>
-              <div className="mt-3 grid gap-3">
-                <Input placeholder="Recipient name" value={address.recipient_name} onChange={(e) => { setSelectedAddrId(null); setAddress({ ...address, recipient_name: e.target.value }); }} maxLength={100} />
-                <Input placeholder="Mobile" value={address.mobile} onChange={(e) => setAddress({ ...address, mobile: e.target.value })} maxLength={15} />
-                <Input placeholder="Address line 1" value={address.line1} onChange={(e) => setAddress({ ...address, line1: e.target.value })} maxLength={200} />
-                <Input placeholder="Address line 2 (optional)" value={address.line2} onChange={(e) => setAddress({ ...address, line2: e.target.value })} maxLength={200} />
-                <div className="grid grid-cols-2 gap-3">
-                  <Input placeholder="City" value={address.city} onChange={(e) => setAddress({ ...address, city: e.target.value })} />
-                  <Input placeholder="State" value={address.state} onChange={(e) => setAddress({ ...address, state: e.target.value })} />
-                </div>
-                <Input placeholder="Pincode" value={address.pincode} onChange={(e) => setAddress({ ...address, pincode: e.target.value })} maxLength={10} />
-              </div>
-            </details>
-            <Button
-              className="h-12 w-full bg-burgundy hover:bg-burgundy/90"
-              onClick={() => {
-                const hasSaved = !!selectedAddrId;
-                const hasNew = address.recipient_name && address.mobile && address.line1 && address.city && address.state && address.pincode;
-                if (!hasSaved && !hasNew) return toast.error("Choose or enter an address");
-                setStep("payment");
-              }}
-            >
-              Continue to Payment
-            </Button>
+        <div className="space-y-3">
+          <div>
+            <Label htmlFor="name">Full name *</Label>
+            <Input id="name" required maxLength={100}
+              value={form.customer_name}
+              onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
           </div>
-        )}
-
-        {step === "payment" && (
-          <div className="mt-6 space-y-5">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="font-semibold">Payment Method</Label>
-              <RadioGroup value={paymentMethod} onValueChange={setPaymentMethod} className="mt-2 space-y-2">
-                {[
-                  { v: "upi", l: "UPI", h: "GPay, PhonePe, Paytm" },
-                  { v: "card", l: "Credit / Debit Card", h: "Visa, Mastercard, RuPay" },
-                  { v: "netbanking", l: "Net Banking", h: "All major banks" },
-                  { v: "bank-transfer", l: "Bank Transfer", h: "NEFT / RTGS" },
-                  { v: "cod", l: "Cash on Delivery", h: "Pay when delivered" },
-                ].map((m) => (
-                  <label key={m.v} className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3 text-sm has-[:checked]:border-burgundy">
-                    <RadioGroupItem value={m.v} />
-                    <div><p className="font-semibold">{m.l}</p><p className="text-xs text-muted-foreground">{m.h}</p></div>
-                  </label>
-                ))}
-              </RadioGroup>
-              <p className="mt-2 text-[11px] text-muted-foreground">Payment integration coming soon — your order will be marked as "Pending Payment" and our team will contact you.</p>
+              <Label htmlFor="phone">WhatsApp / Phone *</Label>
+              <Input id="phone" inputMode="tel" required maxLength={20}
+                value={form.customer_phone}
+                onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} />
             </div>
-
-            <div className="rounded-xl border border-border bg-card p-4 text-sm">
-              <Row label="Subtotal" value={inr(subtotal)} />
-              <Row label="GST (3%)" value={inr(gst)} />
-              <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold">
-                <span>Total</span><span className="font-serif text-burgundy">{inr(total)}</span>
-              </div>
-            </div>
-
-            <Button className="h-12 w-full bg-burgundy hover:bg-burgundy/90" disabled={placeOrder.isPending} onClick={() => placeOrder.mutate()}>
-              {placeOrder.isPending ? "Placing…" : `Place Order · ${inr(total)}`}
-            </Button>
-          </div>
-        )}
-
-        {step === "confirm" && orderId && (
-          <div className="mt-10 text-center">
-            <CheckCircle2 className="mx-auto h-16 w-16 text-burgundy" />
-            <h2 className="mt-4 font-serif text-2xl font-bold">Order Placed!</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Order number</p>
-            <p className="font-serif text-xl font-semibold gold-text">{orderNo}</p>
-            <p className="mt-4 text-sm text-muted-foreground">We'll send you updates as your order progresses.</p>
-            <div className="mt-8 flex flex-col gap-2">
-              <Button asChild className="bg-burgundy hover:bg-burgundy/90"><Link to="/orders/$id" params={{ id: orderId }}>View Order</Link></Button>
-              <Button asChild variant="outline"><Link to="/catalogue">Continue Shopping</Link></Button>
+            <div>
+              <Label htmlFor="email">Email *</Label>
+              <Input id="email" type="email" required maxLength={200}
+                value={form.customer_email}
+                onChange={(e) => setForm({ ...form, customer_email: e.target.value })} />
             </div>
           </div>
-        )}
-      </div>
+          <div>
+            <Label htmlFor="addr">Delivery address *</Label>
+            <Textarea id="addr" required maxLength={500} rows={2}
+              value={form.customer_address}
+              onChange={(e) => setForm({ ...form, customer_address: e.target.value })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="city">City *</Label>
+              <Input id="city" required maxLength={80}
+                value={form.customer_city}
+                onChange={(e) => setForm({ ...form, customer_city: e.target.value })} />
+            </div>
+            <div>
+              <Label htmlFor="pin">Pincode *</Label>
+              <Input id="pin" inputMode="numeric" required maxLength={10}
+                value={form.customer_pincode}
+                onChange={(e) => setForm({ ...form, customer_pincode: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="notes">Notes (optional)</Label>
+            <Textarea id="notes" maxLength={1000} rows={2}
+              placeholder="Anything we should know about your order"
+              value={form.customer_notes}
+              onChange={(e) => setForm({ ...form, customer_notes: e.target.value })} />
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4 text-sm">
+          <Row label="Items" value={String(items.length)} />
+          <Row label="Subtotal" value={inr(subtotal)} />
+          <Row label="GST (3%)" value={inr(gst)} />
+          <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold">
+            <span>Estimated total</span>
+            <span className="font-serif text-burgundy">{inr(total)}</span>
+          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Final price will be confirmed by our team based on current gold rate.
+          </p>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={placeOrder.isPending || !valid}
+          className="h-12 w-full bg-burgundy hover:bg-burgundy/90"
+        >
+          {placeOrder.isPending ? "Placing…" : "Place Order"}
+        </Button>
+      </form>
     </MobileShell>
   );
 }
 
-function Steps({ step }: { step: Step }) {
-  const steps = [
-    { k: "address", l: "Address" },
-    { k: "payment", l: "Payment" },
-    { k: "confirm", l: "Done" },
-  ];
-  const idx = steps.findIndex((s) => s.k === step);
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-center gap-2">
-      {steps.map((s, i) => (
-        <div key={s.k} className="flex items-center gap-2">
-          <div className={`grid h-7 w-7 place-items-center rounded-full text-xs font-semibold ${i <= idx ? "bg-burgundy text-ivory" : "bg-secondary text-muted-foreground"}`}>{i + 1}</div>
-          <span className={`text-xs ${i === idx ? "font-semibold" : "text-muted-foreground"}`}>{s.l}</span>
-          {i < steps.length - 1 && <span className="h-px w-6 bg-border" />}
-        </div>
-      ))}
+    <div className="flex justify-between py-0.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{value}</span>
     </div>
   );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between text-muted-foreground"><span>{label}</span><span className="text-foreground">{value}</span></div>;
 }
