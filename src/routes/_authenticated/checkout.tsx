@@ -1,10 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { inr } from "@/lib/format";
+import { placeOrder as placeOrderFn } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -53,42 +55,30 @@ function Checkout() {
   const gst = subtotal * 0.03;
   const total = subtotal + gst;
 
+  const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
     mutationFn: async () => {
       if (!user || !items || items.length === 0) throw new Error("empty");
-      let ship = addresses?.find((a) => a.id === selectedAddrId) ?? null;
-      if (!ship) {
-        // new address
-        const { data: created } = await supabase.from("addresses").insert({ ...address, user_id: user.id }).select().single();
-        ship = created;
-      }
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          subtotal,
-          gst,
-          total,
-          payment_method: paymentMethod,
-          shipping_address: ship,
-        })
-        .select()
-        .single();
-      if (error || !order) throw error;
-      await supabase.from("order_items").insert(
-        items.map((it) => ({
-          order_id: order.id,
-          product_id: it.product?.id,
-          product_name: it.product?.name ?? "",
-          product_sku: it.product?.sku,
-          image_url: it.product?.image_url,
-          quantity: it.quantity,
-          unit_price: it.product?.price ?? 0,
-          size: it.size,
-        }))
-      );
-      await supabase.from("cart_items").delete().eq("user_id", user.id);
-      return order;
+      const savedAddr = addresses?.find((a) => a.id === selectedAddrId);
+      const payload = savedAddr
+        ? {
+            payment_method: paymentMethod as "upi" | "card" | "netbanking" | "bank-transfer" | "cod",
+            address: {
+              id: savedAddr.id,
+              recipient_name: savedAddr.recipient_name,
+              mobile: savedAddr.mobile,
+              line1: savedAddr.line1,
+              line2: savedAddr.line2,
+              city: savedAddr.city,
+              state: savedAddr.state,
+              pincode: savedAddr.pincode,
+            },
+          }
+        : {
+            payment_method: paymentMethod as "upi" | "card" | "netbanking" | "bank-transfer" | "cod",
+            address,
+          };
+      return placeOrderRpc({ data: payload });
     },
     onSuccess: (order) => {
       setOrderId(order.id);
@@ -98,7 +88,10 @@ function Checkout() {
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
-    onError: () => toast.error("Could not place order. Please try again."),
+    onError: (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Could not place order. Please try again.";
+      toast.error(msg);
+    },
   });
 
   if ((!items || items.length === 0) && step !== "confirm") {
