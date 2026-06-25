@@ -1,6 +1,8 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "@fontsource/playfair-display/300.css";
+@import "@fontsource/playfair-display/300-italic.css";
 @import "@fontsource/playfair-display/400.css";
 @import "@fontsource/playfair-display/600.css";
 @import "@fontsource/playfair-display/700.css";
@@ -12,19 +14,22 @@
 @custom-variant dark (&:is(.dark *));
 
 /* =========================================================
-   SPARKLING JEWELLERS LLP — DESIGN SYSTEM
-   Brand palette: Gold #C9A84C, Burgundy #6D1F2E,
-   Ivory #FAF7F2, Charcoal #1C1C1C, Rose Gold #B76E79
+   SPARKLING JEWELLERS LLP — B2B CATALOGUE DESIGN SYSTEM
+   Primary: Mint Teal #5BBFAD
+   Surfaces: White / #F8F8F8 / #E5E5E5
+   Text: #1A1A1A / #555 / #999
+   Accents: Gold #D4A843 (hero only), Warning #F5C518
    ========================================================= */
 
 @theme inline {
   --font-serif: "Playfair Display", ui-serif, Georgia, serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: 2px;
+  --radius-md: 2px;
+  --radius-lg: 4px;
+  --radius-xl: 6px;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -64,107 +69,137 @@
   --color-gold-soft: var(--gold-soft);
   --color-burgundy: var(--burgundy);
   --color-ivory: var(--ivory);
-  --color-rose-gold: var(--rose-gold);
+  --color-teal: var(--teal);
+  --color-teal-soft: var(--teal-soft);
+  --color-teal-dark: var(--teal-dark);
 }
 
 :root {
-  --radius: 0.75rem;
+  --radius: 0.25rem;
 
-  /* Brand */
-  --gold: oklch(0.77 0.13 85);                /* #C9A84C deep gold */
-  --gold-soft: oklch(0.88 0.08 88);
-  --burgundy: oklch(0.34 0.12 18);            /* #6D1F2E */
-  --ivory: oklch(0.975 0.012 85);             /* #FAF7F2 */
-  --rose-gold: oklch(0.66 0.10 25);           /* #B76E79 */
-  --charcoal: oklch(0.18 0.005 0);            /* #1C1C1C */
+  /* Brand — B2B Catalogue */
+  --teal: #5BBFAD;
+  --teal-soft: #A8E6CF;
+  --teal-dark: #3D9E8C;
+  --gold: #D4A843;
+  --gold-soft: #F5E1A4;
+  --burgundy: #5BBFAD;   /* legacy alias → teal so older classes don't break */
+  --ivory: #FFFFFF;
 
   /* Semantic */
-  --background: var(--ivory);
-  --foreground: var(--charcoal);
-  --card: oklch(1 0 0);
-  --card-foreground: var(--charcoal);
-  --popover: oklch(1 0 0);
-  --popover-foreground: var(--charcoal);
-  --primary: var(--burgundy);
-  --primary-foreground: var(--ivory);
-  --secondary: oklch(0.94 0.02 85);
-  --secondary-foreground: var(--charcoal);
-  --muted: oklch(0.95 0.012 85);
-  --muted-foreground: oklch(0.48 0.02 60);
-  --accent: var(--gold);
-  --accent-foreground: var(--charcoal);
-  --destructive: oklch(0.56 0.21 27);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.90 0.02 80);
-  --input: oklch(0.92 0.018 80);
-  --ring: var(--gold);
+  --background: #FFFFFF;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #5BBFAD;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F8F8F8;
+  --secondary-foreground: #1A1A1A;
+  --muted: #F8F8F8;
+  --muted-foreground: #555555;
+  --accent: #5BBFAD;
+  --accent-foreground: #FFFFFF;
+  --destructive: #DC2626;
+  --destructive-foreground: #FFFFFF;
+  --border: #E5E5E5;
+  --input: #E5E5E5;
+  --ring: #5BBFAD;
 
-  --chart-1: var(--gold);
-  --chart-2: var(--burgundy);
-  --chart-3: var(--rose-gold);
-  --chart-4: oklch(0.55 0.1 80);
-  --chart-5: oklch(0.7 0.12 50);
+  --chart-1: var(--teal);
+  --chart-2: var(--teal-dark);
+  --chart-3: var(--gold);
+  --chart-4: #999999;
+  --chart-5: #555555;
 
-  --sidebar: var(--ivory);
-  --sidebar-foreground: var(--charcoal);
-  --sidebar-primary: var(--burgundy);
-  --sidebar-primary-foreground: var(--ivory);
-  --sidebar-accent: oklch(0.94 0.02 85);
-  --sidebar-accent-foreground: var(--charcoal);
-  --sidebar-border: oklch(0.90 0.02 80);
-  --sidebar-ring: var(--gold);
+  --sidebar: #FFFFFF;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #5BBFAD;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #F8F8F8;
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: #E5E5E5;
+  --sidebar-ring: #5BBFAD;
+
+  --charcoal: #1A1A1A;
 }
 
 .dark {
-  --background: oklch(0.16 0.01 30);
-  --foreground: var(--ivory);
-  --card: oklch(0.22 0.015 30);
-  --card-foreground: var(--ivory);
-  --popover: oklch(0.22 0.015 30);
-  --popover-foreground: var(--ivory);
-  --primary: var(--gold);
-  --primary-foreground: var(--charcoal);
-  --secondary: oklch(0.28 0.02 30);
-  --secondary-foreground: var(--ivory);
-  --muted: oklch(0.26 0.018 30);
-  --muted-foreground: oklch(0.7 0.02 60);
-  --accent: var(--gold);
-  --accent-foreground: var(--charcoal);
-  --destructive: oklch(0.6 0.2 27);
-  --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.32 0.02 30);
-  --input: oklch(0.32 0.02 30);
-  --ring: var(--gold);
+  --background: #0F1411;
+  --foreground: #F1F5F4;
+  --card: #161B19;
+  --card-foreground: #F1F5F4;
+  --popover: #161B19;
+  --popover-foreground: #F1F5F4;
+  --primary: #5BBFAD;
+  --primary-foreground: #0F1411;
+  --secondary: #1C2421;
+  --secondary-foreground: #F1F5F4;
+  --muted: #1C2421;
+  --muted-foreground: #9CA3A0;
+  --accent: #5BBFAD;
+  --accent-foreground: #0F1411;
+  --destructive: #EF4444;
+  --destructive-foreground: #FFFFFF;
+  --border: #242C29;
+  --input: #242C29;
+  --ring: #5BBFAD;
+  --ivory: #F1F5F4;
+  --burgundy: #5BBFAD;
 }
 
 @layer base {
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
   body { font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
-  h1, h2, h3, h4, .font-serif { font-family: var(--font-serif); letter-spacing: -0.01em; }
+  h1, h2, h3, h4, .font-serif { font-family: var(--font-serif); letter-spacing: -0.005em; }
 }
 
 /* =========== Custom utilities =========== */
 @utility text-gold { color: var(--gold); }
 @utility bg-gold { background-color: var(--gold); }
-@utility border-gold { border-color: var(--gold); }
-@utility bg-burgundy { background-color: var(--burgundy); }
-@utility text-burgundy { color: var(--burgundy); }
-@utility bg-ivory { background-color: var(--ivory); }
+@utility border-gold { border-color: var(--teal); }
+@utility bg-burgundy { background-color: var(--teal); }
+@utility text-burgundy { color: var(--teal); }
+@utility bg-ivory { background-color: #FFFFFF; }
+@utility text-charcoal { color: #1A1A1A; }
+@utility bg-teal { background-color: var(--teal); }
+@utility text-teal { color: var(--teal); }
+@utility border-teal { border-color: var(--teal); }
+@utility bg-teal-dark { background-color: var(--teal-dark); }
 
-@utility gold-gradient {
-  background-image: linear-gradient(135deg, oklch(0.85 0.10 88) 0%, oklch(0.77 0.13 85) 45%, oklch(0.6 0.10 75) 100%);
+@utility font-display { font-family: var(--font-display); }
+
+@utility tracking-section {
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@utility section-heading {
+  color: var(--teal);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+@utility section-underline {
+  display: inline-block;
+  height: 2px;
+  width: 56px;
+  background-color: var(--teal);
 }
 
 @utility gold-text {
-  background-image: linear-gradient(135deg, #e6c976 0%, #c9a84c 45%, #8a6f24 100%);
+  background-image: linear-gradient(135deg, #f3e3a0 0%, #d4a843 45%, #8a6f24 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
 @utility gold-shimmer {
-  background: linear-gradient(90deg, #c9a84c 0%, #f3e3a0 30%, #c9a84c 60%, #8a6f24 100%);
+  background: linear-gradient(90deg, #d4a843 0%, #f3e3a0 30%, #d4a843 60%, #8a6f24 100%);
   background-size: 200% auto;
   background-clip: text;
   -webkit-background-clip: text;
@@ -177,13 +212,50 @@
   100% { background-position: 200% center; }
 }
 
-@utility hairline-gold {
-  border-top: 1px solid color-mix(in oklab, var(--gold) 60%, transparent);
-}
-
 @utility scrollbar-hide {
   scrollbar-width: none;
   &::-webkit-scrollbar { display: none; }
+}
+
+/* Ruler ticks on product images — left + bottom edge.
+   Applied to a wrapper around the <img>. */
+@utility ruler-frame {
+  position: relative;
+  background-color: #FFFFFF;
+}
+@utility ruler-frame::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 12px;
+  width: 10px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #B8B8B8 0,
+    #B8B8B8 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+@utility ruler-frame::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 0;
+  height: 10px;
+  background-image: repeating-linear-gradient(
+    to right,
+    #B8B8B8 0,
+    #B8B8B8 1px,
+    transparent 1px,
+    transparent 8px
+  );
+  pointer-events: none;
+  z-index: 2;
 }
 
 /* Mobile-safe-area padding for bottom nav */
