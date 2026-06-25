@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/orders/$id")({
   component: OrderDetail,
 });
 
-const STAGES = ["placed", "processing", "ready", "dispatched", "delivered"];
+const STAGES = ["pending", "accepted", "dispatched", "delivered"];
 
 function OrderDetail() {
   const { id } = Route.useParams();

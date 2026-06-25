@@ -14,6 +14,9 @@ export const Route = createFileRoute("/_authenticated/orders")({
 });
 
 const statusColor: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-900",
+  accepted: "bg-green-100 text-green-900",
+  rejected: "bg-destructive/15 text-destructive",
   placed: "bg-secondary text-foreground",
   processing: "bg-gold/20 text-charcoal",
   ready: "bg-gold/20 text-charcoal",

@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin, Bell, Globe, HelpCircle, Info, LogOut, ChevronRight,
-  ShoppingBag, Heart, Gift, UserCog
+  ShoppingBag, Heart, Gift, UserCog, ShieldCheck
 } from "lucide-react";
 import { toast } from "sonner";
+import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: "My Account — Sparkling Jewellers" }] }),
@@ -19,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/account")({
 function AccountPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isAdmin } = useIsAdmin();
+
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -67,6 +70,13 @@ function AccountPage() {
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
           <Row icon={Info} label="About Sparkling Jewellers LLP" hint="v1.0" />
         </section>
+
+        {isAdmin && (
+          <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-burgundy bg-card">
+            <Row to="/admin" icon={ShieldCheck} label="Admin Panel" hint="Manage orders" />
+          </section>
+        )}
+
 
         <Button
           variant="outline"

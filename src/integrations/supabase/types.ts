@@ -272,7 +272,15 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           created_at: string
+          customer_address: string | null
+          customer_city: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_notes: string | null
+          customer_phone: string | null
+          customer_pincode: string | null
           gst: number
           id: string
           making_charges: number
@@ -283,10 +291,19 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          updated_at: string
           user_id: string
         }
         Insert: {
+          admin_notes?: string | null
           created_at?: string
+          customer_address?: string | null
+          customer_city?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          customer_pincode?: string | null
           gst?: number
           id?: string
           making_charges?: number
@@ -297,10 +314,19 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          updated_at?: string
           user_id: string
         }
         Update: {
+          admin_notes?: string | null
           created_at?: string
+          customer_address?: string | null
+          customer_city?: string | null
+          customer_email?: string | null
+          customer_name?: string | null
+          customer_notes?: string | null
+          customer_phone?: string | null
+          customer_pincode?: string | null
           gst?: number
           id?: string
           making_charges?: number
@@ -311,6 +337,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -453,6 +480,33 @@ export type Database = {
         }
         Relationships: []
       }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string
@@ -505,7 +559,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "customer"
@@ -518,6 +578,9 @@ export type Database = {
         | "dispatched"
         | "delivered"
         | "cancelled"
+        | "pending"
+        | "accepted"
+        | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -655,6 +718,9 @@ export const Constants = {
         "dispatched",
         "delivered",
         "cancelled",
+        "pending",
+        "accepted",
+        "rejected",
       ],
     },
   },
