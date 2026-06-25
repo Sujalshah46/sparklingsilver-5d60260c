@@ -28,7 +28,7 @@ export async function ensurePushSubscription(): Promise<PushSubscription | null>
 
   return reg.pushManager.subscribe({
     userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    applicationServerKey: urlBase64ToArrayBuffer(VAPID_PUBLIC_KEY),
   });
 }
 
