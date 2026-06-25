@@ -221,40 +221,40 @@
 @utility ruler-frame {
   position: relative;
   background-color: #FFFFFF;
-}
-@utility ruler-frame::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 12px;
-  width: 10px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    #B8B8B8 0,
-    #B8B8B8 1px,
-    transparent 1px,
-    transparent 8px
-  );
-  pointer-events: none;
-  z-index: 2;
-}
-@utility ruler-frame::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 10px;
-  right: 0;
-  height: 10px;
-  background-image: repeating-linear-gradient(
-    to right,
-    #B8B8B8 0,
-    #B8B8B8 1px,
-    transparent 1px,
-    transparent 8px
-  );
-  pointer-events: none;
-  z-index: 2;
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 12px;
+    width: 10px;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      #B8B8B8 0,
+      #B8B8B8 1px,
+      transparent 1px,
+      transparent 8px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 10px;
+    right: 0;
+    height: 10px;
+    background-image: repeating-linear-gradient(
+      to right,
+      #B8B8B8 0,
+      #B8B8B8 1px,
+      transparent 1px,
+      transparent 8px
+    );
+    pointer-events: none;
+    z-index: 2;
+  }
 }
 
 /* Mobile-safe-area padding for bottom nav */
