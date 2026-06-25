@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { inr, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, MessageSquare, Boxes, AlertTriangle } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, MessageSquare, Boxes, AlertTriangle, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
