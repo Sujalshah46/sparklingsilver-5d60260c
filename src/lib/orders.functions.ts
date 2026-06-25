@@ -92,13 +92,16 @@ export const placeOrder = createServerFn({ method: "POST" })
 
     await supabase.from("cart_items").delete().eq("user_id", userId);
 
-    // Fire-and-forget push to admins
-    notifyAdmins({
-      title: "New order received",
-      body: `${data.customer_name} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
-      url: `/admin/orders/${order.id}`,
-      tag: `order-${order.id}`,
-    }).catch(() => {});
+    // Fire-and-forget push to admins (server-only module, dynamic import).
+    try {
+      const { notifyAdmins } = await import("./push.server");
+      notifyAdmins({
+        title: "New order received",
+        body: `${data.customer_name} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
+        url: `/admin/orders/${order.id}`,
+        tag: `order-${order.id}`,
+      }).catch(() => {});
+    } catch (e) { console.error("push import failed", e); }
 
     return { id: order.id as string, order_no: order.order_no as string };
   });
