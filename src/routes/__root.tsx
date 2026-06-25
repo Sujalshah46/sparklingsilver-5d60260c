@@ -98,10 +98,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "Sparkling Jewellers LLP",
-          url: "https://cuddly-code-gen.lovable.app",
+          url: "https://sparkling-jewellers-llp.lovable.app",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://cuddly-code-gen.lovable.app/search?q={search_term_string}",
+            target: "https://sparkling-jewellers-llp.lovable.app/search?q={search_term_string}",
             "query-input": "required name=search_term_string",
           },
         }),

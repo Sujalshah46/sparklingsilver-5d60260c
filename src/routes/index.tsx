@@ -13,11 +13,17 @@ import heroDaily from "@/assets/hero-daily.jpg";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
+  staleTime: 60_000,
   queryFn: async () => {
     const [categories, products, collections] = await Promise.all([
       supabase.from("categories").select("*").order("sort_order"),
-      supabase.from("products").select("*"),
-      supabase.from("collections").select("*").order("sort_order"),
+      // Server-side filtered: only what the home page renders.
+      supabase
+        .from("products")
+        .select("*")
+        .or("is_new.eq.true,is_bestseller.eq.true")
+        .limit(24),
+      supabase.from("collections").select("*").order("sort_order").limit(4),
     ]);
     return {
       categories: categories.data ?? [],
@@ -37,13 +43,13 @@ export const Route = createFileRoute("/")({
       { name: "description", content: HOME_DESC },
       { property: "og:title", content: HOME_TITLE },
       { property: "og:description", content: HOME_DESC },
-      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/" },
-      { property: "og:image", content: "https://cuddly-code-gen.lovable.app/og-home.jpg" },
+      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/" },
+      { property: "og:image", content: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg" },
       { name: "twitter:title", content: HOME_TITLE },
       { name: "twitter:description", content: HOME_DESC },
     ],
     links: [
-      { rel: "canonical", href: "https://cuddly-code-gen.lovable.app/" },
+      { rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/" },
       { rel: "preload", as: "image", href: heroBridal, fetchpriority: "high" } as unknown as { rel: string; href: string },
     ],
     scripts: [
@@ -53,8 +59,8 @@ export const Route = createFileRoute("/")({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
           name: "Sparkling Jewellers LLP",
-          url: "https://cuddly-code-gen.lovable.app",
-          image: "https://cuddly-code-gen.lovable.app/og-home.jpg",
+          url: "https://sparkling-jewellers-llp.lovable.app",
+          image: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg",
           telephone: "+91-99999-99999",
           email: "hello@sparklingjewellers.in",
           address: {

@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { sanitizeRedirect } from "@/lib/site";
 import logo from "@/assets/logo.png";
 
 const searchSchema = z.object({
@@ -28,7 +29,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { redirect } = useSearch({ from: "/auth" });
+  const search = useSearch({ from: "/auth" });
+  const redirect = sanitizeRedirect(search.redirect);
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 

@@ -14,9 +14,10 @@ import { SlidersHorizontal } from "lucide-react";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalogue"],
+  staleTime: 60_000,
   queryFn: async () => {
     const [products, categories] = await Promise.all([
-      supabase.from("products").select("*"),
+      supabase.from("products").select("*").limit(120),
       supabase.from("categories").select("*").order("sort_order"),
     ]);
     return { products: (products.data ?? []) as ProductCardData[] & { category_id: string; purity: string; price: number }[], categories: categories.data ?? [] };
@@ -33,9 +34,9 @@ export const Route = createFileRoute("/catalogue")({
       { name: "description", content: CAT_DESC },
       { property: "og:title", content: CAT_TITLE },
       { property: "og:description", content: CAT_DESC },
-      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/catalogue" },
+      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/catalogue" },
     ],
-    links: [{ rel: "canonical", href: "https://cuddly-code-gen.lovable.app/catalogue" }],
+    links: [{ rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/catalogue" }],
   }),
   loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
   component: Catalogue,

@@ -37,10 +37,10 @@ export const Route = createFileRoute("/product/$slug")({
     const desc = rawDesc
       ? rawDesc.slice(0, 158)
       : `Shop ${p?.name ?? "premium jewellery"} at Sparkling Jewellers. BIS hallmarked, transparent pricing.`;
-    const url = `https://cuddly-code-gen.lovable.app/product/${params.slug}`;
+    const url = `https://sparkling-jewellers-llp.lovable.app/product/${params.slug}`;
     const img = p?.image_url
-      ? (p.image_url.startsWith("http") ? p.image_url : `https://cuddly-code-gen.lovable.app${p.image_url}`)
-      : "https://cuddly-code-gen.lovable.app/og-home.jpg";
+      ? (p.image_url.startsWith("http") ? p.image_url : `https://sparkling-jewellers-llp.lovable.app${p.image_url}`)
+      : "https://sparkling-jewellers-llp.lovable.app/og-home.jpg";
     return {
       meta: [
         { title },
