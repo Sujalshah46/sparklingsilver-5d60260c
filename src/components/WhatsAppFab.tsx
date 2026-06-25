@@ -1,9 +1,7 @@
-const DEFAULT_MESSAGE =
-  "Hello Sparkling Jewellery LLP, I am interested in your jewellery products. Please assist me.";
-const WHATSAPP_NUMBER = "91XXXXXXXXXX"; // TODO: replace with official Sparkling Jewellery LLP WhatsApp number
+import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE } from "@/lib/site";
 
-export function WhatsAppFab({ message = DEFAULT_MESSAGE }: { message?: string }) {
-  const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: string }) {
+  const url = whatsappUrl(message);
   return (
     <a
       href={url}

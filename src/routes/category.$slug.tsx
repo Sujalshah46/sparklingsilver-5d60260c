@@ -21,7 +21,7 @@ export const Route = createFileRoute("/category/$slug")({
     const name = ld?.category?.name ?? params.slug;
     const title = `${name} — Sparkling Jewellers`;
     const desc = `Browse our ${name.toLowerCase()} collection — premium 22K & 18K gold and diamond designs with BIS hallmark.`;
-    const url = `https://cuddly-code-gen.lovable.app/category/${params.slug}`;
+    const url = `https://sparkling-jewellers-llp.lovable.app/category/${params.slug}`;
     return {
       meta: [
         { title },
@@ -41,7 +41,7 @@ export const Route = createFileRoute("/category/$slug")({
                 name: title,
                 url,
                 description: desc,
-                isPartOf: { "@type": "WebSite", name: "Sparkling Jewellers LLP", url: "https://cuddly-code-gen.lovable.app" },
+                isPartOf: { "@type": "WebSite", name: "Sparkling Jewellers LLP", url: "https://sparkling-jewellers-llp.lovable.app" },
               }),
             },
             {
@@ -50,8 +50,8 @@ export const Route = createFileRoute("/category/$slug")({
                 "@context": "https://schema.org",
                 "@type": "BreadcrumbList",
                 itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Home", item: "https://cuddly-code-gen.lovable.app/" },
-                  { "@type": "ListItem", position: 2, name: "Shop", item: "https://cuddly-code-gen.lovable.app/catalogue" },
+                  { "@type": "ListItem", position: 1, name: "Home", item: "https://sparkling-jewellers-llp.lovable.app/" },
+                  { "@type": "ListItem", position: 2, name: "Shop", item: "https://sparkling-jewellers-llp.lovable.app/catalogue" },
                   { "@type": "ListItem", position: 3, name, item: url },
                 ],
               }),

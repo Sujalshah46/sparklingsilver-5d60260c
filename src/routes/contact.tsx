@@ -27,9 +27,9 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: CONTACT_DESC },
       { property: "og:title", content: CONTACT_TITLE },
       { property: "og:description", content: CONTACT_DESC },
-      { property: "og:url", content: "https://cuddly-code-gen.lovable.app/contact" },
+      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/contact" },
     ],
-    links: [{ rel: "canonical", href: "https://cuddly-code-gen.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/contact" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -37,7 +37,7 @@ export const Route = createFileRoute("/contact")({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
           name: "Sparkling Jewellers LLP",
-          url: "https://cuddly-code-gen.lovable.app/contact",
+          url: "https://sparkling-jewellers-llp.lovable.app/contact",
           telephone: "+91-99999-99999",
           email: "hello@sparklingjewellers.in",
           address: {

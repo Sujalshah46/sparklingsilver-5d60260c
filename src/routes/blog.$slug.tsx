@@ -91,7 +91,7 @@ export const Route = createFileRoute("/blog/$slug")({
   head: ({ params }) => {
     const post = POSTS[params.slug];
     if (!post) return { meta: [{ title: "Article — Sparkling Jewellers" }] };
-    const url = `https://cuddly-code-gen.lovable.app/blog/${post.slug}`;
+    const url = `https://sparkling-jewellers-llp.lovable.app/blog/${post.slug}`;
     return {
       meta: [
         { title: `${post.title} — Sparkling Jewellers` },
