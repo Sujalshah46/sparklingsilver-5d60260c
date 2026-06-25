@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { inr, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, MessageSquare, Boxes } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, MessageSquare, Boxes, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
@@ -28,7 +28,7 @@ function AdminDashboard() {
       const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-      const [ordersAll, ordersRecent, products, customers, enquiries] = await Promise.all([
+      const [ordersAll, ordersRecent, products, customers, enquiries, inv] = await Promise.all([
         supabase.from("orders").select("id, status, total, created_at"),
         supabase
           .from("orders")
@@ -38,6 +38,7 @@ function AdminDashboard() {
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("enquiries").select("id", { count: "exact", head: true }),
+        supabase.from("products").select("stock_quantity, low_stock_threshold"),
       ]);
 
       const rows = ordersAll.data ?? [];
@@ -49,6 +50,10 @@ function AdminDashboard() {
         .filter((o) => ["accepted", "processing", "ready", "dispatched", "delivered"].includes(o.status))
         .reduce((s, o) => s + Number(o.total ?? 0), 0);
 
+      const invRows = inv.data ?? [];
+      const lowStock = invRows.filter((p) => (p.stock_quantity ?? 0) > 0 && (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0)).length;
+      const outOfStock = invRows.filter((p) => (p.stock_quantity ?? 0) === 0).length;
+
       return {
         totalOrders: rows.length,
         pending,
@@ -58,6 +63,8 @@ function AdminDashboard() {
         productCount: products.count ?? 0,
         customerCount: customers.count ?? 0,
         newEnquiries: enquiries.count ?? 0,
+        lowStock,
+        outOfStock,
         recent: ordersRecent.data ?? [],
       };
     },
@@ -106,6 +113,7 @@ function AdminDashboard() {
     { label: "Revenue · 7d", value: inr(stats?.revenue7 ?? 0), icon: IndianRupee, accent: "text-green-800 bg-green-50" },
     { label: "Total orders", value: stats?.totalOrders ?? 0, icon: Package, accent: "text-blue-800 bg-blue-50" },
     { label: "Products", value: stats?.productCount ?? 0, icon: Boxes, accent: "text-charcoal bg-gold/15" },
+    { label: "Low stock", value: (stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0), icon: AlertTriangle, accent: "text-amber-800 bg-amber-50" },
     { label: "Customers", value: stats?.customerCount ?? 0, icon: Users, accent: "text-purple-800 bg-purple-50" },
   ];
 
@@ -140,9 +148,9 @@ function AdminDashboard() {
           <h2 className="mb-2 font-serif text-sm font-semibold">Quick actions</h2>
           <div className="grid grid-cols-2 gap-2">
             <QuickAction to="/admin/orders" icon={ShoppingBag} label="Manage orders" badge={stats?.pending} />
-            <QuickAction to="/products" icon={Boxes} label="View catalogue" />
+            <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
+            <QuickAction to="/products" icon={Package} label="View catalogue" />
             <QuickAction to="/account/enquiries" icon={MessageSquare} label="Enquiries" badge={stats?.newEnquiries} />
-            <QuickAction to="/" icon={Package} label="Storefront" />
           </div>
         </div>
 

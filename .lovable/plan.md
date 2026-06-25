@@ -1,69 +1,56 @@
-## SEO Plan — Sparkling Jewellers LLP
+## Inventory Management — Admin Panel
 
-Goal: get every public page indexable, uniquely titled, structured, and shareable, then layer in content + Google Search Console.
+Adds a full inventory section so admins can track and manage product stock.
 
-### 1. Crawlability foundation
-- Create `public/robots.txt` (allow all, reference sitemap).
-- Create `src/routes/sitemap[.]xml.ts` server route listing: `/`, `/catalogue`, `/contact`, `/gold-rate`, `/search`, every `/category/$slug` (from `categories` table), every `/product/$slug` (from `products` table where `is_active`). Exclude `/auth`, `/_authenticated/*`, `/notifications`.
-- Create `public/llms.txt` summarizing the brand + linking public pages.
+### Schema changes (one migration)
+- Add to `public.products`:
+  - `stock_quantity` (integer, default 0, not null)
+  - `low_stock_threshold` (integer, default 5, not null)
+- Backfill: existing in-stock products → `stock_quantity = 10`; out-of-stock → `0`.
+- Add admin-only RLS policies on `products` for UPDATE (existing policy is read-only for anon/authenticated).
+- Trigger: auto-sync `in_stock = (stock_quantity > 0)` on update.
 
-### 2. Per-route metadata (head())
-Replace the generic root-inherited meta on every leaf with unique `title` (≤60 chars), `description` (120–160 chars), `og:title`, `og:description`, `og:url`, and self-referencing `canonical`.
+### New routes
+- `/admin/inventory` — main inventory list
+  - Search by name/SKU, filter by category, filter chip: All / Low stock / Out of stock
+  - Each row: image, name, SKU, category, current qty, low-stock threshold, status badge
+  - Inline +/− qty stepper with debounced save (optimistic update)
+  - "Edit" opens a sheet for threshold + bulk adjust (set/add/subtract with reason note)
+- `/admin/inventory/$id` — product stock detail (optional drill-in)
+  - Current qty, threshold, in-stock toggle override
+  - Recent stock changes (last 20 — from new `stock_movements` table)
 
-| Route | Title |
-|---|---|
-| `/` | "Sparkling Jewellers LLP — Premium Indian Jewellery" |
-| `/catalogue` | "Shop Gold & Diamond Jewellery — Sparkling Jewellers" |
-| `/category/$slug` | "{Category} — Sparkling Jewellers" (from loader) |
-| `/product/$slug` | "{Product Name} — {SKU} | Sparkling Jewellers" (dynamic from loaderData) |
-| `/contact` | "Contact Sparkling Jewellers — Visit, Call, WhatsApp" |
-| `/gold-rate` | "Today's Gold Rate — 22K & 18K | Sparkling Jewellers" |
-| `/search` | "Search Jewellery — Sparkling Jewellers" + `noindex` |
+### Stock movements log (audit trail)
+- New table `public.stock_movements`:
+  - `product_id`, `delta` (int), `reason` (text), `previous_qty`, `new_qty`, `created_by`, `created_at`
+- Inserted automatically by an `adjustStock` server function on every change.
+- Read-only for admins.
 
-Root `__root.tsx`: keep only sitewide defaults (`charSet`, `viewport`, `og:site_name`, `og:type: website`). Remove the leaf-overriding og:image so product pages can supply their own.
+### Server functions (`src/lib/inventory.functions.ts`)
+- `adjustStock({ product_id, delta, reason })` — atomic update + movement log
+- `setStock({ product_id, quantity, reason })` — absolute set
+- `updateThreshold({ product_id, low_stock_threshold })`
+- All gated with `requireSupabaseAuth` + `has_role('admin')` check.
 
-### 3. Structured data (JSON-LD)
-- `__root.tsx` → `WebSite` + `Organization`/`JewelryStore` (name, url, logo, address, telephone, sameAs).
-- `/` → `JewelryStore` with full NAP from contact page.
-- `/product/$slug` → `Product` (name, image, description, sku, brand, offers{price, priceCurrency: INR, availability}).
-- `/category/$slug` → `CollectionPage` + `BreadcrumbList`.
-- `/contact` → `LocalBusiness` with geo + opening hours if available.
+### Dashboard integration
+- Add a "Low stock" stat card on `/admin` (count of products at/below threshold).
+- New Quick Action tile: "Inventory" (links to `/admin/inventory`, badge = low-stock count).
 
-### 4. On-page content & accessibility
-- Add a visible `<h1>` to `/` ("Sparkling Jewellers — Premium Indian Gold & Diamond Jewellery") and `/catalogue` ("Shop Our Jewellery Collection").
-- Add `aria-label="Save to wishlist"` on the wishlist icon button in `product.$slug.tsx`.
-- Ensure product/category pages render product `alt` text from product name.
-- Add internal links: home → top categories; category → related categories; product → "You may also like".
+### Customer-side effect
+- Product cards & detail page show "Only N left" warning when stock ≤ threshold.
+- "Add to Cart" disabled when `stock_quantity = 0`.
+- Order placement decrements stock atomically (server-side, inside `placeOrder`).
 
-### 5. Content marketing (blog)
-- Add a `blog` route group: `/blog` index + `/blog/$slug` dynamic.
-- Seed first 3 articles targeting high-intent Indian jewellery queries:
-  1. "How to Calculate Gold Jewellery Price in India" (making charges, GST, purity).
-  2. "22K vs 18K Gold — Which Should You Buy?"
-  3. "Hallmarking & BIS Certification Explained".
-- Each post: `Article` JSON-LD, og:image, canonical, breadcrumbs.
+### Technical notes
+- Realtime subscription on `products` table in `/admin/inventory` so concurrent admins see live updates.
+- Uses TanStack Query optimistic updates for the stepper to feel instant.
+- All mutations go through server functions — never direct client writes to stock fields.
 
-### 6. Performance for SEO (Core Web Vitals)
-- Preload LCP hero image on `/` via `head().links` (`rel=preload`, `as=image`, `fetchpriority=high`).
-- Add `width`/`height` + `loading="lazy"` (except LCP) on all product/category images.
-- Convert bundled hero/product images via `vite-imagetools` to AVIF/WebP.
-
-### 7. Google Search Console
-- Connect GSC via `standard_connectors--connect` (google_search_console).
-- Verify ownership of `https://cuddly-code-gen.lovable.app`.
-- Submit `/sitemap.xml`.
-
-### 8. Verification
-- Run SEO rescan; mark resolved findings via `update_findings`.
-- Validate with Google Rich Results Test on `/` + a product page.
-
-### Execution order (next turns)
-1. robots.txt + sitemap.xml + llms.txt + root JSON-LD cleanup.
-2. Per-route head() upgrades + canonical/og:url + Product/Collection JSON-LD.
-3. H1s + wishlist aria-label.
-4. Blog scaffold + 3 seed articles.
-5. LCP preload + image lazy-loading.
-6. GSC connect + sitemap submit.
-7. Rescan + mark findings fixed.
-
-Want me to execute all 7 steps, or start with steps 1–3 (the technical SEO core) and queue the blog + GSC for a follow-up?
+### Files touched
+- New: `supabase/migrations/...` (schema + RLS + trigger)
+- New: `src/lib/inventory.functions.ts`
+- New: `src/routes/_authenticated/admin/inventory.tsx`
+- New: `src/routes/_authenticated/admin/inventory.$id.tsx`
+- Edit: `src/routes/_authenticated/admin/index.tsx` (low-stock card + quick action)
+- Edit: `src/lib/orders.functions.ts` (decrement stock on order placement)
+- Edit: product card + product detail components (low-stock warning, disabled CTA)
