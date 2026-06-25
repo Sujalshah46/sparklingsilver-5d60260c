@@ -7,10 +7,15 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 const categoryQuery = (slug: string) =>
   queryOptions({
     queryKey: ["category", slug],
+    staleTime: 60_000,
     queryFn: async () => {
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
       if (!cat) return null;
-      const { data: products } = await supabase.from("products").select("*").eq("category_id", cat.id as string);
+      const { data: products } = await supabase
+        .from("products")
+        .select("*")
+        .eq("category_id", cat.id as string)
+        .limit(48);
       return { category: cat, products: (products ?? []) as ProductCardData[] };
     },
   });

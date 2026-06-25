@@ -13,11 +13,17 @@ import heroDaily from "@/assets/hero-daily.jpg";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
+  staleTime: 60_000,
   queryFn: async () => {
     const [categories, products, collections] = await Promise.all([
       supabase.from("categories").select("*").order("sort_order"),
-      supabase.from("products").select("*"),
-      supabase.from("collections").select("*").order("sort_order"),
+      // Server-side filtered: only what the home page renders.
+      supabase
+        .from("products")
+        .select("*")
+        .or("is_new.eq.true,is_bestseller.eq.true")
+        .limit(24),
+      supabase.from("collections").select("*").order("sort_order").limit(4),
     ]);
     return {
       categories: categories.data ?? [],

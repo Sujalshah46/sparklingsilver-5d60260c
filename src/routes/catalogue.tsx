@@ -14,9 +14,10 @@ import { SlidersHorizontal } from "lucide-react";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalogue"],
+  staleTime: 60_000,
   queryFn: async () => {
     const [products, categories] = await Promise.all([
-      supabase.from("products").select("*"),
+      supabase.from("products").select("*").limit(120),
       supabase.from("categories").select("*").order("sort_order"),
     ]);
     return { products: (products.data ?? []) as ProductCardData[] & { category_id: string; purity: string; price: number }[], categories: categories.data ?? [] };
