@@ -90,6 +90,15 @@ function InventoryPage() {
           <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">← Dashboard</Link>
         </div>
 
+        <div className="flex gap-2">
+          <Link to="/admin/inventory/import" className="flex-1 rounded-lg border border-border bg-card p-2 text-center text-xs font-medium hover:border-gold">
+            Import CSV
+          </Link>
+          <Link to="/admin/inventory/audit" className="flex-1 rounded-lg border border-border bg-card p-2 text-center text-xs font-medium hover:border-gold">
+            Audit log
+          </Link>
+        </div>
+
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or SKU" className="pl-9" />

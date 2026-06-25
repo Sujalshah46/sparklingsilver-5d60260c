@@ -34,7 +34,10 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
+import { Route as ApiPublicHooksLowStockDigestRouteImport } from './routes/api/public/hooks/low-stock-digest'
 import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin/orders.$id'
+import { Route as AuthenticatedAdminInventoryImportRouteImport } from './routes/_authenticated/admin/inventory.import'
+import { Route as AuthenticatedAdminInventoryAuditRouteImport } from './routes/_authenticated/admin/inventory.audit'
 import { Route as AuthenticatedAdminInventoryIdRouteImport } from './routes/_authenticated/admin/inventory.$id'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -164,11 +167,29 @@ const AuthenticatedAdminInventoryRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPublicHooksLowStockDigestRoute =
+  ApiPublicHooksLowStockDigestRouteImport.update({
+    id: '/api/public/hooks/low-stock-digest',
+    path: '/api/public/hooks/low-stock-digest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminOrdersIdRoute =
   AuthenticatedAdminOrdersIdRouteImport.update({
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthenticatedAdminOrdersRoute,
+  } as any)
+const AuthenticatedAdminInventoryImportRoute =
+  AuthenticatedAdminInventoryImportRouteImport.update({
+    id: '/import',
+    path: '/import',
+    getParentRoute: () => AuthenticatedAdminInventoryRoute,
+  } as any)
+const AuthenticatedAdminInventoryAuditRoute =
+  AuthenticatedAdminInventoryAuditRouteImport.update({
+    id: '/audit',
+    path: '/audit',
+    getParentRoute: () => AuthenticatedAdminInventoryRoute,
   } as any)
 const AuthenticatedAdminInventoryIdRoute =
   AuthenticatedAdminInventoryIdRouteImport.update({
@@ -203,7 +224,10 @@ export interface FileRoutesByFullPath {
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
+  '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
+  '/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
+  '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -230,7 +254,10 @@ export interface FileRoutesByTo {
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
+  '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
+  '/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
+  '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -260,7 +287,10 @@ export interface FileRoutesById {
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
+  '/_authenticated/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
+  '/_authenticated/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
+  '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -290,7 +320,10 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/admin/'
     | '/admin/inventory/$id'
+    | '/admin/inventory/audit'
+    | '/admin/inventory/import'
     | '/admin/orders/$id'
+    | '/api/public/hooks/low-stock-digest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -317,7 +350,10 @@ export interface FileRouteTypes {
     | '/orders/$id'
     | '/admin'
     | '/admin/inventory/$id'
+    | '/admin/inventory/audit'
+    | '/admin/inventory/import'
     | '/admin/orders/$id'
+    | '/api/public/hooks/low-stock-digest'
   id:
     | '__root__'
     | '/'
@@ -346,7 +382,10 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/inventory/$id'
+    | '/_authenticated/admin/inventory/audit'
+    | '/_authenticated/admin/inventory/import'
     | '/_authenticated/admin/orders/$id'
+    | '/api/public/hooks/low-stock-digest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -363,6 +402,7 @@ export interface RootRouteChildren {
   CategorySlugRoute: typeof CategorySlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicHooksLowStockDigestRoute: typeof ApiPublicHooksLowStockDigestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -542,12 +582,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInventoryRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/hooks/low-stock-digest': {
+      id: '/api/public/hooks/low-stock-digest'
+      path: '/api/public/hooks/low-stock-digest'
+      fullPath: '/api/public/hooks/low-stock-digest'
+      preLoaderRoute: typeof ApiPublicHooksLowStockDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/admin/orders/$id': {
       id: '/_authenticated/admin/orders/$id'
       path: '/$id'
       fullPath: '/admin/orders/$id'
       preLoaderRoute: typeof AuthenticatedAdminOrdersIdRouteImport
       parentRoute: typeof AuthenticatedAdminOrdersRoute
+    }
+    '/_authenticated/admin/inventory/import': {
+      id: '/_authenticated/admin/inventory/import'
+      path: '/import'
+      fullPath: '/admin/inventory/import'
+      preLoaderRoute: typeof AuthenticatedAdminInventoryImportRouteImport
+      parentRoute: typeof AuthenticatedAdminInventoryRoute
+    }
+    '/_authenticated/admin/inventory/audit': {
+      id: '/_authenticated/admin/inventory/audit'
+      path: '/audit'
+      fullPath: '/admin/inventory/audit'
+      preLoaderRoute: typeof AuthenticatedAdminInventoryAuditRouteImport
+      parentRoute: typeof AuthenticatedAdminInventoryRoute
     }
     '/_authenticated/admin/inventory/$id': {
       id: '/_authenticated/admin/inventory/$id'
@@ -561,11 +622,17 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminInventoryRouteChildren {
   AuthenticatedAdminInventoryIdRoute: typeof AuthenticatedAdminInventoryIdRoute
+  AuthenticatedAdminInventoryAuditRoute: typeof AuthenticatedAdminInventoryAuditRoute
+  AuthenticatedAdminInventoryImportRoute: typeof AuthenticatedAdminInventoryImportRoute
 }
 
 const AuthenticatedAdminInventoryRouteChildren: AuthenticatedAdminInventoryRouteChildren =
   {
     AuthenticatedAdminInventoryIdRoute: AuthenticatedAdminInventoryIdRoute,
+    AuthenticatedAdminInventoryAuditRoute:
+      AuthenticatedAdminInventoryAuditRoute,
+    AuthenticatedAdminInventoryImportRoute:
+      AuthenticatedAdminInventoryImportRoute,
   }
 
 const AuthenticatedAdminInventoryRouteWithChildren =
@@ -656,6 +723,7 @@ const rootRouteChildren: RootRouteChildren = {
   CategorySlugRoute: CategorySlugRoute,
   ProductSlugRoute: ProductSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicHooksLowStockDigestRoute: ApiPublicHooksLowStockDigestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
