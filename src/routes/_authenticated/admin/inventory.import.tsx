@@ -146,9 +146,10 @@ function ImportPage() {
 
         {result && (
           <div className="space-y-2">
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Badge className="bg-green-100 text-green-900"><CheckCircle2 className="mr-1 h-3 w-3" />{result.updated} updated</Badge>
               {result.notFound > 0 && <Badge className="bg-amber-100 text-amber-900"><XCircle className="mr-1 h-3 w-3" />{result.notFound} not found</Badge>}
+              {result.failed && result.failed > 0 ? <Badge className="bg-red-100 text-red-900"><XCircle className="mr-1 h-3 w-3" />{result.failed} failed</Badge> : null}
             </div>
             <div className="max-h-72 overflow-y-auto rounded-xl border border-border bg-card">
               <table className="w-full text-xs">
@@ -159,7 +160,11 @@ function ImportPage() {
                   {result.results.map((r, i) => (
                     <tr key={i} className="border-t border-border">
                       <td className="px-3 py-1.5 font-mono">{r.sku}</td>
-                      <td className="px-3 py-1.5">{r.status === "updated" ? <span className="text-green-700">updated</span> : <span className="text-amber-700">not found</span>}</td>
+                      <td className="px-3 py-1.5">
+                        {r.status === "updated" ? <span className="text-green-700">updated</span>
+                          : r.status === "not_found" ? <span className="text-amber-700">not found</span>
+                          : <span className="text-red-700" title={r.error}>failed</span>}
+                      </td>
                       <td className="px-3 py-1.5 text-right text-muted-foreground">{r.status === "updated" ? `${r.previous} → ${r.next}` : "—"}</td>
                     </tr>
                   ))}
