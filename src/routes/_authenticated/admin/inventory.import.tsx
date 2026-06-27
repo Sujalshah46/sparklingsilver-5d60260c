@@ -69,10 +69,12 @@ function ImportPage() {
     setSubmitting(true);
     try {
       const r = await bulk({ data: { rows: rows.map((x) => ({ sku: x.sku, quantity: x.quantity })), reason: reason || null } });
-      setResult({ updated: r.updated, notFound: r.notFound, results: r.results });
-      toast.success(`Updated ${r.updated} · ${r.notFound} not found`);
+      setResult({ updated: r.updated, notFound: r.notFound, failed: r.failed, results: r.results });
+      const failedMsg = r.failed ? ` · ${r.failed} failed` : "";
+      toast.success(`Updated ${r.updated} · ${r.notFound} not found${failedMsg}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Import failed");
+      const { getErrorMessage } = await import("@/lib/errors");
+      toast.error(getErrorMessage(e, "Import failed"));
     } finally {
       setSubmitting(false);
     }
