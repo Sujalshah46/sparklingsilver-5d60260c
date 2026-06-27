@@ -156,11 +156,47 @@ function AdminDashboard() {
           <h2 className="mb-2 font-serif text-sm font-semibold">Quick actions</h2>
           <div className="grid grid-cols-2 gap-2">
             <QuickAction to="/admin/orders" icon={ShoppingBag} label="Manage orders" badge={stats?.pending} />
+            <QuickAction to="/admin/products" icon={Package} label="Products" badge={stats?.productCount} />
             <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
             <QuickAction to="/admin/categories" icon={ImageIcon} label="Category images" />
-            <QuickAction to="/catalogue" icon={Package} label="View catalogue" />
           </div>
         </div>
+
+        {/* Low-stock alerts */}
+        {(stats?.lowStockList ?? []).length > 0 && (
+          <div>
+            <div className="mb-2 flex items-center justify-between">
+              <h2 className="font-serif text-sm font-semibold flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 text-amber-700" /> Low-stock alerts
+              </h2>
+              <Link to="/admin/inventory" className="text-xs text-burgundy hover:underline">View all</Link>
+            </div>
+            <ul className="space-y-2">
+              {stats!.lowStockList.map((p: any) => {
+                const qty = p.stock_quantity ?? 0;
+                const out = qty === 0;
+                return (
+                  <li key={p.id}>
+                    <Link
+                      to="/admin/inventory/$id"
+                      params={{ id: p.id }}
+                      className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 transition hover:border-gold"
+                    >
+                      <img src={p.image_url} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{p.name}</p>
+                        <p className="truncate text-[11px] text-muted-foreground">{p.sku}</p>
+                      </div>
+                      <Badge className={out ? "bg-destructive/15 text-destructive" : "bg-amber-100 text-amber-900"}>
+                        {out ? "Out" : `${qty} left`}
+                      </Badge>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
 
         {/* Recent orders */}
         <div>
