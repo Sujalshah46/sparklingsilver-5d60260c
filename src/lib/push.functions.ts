@@ -34,7 +34,13 @@ export const removePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ endpoint: z.string().url() }).parse(d))
   .handler(async ({ data, context }) => {
-    await context.supabase.from("push_subscriptions").delete().eq("endpoint", data.endpoint);
+    // Scope delete to the caller — without user_id filter any signed-in user
+    // could wipe another user's push subscription by guessing the endpoint.
+    await context.supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("endpoint", data.endpoint)
+      .eq("user_id", context.userId);
     return { ok: true };
   });
 
