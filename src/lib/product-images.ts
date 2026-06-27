@@ -1,5 +1,6 @@
 // Maps DB image_url (filename) to bundled Vite asset URL
-import categoryPlaceholder from "@/assets/category-placeholder.jpg";
+import catPlaceholder from "@/assets/category-placeholder.jpg";
+export { catPlaceholder as categoryPlaceholder };
 import ring from "@/assets/product-1-ring.jpg";
 import necklace from "@/assets/product-2-necklace.jpg";
 import earrings from "@/assets/product-3-earrings.jpg";
