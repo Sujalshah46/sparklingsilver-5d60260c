@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { inr } from "@/lib/format";
 import { deleteProduct } from "@/lib/products.functions";
 import { getErrorMessage } from "@/lib/errors";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({ meta: [{ title: "Admin — Products" }] }),
