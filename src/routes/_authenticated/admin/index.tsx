@@ -71,6 +71,9 @@ function AdminDashboard() {
         lowStock,
         outOfStock,
         recent: ordersRecent.data ?? [],
+        lowStockList: (lowStockList.data ?? []).filter(
+          (p: any) => (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0),
+        ).slice(0, 6),
       };
     },
   });
