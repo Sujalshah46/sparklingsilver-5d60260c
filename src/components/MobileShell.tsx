@@ -82,7 +82,7 @@ function SideMenu() {
             </button>
           )}
         </nav>
-        <p className="px-4 py-3 text-[11px] text-[#999]">v1.0.0 · Sparkling Jewellers LLP</p>
+        <p className="px-4 py-3 text-[11px] text-[#999]">v1.0.0 · Sparkling Silver LLP</p>
       </SheetContent>
     </Sheet>
   );
@@ -94,7 +94,7 @@ export function TopBar() {
       <div className="mx-auto flex max-w-2xl items-center justify-between px-2" style={{ height: 52 }}>
         <SideMenu />
         <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
-          Sparkling Jewellers LLP
+          Sparkling Silver LLP
         </Link>
         <div className="flex shrink-0 items-center">
           <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">

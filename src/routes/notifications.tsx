@@ -3,7 +3,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { Bell, Package, Sparkles, Gift, TrendingUp } from "lucide-react";
 
 export const Route = createFileRoute("/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — Sparkling Jewellers" }] }),
+  head: () => ({ meta: [{ title: "Notifications — Sparkling Silver" }] }),
   component: NotificationsPage,
 });
 

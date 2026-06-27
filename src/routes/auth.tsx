@@ -20,7 +20,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Sparkling Jewellers LLP" },
+      { title: "Sign in — Sparkling Silver LLP" },
       { name: "description", content: "Sign in or create an account to start shopping exquisite jewellery." },
     ],
   }),
@@ -42,7 +42,7 @@ function AuthPage() {
     <div className="min-h-screen bg-ivory">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
         <div className="flex flex-col items-center pb-6 text-center">
-          <img src={logo} alt="Sparkling Jewellers" className="h-20 w-auto" />
+          <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
           <p className="mt-1 text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
             Where Every Piece Tells a Story
           </p>
@@ -161,7 +161,7 @@ function SignUpForm({ redirect }: { redirect: string }) {
       await supabase.from("profiles").update({ full_name: form.full_name, mobile: form.mobile, city: form.city }).eq("id", data.user.id);
     }
     setLoading(false);
-    toast.success("Welcome to Sparkling Jewellers!");
+    toast.success("Welcome to Sparkling Silver!");
     navigate({ to: redirect, replace: true });
   };
 

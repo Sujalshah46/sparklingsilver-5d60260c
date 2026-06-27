@@ -35,7 +35,7 @@ const homeQuery = queryOptions({
   },
 });
 
-const HOME_TITLE = "Sparkling Jewellers LLP — Premium Indian Jewellery";
+const HOME_TITLE = "Sparkling Silver LLP — Premium Indian Jewellery";
 const HOME_DESC = "Wholesale jewellery catalogue — 22K & 18K gold, diamond and gemstone designs across rings, earrings, pendants, bangles and more.";
 
 export const Route = createFileRoute("/")({
@@ -60,7 +60,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
-          name: "Sparkling Jewellers LLP",
+          name: "Sparkling Silver LLP",
           url: "https://sparkling-jewellers-llp.lovable.app",
           image: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg",
           telephone: "+91-99999-99999",
@@ -111,7 +111,7 @@ function Home() {
 
   return (
     <MobileShell>
-      <h1 className="sr-only">Sparkling Jewellers LLP — Wholesale Jewellery Catalogue</h1>
+      <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
       <GoldRateStrip />
       <HeroSlider slides={heroSlides} />
       <AccessBanner />

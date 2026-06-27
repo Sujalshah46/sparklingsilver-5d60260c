@@ -22,7 +22,7 @@ export function AccessBanner() {
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
         <a
-          href={whatsappUrl("Hello, I'd like full app access on Sparkling Jewellers LLP.")}
+          href={whatsappUrl("Hello, I'd like full app access on Sparkling Silver LLP.")}
           target="_blank"
           rel="noopener noreferrer"
           className="rounded-[2px] bg-teal px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal-dark"

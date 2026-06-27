@@ -27,7 +27,7 @@ const catalogQuery = queryOptions({
   },
 });
 
-const CAT_TITLE = "Shop Gold & Diamond Jewellery — Sparkling Jewellers";
+const CAT_TITLE = "Shop Gold & Diamond Jewellery — Sparkling Silver";
 const CAT_DESC = "Browse our complete wholesale jewellery catalogue. Filter by category, purity and weight.";
 
 export const Route = createFileRoute("/catalogue")({

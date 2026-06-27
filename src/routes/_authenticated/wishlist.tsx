@@ -9,7 +9,7 @@ import { Heart, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/wishlist")({
-  head: () => ({ meta: [{ title: "Wishlist — Sparkling Jewellers" }] }),
+  head: () => ({ meta: [{ title: "Wishlist — Sparkling Silver" }] }),
   component: WishlistPage,
 });
 

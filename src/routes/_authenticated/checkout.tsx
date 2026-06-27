@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { CheckCircle2, Clock } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Sparkling Jewellers" }] }),
+  head: () => ({ meta: [{ title: "Checkout — Sparkling Silver" }] }),
   component: Checkout,
 });
 

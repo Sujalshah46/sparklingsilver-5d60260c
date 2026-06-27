@@ -8,7 +8,7 @@ import { resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
-  head: () => ({ meta: [{ title: "Order Details — Sparkling Jewellers" }] }),
+  head: () => ({ meta: [{ title: "Order Details — Sparkling Silver" }] }),
   component: OrderDetail,
 });
 

@@ -26,7 +26,7 @@ export const Route = createFileRoute("/category/$slug")({
   head: ({ params, loaderData }) => {
     const ld = loaderData as { category?: { name: string } } | undefined;
     const name = ld?.category?.name ?? params.slug;
-    const title = `${name} — Sparkling Jewellers`;
+    const title = `${name} — Sparkling Silver`;
     const desc = `Browse our ${name.toLowerCase()} collection — premium 22K & 18K gold and diamond designs with BIS hallmark.`;
     const url = `https://sparkling-jewellers-llp.lovable.app/category/${params.slug}`;
     return {

@@ -29,7 +29,7 @@ const POSTS: Record<string, Post> = {
         "Making charges pay for the design, craftsmanship and wastage. They are usually a percentage of the gold value (typically 8–25% depending on intricacy) or a flat rupees-per-gram figure. On our ₹62,836 example at 12% making, that's ₹7,540.",
       ] },
       { h2: "Step 4 — Add 3% GST on the total", paragraphs: [
-        "GST in India on gold jewellery is 3% on the sum of metal value + making charges. (₹62,836 + ₹7,540) × 3% = ₹2,111. Final price = ₹72,487. Every product page on Sparkling Jewellers shows this exact breakdown so you can verify the math before you buy.",
+        "GST in India on gold jewellery is 3% on the sum of metal value + making charges. (₹62,836 + ₹7,540) × 3% = ₹2,111. Final price = ₹72,487. Every product page on Sparkling Silver shows this exact breakdown so you can verify the math before you buy.",
       ] },
       { h2: "Tips before you buy", paragraphs: [
         "Insist on a BIS-hallmarked piece (look for the six-digit HUID). Confirm net weight and making-charge percentage in writing on your invoice. And remember — a higher karat (22K, 24K) is purer but softer; 18K is more durable for everyday rings and bracelets.",
@@ -55,7 +55,7 @@ const POSTS: Record<string, Post> = {
         "You're paying for the extra gold content, so 22K is meaningfully more expensive per gram than 18K. For diamond-heavy pieces, 18K can give you a bigger, more impressive design for the same budget.",
       ] },
       { h2: "Quick recommendation", paragraphs: [
-        "Bridal sets, bangles, mangalsutra, gifting and investment-grade pieces → 22K. Diamond rings, daily-wear chains and bracelets, modern western designs → 18K. Both are BIS-hallmarked at Sparkling Jewellers; the choice is about lifestyle, not quality.",
+        "Bridal sets, bangles, mangalsutra, gifting and investment-grade pieces → 22K. Diamond rings, daily-wear chains and bracelets, modern western designs → 18K. Both are BIS-hallmarked at Sparkling Silver; the choice is about lifestyle, not quality.",
       ] },
     ],
   },
@@ -77,7 +77,7 @@ const POSTS: Record<string, Post> = {
       { h2: "Why this protects you", paragraphs: [
         "Pre-hallmarking, under-karating (selling 18K as 22K) cost Indian buyers thousands of crores a year. With HUID, every piece is traceable to a specific jeweller and assaying centre, and any dispute can be resolved by the BIS itself.",
       ] },
-      { h2: "Sparkling Jewellers and BIS", paragraphs: [
+      { h2: "Sparkling Silver and BIS", paragraphs: [
         "Every gold piece we sell carries a BIS hallmark and a valid HUID; every diamond is accompanied by an IGI or GIA certificate. Ask for both at checkout — we'll happily walk you through how to verify each one.",
       ] },
     ],
@@ -90,11 +90,11 @@ export const Route = createFileRoute("/blog/$slug")({
   },
   head: ({ params }) => {
     const post = POSTS[params.slug];
-    if (!post) return { meta: [{ title: "Article — Sparkling Jewellers" }] };
+    if (!post) return { meta: [{ title: "Article — Sparkling Silver" }] };
     const url = `https://sparkling-jewellers-llp.lovable.app/blog/${post.slug}`;
     return {
       meta: [
-        { title: `${post.title} — Sparkling Jewellers` },
+        { title: `${post.title} — Sparkling Silver` },
         { name: "description", content: post.description },
         { property: "og:title", content: post.title },
         { property: "og:description", content: post.description },
@@ -113,8 +113,8 @@ export const Route = createFileRoute("/blog/$slug")({
             headline: post.title,
             description: post.description,
             datePublished: post.datePublished,
-            author: { "@type": "Organization", name: "Sparkling Jewellers LLP" },
-            publisher: { "@type": "Organization", name: "Sparkling Jewellers LLP" },
+            author: { "@type": "Organization", name: "Sparkling Silver LLP" },
+            publisher: { "@type": "Organization", name: "Sparkling Silver LLP" },
             mainEntityOfPage: url,
           }),
         },

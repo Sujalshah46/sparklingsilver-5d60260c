@@ -17,7 +17,7 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
-const CONTACT_TITLE = "Contact Sparkling Jewellers — Visit, Call, WhatsApp";
+const CONTACT_TITLE = "Contact Sparkling Silver — Visit, Call, WhatsApp";
 const CONTACT_DESC = "Visit our Mumbai showroom, call +91 99999 99999, or message us on WhatsApp. Open Mon–Sat, 10:30 AM – 8:30 PM.";
 
 export const Route = createFileRoute("/contact")({
@@ -36,7 +36,7 @@ export const Route = createFileRoute("/contact")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
-          name: "Sparkling Jewellers LLP",
+          name: "Sparkling Silver LLP",
           url: "https://sparkling-jewellers-llp.lovable.app/contact",
           telephone: "+91-99999-99999",
           email: "hello@sparklingjewellers.in",
