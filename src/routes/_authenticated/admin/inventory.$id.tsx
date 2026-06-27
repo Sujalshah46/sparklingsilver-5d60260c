@@ -109,12 +109,13 @@ function StockDetail() {
             }}
             className="h-20 w-20 shrink-0 rounded-lg bg-secondary object-cover"
           />
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="font-serif text-base font-semibold">{product.name}</p>
             <p className="text-xs text-muted-foreground">{product.sku}</p>
             <p className="mt-1 text-xs">{product.in_stock ? "In stock" : "Out of stock"}</p>
+            <Link to="/admin/products/$id" params={{ id }}
+              className="mt-2 inline-block text-[11px] text-burgundy hover:underline">Edit product details →</Link>
           </div>
-        </div>
 
         <div className="rounded-xl border border-border bg-card p-3 space-y-3">
           <div>
