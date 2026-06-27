@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { inr } from "@/lib/format";
 import { deleteProduct } from "@/lib/products.functions";
 import { getErrorMessage } from "@/lib/errors";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/products")({
   head: () => ({ meta: [{ title: "Admin — Products" }] }),
@@ -86,7 +87,18 @@ function ProductsAdmin() {
               return (
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-start gap-3">
-                    <img src={p.image_url} alt={p.name} className="h-16 w-16 rounded-lg object-cover" />
+                    <img
+                      src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                      alt={p.name}
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }
+                        img.dataset.fallback = "1";
+                        img.src = categoryPlaceholder;
+                      }}
+                      className="h-16 w-16 rounded-lg bg-secondary object-cover"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-serif text-sm font-semibold">{p.name}</p>
                       <p className="truncate text-[11px] text-muted-foreground">

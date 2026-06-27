@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { inr, formatDate } from "@/lib/format";
-import { resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,7 +105,20 @@ function AdminOrderDetail() {
           <div className="space-y-2">
             {order.order_items?.map((it) => (
               <div key={it.id} className="flex gap-3 rounded-xl border border-border bg-card p-3">
-                <img src={resolveProductImage(it.image_url)} alt={it.product_name} width={64} height={64} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
+                <img
+                  src={resolveProductImage(it.image_url, categoryPlaceholder)}
+                  alt={it.product_name}
+                  width={64}
+                  height={64}
+                  loading="lazy"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }
+                    img.dataset.fallback = "1";
+                    img.src = categoryPlaceholder;
+                  }}
+                  className="h-16 w-16 rounded-lg bg-secondary object-cover"
+                />
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
                   <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>

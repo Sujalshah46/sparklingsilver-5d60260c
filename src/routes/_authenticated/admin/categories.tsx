@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, ImageIcon } from "lucide-react";
-import { resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
@@ -114,7 +114,18 @@ function CategoryRow({ cat, onSaved }: { cat: Cat; onSaved: () => void }) {
     <li className="flex items-center gap-3 rounded-xl border border-border bg-card p-3">
       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
         {preview ? (
-          <img src={preview} alt={cat.name} className="h-full w-full object-cover" />
+          <img
+            src={preview}
+            alt={cat.name}
+            loading="lazy"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }
+              img.dataset.fallback = "1";
+              img.src = categoryPlaceholder;
+            }}
+            className="h-full w-full object-cover"
+          />
         ) : (
           <div className="grid h-full w-full place-items-center text-muted-foreground">
             <ImageIcon className="h-5 w-5" />
