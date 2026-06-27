@@ -8,7 +8,7 @@ export function CategoryTile({
     <Link
       to="/category/$slug"
       params={{ slug }}
-      className="group relative block aspect-[4/5] overflow-hidden bg-[#F0F0F0]"
+      className="group relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-[#F0F0F0]"
     >
       <img
         src={resolveProductImage(image ?? null)}
