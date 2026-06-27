@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { setStock, updateThreshold } from "@/lib/inventory.functions";
+import { resolveProductImage } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
