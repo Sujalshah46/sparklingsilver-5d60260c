@@ -250,7 +250,12 @@ const map: Record<string, string> = {
 
 export function resolveProductImage(filename: string | null | undefined): string {
   if (!filename) return ring;
-  if (filename.startsWith("http://") || filename.startsWith("https://")) return filename;
+  if (
+    filename.startsWith("http://") ||
+    filename.startsWith("https://") ||
+    filename.startsWith("/") ||
+    filename.startsWith("data:")
+  ) return filename;
   return map[filename] ?? ring;
 }
 
