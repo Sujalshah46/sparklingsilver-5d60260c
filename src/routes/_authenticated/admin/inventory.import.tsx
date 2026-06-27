@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin/inventory/import")({
 
 type Row = { sku: string; quantity: number; line: number };
 type RowError = { line: number; raw: string; error: string };
-type ResultRow = { sku: string; status: "updated" | "not_found"; previous?: number; next?: number };
+type ResultRow = { sku: string; status: "updated" | "not_found" | "failed"; previous?: number; next?: number; error?: string };
 
 function parseCSV(text: string): { rows: Row[]; errors: RowError[] } {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
