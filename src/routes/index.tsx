@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -106,6 +107,18 @@ function SectionHeader({ title, total, to }: { title: string; total?: number | s
 
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
+  const [style, setStyle] = useState<"premium" | "classic">("premium");
+  useEffect(() => {
+    const saved = (typeof window !== "undefined" && localStorage.getItem("sj.categoryStyle")) as
+      | "premium"
+      | "classic"
+      | null;
+    if (saved === "premium" || saved === "classic") setStyle(saved);
+  }, []);
+  const updateStyle = (s: "premium" | "classic") => {
+    setStyle(s);
+    try { localStorage.setItem("sj.categoryStyle", s); } catch {}
+  };
   const newArrivals = (data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new).slice(0, 10).length
     ? data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new)
     : data.products
@@ -133,20 +146,44 @@ function Home() {
 
       {/* OUR COLLECTION — 3-col photo grid */}
       <section className="pt-6">
-        <SectionHeader title="Our Collection" to="/catalogue" />
+        <div className="flex items-center justify-between gap-2 px-3">
+          <div className="flex-1">
+            <SectionHeader title="Our Collection" to="/catalogue" />
+          </div>
+        </div>
+        <div className="mt-2 flex justify-end px-3">
+          <div className="inline-flex rounded-[2px] border border-teal/40 p-[2px] text-[11px] font-bold uppercase tracking-wider">
+            <button
+              type="button"
+              onClick={() => updateStyle("premium")}
+              aria-pressed={style === "premium"}
+              className={`px-3 py-1 rounded-[2px] transition-colors ${style === "premium" ? "bg-teal text-white" : "text-teal hover:bg-teal/10"}`}
+            >
+              Premium
+            </button>
+            <button
+              type="button"
+              onClick={() => updateStyle("classic")}
+              aria-pressed={style === "classic"}
+              className={`px-3 py-1 rounded-[2px] transition-colors ${style === "classic" ? "bg-teal text-white" : "text-teal hover:bg-teal/10"}`}
+            >
+              Classic
+            </button>
+          </div>
+        </div>
         <div className="mt-3 grid grid-cols-3 gap-[2px]">
           {data.categories.map((c) => {
             const count = data.counts.get(c.id) ?? 0;
+            const dbImage = (c as unknown as { image_url?: string | null }).image_url;
+            const premium = PREMIUM_CATEGORY_IMAGES[c.slug];
+            const classic = resolveProductImage(c.slug === "jewelry-sets" ? "cat-necklaces-a.jpg" : `cat-${c.slug}-a.jpg`);
+            const image = style === "premium" ? (premium || dbImage || classic) : (classic || dbImage || premium);
             return (
               <CategoryTile
                 key={c.id}
                 slug={c.slug}
                 name={c.name}
-                image={
-                  (c as unknown as { image_url?: string | null }).image_url ||
-                  CATEGORY_UNSPLASH[c.slug] ||
-                  resolveProductImage(c.slug === "jewelry-sets" ? "cat-necklaces-a.jpg" : `cat-${c.slug}-a.jpg`)
-                }
+                image={image}
                 count={count}
                 newCount={Math.max(0, Math.min(count, 24))}
               />
