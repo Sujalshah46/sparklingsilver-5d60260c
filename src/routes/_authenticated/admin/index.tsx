@@ -39,6 +39,11 @@ function AdminDashboard() {
         supabase.from("profiles").select("id", { count: "exact", head: true }),
         supabase.from("enquiries").select("id", { count: "exact", head: true }),
         supabase.from("products").select("stock_quantity, low_stock_threshold"),
+        supabase
+          .from("products")
+          .select("id, name, sku, stock_quantity, low_stock_threshold, image_url")
+          .order("stock_quantity", { ascending: true })
+          .limit(20),
       ]);
 
       const rows = ordersAll.data ?? [];
