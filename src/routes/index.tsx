@@ -38,6 +38,20 @@ const homeQuery = queryOptions({
 const HOME_TITLE = "Sparkling Silver LLP — Premium Indian Jewellery";
 const HOME_DESC = "Wholesale jewellery catalogue — 22K & 18K gold, diamond and gemstone designs across rings, earrings, pendants, bangles and more.";
 
+const CATEGORY_UNSPLASH: Record<string, string> = {
+  rings: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&fit=crop",
+  necklaces: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&fit=crop",
+  earrings: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&fit=crop",
+  bangles: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fit=crop",
+  bracelets: "https://images.unsplash.com/photo-1573408301185-9519f94815b6?w=400&fit=crop",
+  pendants: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=400&fit=crop",
+  chains: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&fit=crop",
+  mangalsutra: "https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=400&fit=crop",
+  anklets: "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=400&fit=crop",
+  kada: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fit=crop",
+  "jewelry-sets": "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=400&fit=crop",
+};
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -128,19 +142,6 @@ function Home() {
         </div>
       </section>
 
-      const CATEGORY_UNSPLASH: Record<string, string> = {
-        rings: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=400&fit=crop",
-        necklaces: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&fit=crop",
-        earrings: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&fit=crop",
-        bangles: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fit=crop",
-        bracelets: "https://images.unsplash.com/photo-1573408301185-9519f94815b6?w=400&fit=crop",
-        pendants: "https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=400&fit=crop",
-        chains: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400&fit=crop",
-        mangalsutra: "https://images.unsplash.com/photo-1596944924616-7b38e7cfac36?w=400&fit=crop",
-        anklets: "https://images.unsplash.com/photo-1622398925373-3f91b1e275f5?w=400&fit=crop",
-        kada: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fit=crop",
-        "jewelry-sets": "https://images.unsplash.com/photo-1599643477877-530eb83abc8e?w=400&fit=crop",
-      };
 
       {/* OUR COLLECTION — 3-col photo grid */}
       <section className="pt-6">
