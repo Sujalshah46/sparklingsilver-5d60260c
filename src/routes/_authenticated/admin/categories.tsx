@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, ImageIcon } from "lucide-react";
 import { resolveProductImage } from "@/lib/product-images";
+import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
   head: () => ({ meta: [{ title: "Admin — Category Images" }] }),
