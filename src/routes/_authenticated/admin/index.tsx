@@ -11,6 +11,7 @@ import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, Boxes, 
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
   head: () => ({ meta: [{ title: "Admin — Dashboard" }] }),
