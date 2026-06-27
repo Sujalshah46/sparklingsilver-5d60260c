@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, ImageIcon } from "lucide-react";
-import { resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
