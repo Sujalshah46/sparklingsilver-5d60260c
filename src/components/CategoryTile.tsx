@@ -5,6 +5,7 @@ import { resolveProductImage, categoryPlaceholder } from "@/lib/product-images";
 export function CategoryTile({
   slug, name, image, count, newCount,
 }: { slug: string; name: string; image?: string | null; count?: number; newCount?: number }) {
+  const [src, setSrc] = useState(() => resolveProductImage(image ?? null, categoryPlaceholder));
   return (
     <Link
       to="/category/$slug"
@@ -12,9 +13,10 @@ export function CategoryTile({
       className="group relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-[#F0F0F0]"
     >
       <img
-        src={resolveProductImage(image ?? null, categoryPlaceholder)}
+        src={src}
         alt={name}
         loading="lazy"
+        onError={() => setSrc(categoryPlaceholder)}
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       {!!newCount && newCount > 0 && (
