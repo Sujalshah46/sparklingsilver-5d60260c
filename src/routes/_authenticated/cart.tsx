@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: "Cart — Sparkling Silver" }] }),
