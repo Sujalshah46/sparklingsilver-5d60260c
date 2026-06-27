@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Minus, Plus, Search, AlertTriangle, PackageX } from "lucide-react";
 import { toast } from "sonner";
 import { adjustStock } from "@/lib/inventory.functions";
-import { resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   head: () => ({ meta: [{ title: "Admin — Inventory" }] }),
@@ -131,7 +131,22 @@ function InventoryPage() {
               return (
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-center gap-3">
-                    <img src={resolveProductImage(p.image_url)} alt={p.name} onError={(e) => { (e.currentTarget as HTMLImageElement).src = resolveProductImage(null); }} className="h-14 w-14 rounded-lg object-cover" />
+                    <img
+                      src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                      alt={p.name}
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        if (img.dataset.fallback === "1") {
+                          img.alt = "";
+                          img.style.visibility = "hidden";
+                          return;
+                        }
+                        img.dataset.fallback = "1";
+                        img.src = categoryPlaceholder;
+                      }}
+                      className="h-14 w-14 shrink-0 rounded-lg bg-secondary object-cover"
+                    />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-serif text-sm font-semibold">{p.name}</p>
                       <p className="truncate text-[11px] text-muted-foreground">{p.sku}</p>
