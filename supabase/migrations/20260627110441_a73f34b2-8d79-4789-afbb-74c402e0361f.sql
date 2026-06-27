@@ -1,0 +1,13 @@
+
+INSERT INTO public.products (sku, name, slug, description, category_id, metal, purity, gross_weight, net_weight, price, image_url, is_new, is_bestseller, in_stock, stock_quantity, moq) VALUES
+  ('ANK-001','Ghungroo Charm Anklet','ghungroo-charm-anklet','Delicate silver anklet with traditional ghungroo bells.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',12.5,11.8,2450,'prod-a-1.jpg',true,true,true,25,1),
+  ('ANK-002','Oxidised Beaded Payal','oxidised-beaded-payal','Antique oxidised silver beaded anklet with bell drops.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',14.2,13.5,2780,'prod-a-2.jpg',true,false,true,20,1),
+  ('ANK-003','Starlight Dainty Anklet','starlight-dainty-anklet','Minimalist sterling silver chain anklet with tiny star charms.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',4.8,4.6,1290,'prod-a-3.jpg',true,false,true,40,1),
+  ('ANK-004','Filigree Bridal Payal','filigree-bridal-payal','Intricate filigree silver anklet with ghungroo for bridal wear.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',22.0,20.5,4250,'prod-a-4.jpg',false,true,true,15,1),
+  ('ANK-005','Crystal Drop Anklet','crystal-drop-anklet','Sparkling cubic zirconia anklet with elegant bell drops.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',10.4,9.8,2980,'prod-a-5.jpg',true,false,true,22,1),
+  ('ANK-006','Twisted Rope Anklet','twisted-rope-anklet','Polished silver twisted rope chain anklet, everyday elegance.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',3.6,3.5,990,'prod-a-6.jpg',false,true,true,50,1),
+  ('ANK-007','Kundan Meena Payal','kundan-meena-payal','Traditional kundan anklet with red and green meenakari work.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',18.5,16.8,5450,'prod-a-7.jpg',true,true,true,12,1),
+  ('ANK-008','Peacock Charm Anklet','peacock-charm-anklet','Oxidised silver anklet with peacock motifs and tiny bells.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',15.8,14.9,3290,'prod-a-8.jpg',false,true,true,18,1),
+  ('ANK-009','Heart Figaro Anklet','heart-figaro-anklet','Polished figaro chain anklet with a charming heart pendant.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',5.2,5.0,1450,'prod-a-9.jpg',true,false,true,35,1),
+  ('ANK-010','Royal Bridal Ghungroo Set','royal-bridal-ghungroo-set','Heritage bridal silver anklets with dense ghungroo and floral motifs.','eeceae4f-a27e-4a0f-9d8a-22bf4d5c7631','silver','925',32.0,29.5,6890,'prod-a-10.jpg',false,true,true,10,1)
+ON CONFLICT (sku) DO UPDATE SET image_url = EXCLUDED.image_url, name = EXCLUDED.name, description = EXCLUDED.description;

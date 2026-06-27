@@ -124,6 +124,16 @@ import pm7 from "@/assets/prod-m-7.jpg";
 import pm8 from "@/assets/prod-m-8.jpg";
 import pm9 from "@/assets/prod-m-9.jpg";
 import pm10 from "@/assets/prod-m-10.jpg";
+import pa1 from "@/assets/prod-a-1.jpg";
+import pa2 from "@/assets/prod-a-2.jpg";
+import pa3 from "@/assets/prod-a-3.jpg";
+import pa4 from "@/assets/prod-a-4.jpg";
+import pa5 from "@/assets/prod-a-5.jpg";
+import pa6 from "@/assets/prod-a-6.jpg";
+import pa7 from "@/assets/prod-a-7.jpg";
+import pa8 from "@/assets/prod-a-8.jpg";
+import pa9 from "@/assets/prod-a-9.jpg";
+import pa10 from "@/assets/prod-a-10.jpg";
 import ps1 from "@/assets/prod-s-1.jpg";
 import ps2 from "@/assets/prod-s-2.jpg";
 import ps3 from "@/assets/prod-s-3.jpg";
@@ -236,6 +246,16 @@ const map: Record<string, string> = {
   "prod-m-8.jpg": pm8,
   "prod-m-9.jpg": pm9,
   "prod-m-10.jpg": pm10,
+  "prod-a-1.jpg": pa1,
+  "prod-a-2.jpg": pa2,
+  "prod-a-3.jpg": pa3,
+  "prod-a-4.jpg": pa4,
+  "prod-a-5.jpg": pa5,
+  "prod-a-6.jpg": pa6,
+  "prod-a-7.jpg": pa7,
+  "prod-a-8.jpg": pa8,
+  "prod-a-9.jpg": pa9,
+  "prod-a-10.jpg": pa10,
   "prod-s-1.jpg": ps1,
   "prod-s-2.jpg": ps2,
   "prod-s-3.jpg": ps3,
