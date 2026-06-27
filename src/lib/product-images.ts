@@ -225,6 +225,7 @@ const map: Record<string, string> = {
 
 export function resolveProductImage(filename: string | null | undefined): string {
   if (!filename) return ring;
+  if (filename.startsWith("http://") || filename.startsWith("https://")) return filename;
   return map[filename] ?? ring;
 }
 
