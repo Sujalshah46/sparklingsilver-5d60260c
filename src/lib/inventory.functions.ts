@@ -130,7 +130,7 @@ export const bulkUpdateStock = createServerFn({ method: "POST" })
     if (fe) throw new Error(fe.message);
     const bySku = new Map((prods ?? []).map((p: any) => [p.sku, p]));
 
-    const results: Array<{ sku: string; status: "updated" | "not_found"; previous?: number; next?: number }> = [];
+    const results: Array<{ sku: string; status: "updated" | "not_found" | "failed"; previous?: number; next?: number; error?: string }> = [];
     const reason = data.reason || "CSV bulk import";
 
     for (const row of data.rows) {
@@ -139,20 +139,28 @@ export const bulkUpdateStock = createServerFn({ method: "POST" })
       const prev = p.stock_quantity ?? 0;
       const next = row.quantity;
       if (prev === next) { results.push({ sku: row.sku, status: "updated", previous: prev, next }); continue; }
-      await supabase.from("products").update({ stock_quantity: next }).eq("id", p.id);
-      await supabase.from("stock_movements").insert({
-        product_id: p.id,
-        delta: next - prev,
-        previous_qty: prev,
-        new_qty: next,
-        reason,
-        created_by: userId,
-      });
-      await maybeAlert(supabase, p.id, prev, next);
-      results.push({ sku: row.sku, status: "updated", previous: prev, next });
+      try {
+        const { error: upErr } = await supabase.from("products").update({ stock_quantity: next }).eq("id", p.id);
+        if (upErr) throw new Error(upErr.message);
+        const { error: mvErr } = await supabase.from("stock_movements").insert({
+          product_id: p.id,
+          delta: next - prev,
+          previous_qty: prev,
+          new_qty: next,
+          reason,
+          created_by: userId,
+        });
+        if (mvErr) console.error("[bulkUpdateStock] movement insert failed", mvErr);
+        await maybeAlert(supabase, p.id, prev, next);
+        results.push({ sku: row.sku, status: "updated", previous: prev, next });
+      } catch (e) {
+        console.error("[bulkUpdateStock] row failed", row.sku, e);
+        results.push({ sku: row.sku, status: "failed", error: e instanceof Error ? e.message : "Update failed" });
+      }
     }
 
     const updated = results.filter((r) => r.status === "updated").length;
     const notFound = results.filter((r) => r.status === "not_found").length;
-    return { ok: true, updated, notFound, results };
+    const failed = results.filter((r) => r.status === "failed").length;
+    return { ok: true, updated, notFound, failed, results };
   });
