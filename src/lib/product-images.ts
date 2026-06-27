@@ -29,6 +29,31 @@ import catAnkletsA from "@/assets/cat-anklets-a.jpg";
 import catAnkletsB from "@/assets/cat-anklets-b.jpg";
 import catKadaA from "@/assets/cat-kada-a.jpg";
 import catKadaB from "@/assets/cat-kada-b.jpg";
+import premRings from "@/assets/cat-premium-rings.jpg";
+import premNecklaces from "@/assets/cat-premium-necklaces.jpg";
+import premEarrings from "@/assets/cat-premium-earrings.jpg";
+import premBangles from "@/assets/cat-premium-bangles.jpg";
+import premBracelets from "@/assets/cat-premium-bracelets.jpg";
+import premPendants from "@/assets/cat-premium-pendants.jpg";
+import premChains from "@/assets/cat-premium-chains.jpg";
+import premMangalsutra from "@/assets/cat-premium-mangalsutra.jpg";
+import premAnklets from "@/assets/cat-premium-anklets.jpg";
+import premKada from "@/assets/cat-premium-kada.jpg";
+import premSets from "@/assets/cat-premium-sets.jpg";
+
+export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
+  rings: premRings,
+  necklaces: premNecklaces,
+  earrings: premEarrings,
+  bangles: premBangles,
+  bracelets: premBracelets,
+  pendants: premPendants,
+  chains: premChains,
+  mangalsutra: premMangalsutra,
+  anklets: premAnklets,
+  kada: premKada,
+  "jewelry-sets": premSets,
+};
 import pr1 from "@/assets/prod-r-1.jpg";
 import pr2 from "@/assets/prod-r-2.jpg";
 import pr3 from "@/assets/prod-r-3.jpg";
