@@ -1,12 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Upload, ImageIcon } from "lucide-react";
 import { resolveProductImage } from "@/lib/product-images";
+import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
   head: () => ({ meta: [{ title: "Admin — Category Images" }] }),
@@ -60,6 +62,8 @@ function CategoryRow({ cat, onSaved }: { cat: Cat; onSaved: () => void }) {
   const [busy, setBusy] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const preview = cat.image_url ?? resolveProductImage(`cat-${cat.slug}-a.jpg`);
+  const setImageFn = useServerFn(setCategoryImage);
+  const clearImageFn = useServerFn(clearCategoryImage);
 
   async function handleFile(file: File) {
     if (!file.type.startsWith("image/")) {
@@ -74,22 +78,14 @@ function CategoryRow({ cat, onSaved }: { cat: Cat; onSaved: () => void }) {
     try {
       const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
       const path = `${cat.slug}/${Date.now()}.${ext}`;
+      // Upload still happens client-side (gated by storage RLS), but the
+      // DB write + signed-URL minting is server-verified admin only.
       const up = await supabase.storage
         .from("category-images")
         .upload(path, file, { upsert: true, contentType: file.type });
       if (up.error) throw up.error;
 
-      // Bucket is private — generate a long-lived signed URL (1 year)
-      const signed = await supabase.storage
-        .from("category-images")
-        .createSignedUrl(path, 60 * 60 * 24 * 365);
-      if (signed.error || !signed.data) throw signed.error ?? new Error("No URL");
-
-      const upd = await supabase
-        .from("categories")
-        .update({ image_url: signed.data.signedUrl })
-        .eq("id", cat.id);
-      if (upd.error) throw upd.error;
+      await setImageFn({ data: { category_id: cat.id, storage_path: path } });
 
       toast.success(`${cat.name} image updated`);
       onSaved();
@@ -104,11 +100,7 @@ function CategoryRow({ cat, onSaved }: { cat: Cat; onSaved: () => void }) {
   async function clearImage() {
     setBusy(true);
     try {
-      const { error } = await supabase
-        .from("categories")
-        .update({ image_url: null })
-        .eq("id", cat.id);
-      if (error) throw error;
+      await clearImageFn({ data: { category_id: cat.id } });
       toast.success(`${cat.name} reset to default`);
       onSaved();
     } catch (e) {
