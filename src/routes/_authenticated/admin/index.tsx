@@ -28,7 +28,7 @@ function AdminDashboard() {
       const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-      const [ordersAll, ordersRecent, products, customers, enquiries, inv] = await Promise.all([
+      const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList] = await Promise.all([
         supabase.from("orders").select("id, status, total, created_at"),
         supabase
           .from("orders")
