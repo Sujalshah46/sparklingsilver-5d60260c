@@ -131,7 +131,7 @@ function InventoryPage() {
               return (
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-center gap-3">
-                    <img src={p.image_url} alt={p.name} className="h-14 w-14 rounded-lg object-cover" />
+                    <img src={resolveProductImage(p.image_url)} alt={p.name} onError={(e) => { (e.currentTarget as HTMLImageElement).src = resolveProductImage(null); }} className="h-14 w-14 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate font-serif text-sm font-semibold">{p.name}</p>
                       <p className="truncate text-[11px] text-muted-foreground">{p.sku}</p>
