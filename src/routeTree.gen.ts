@@ -36,6 +36,7 @@ import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin/categories'
+import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products.index'
 import { Route as ApiPublicHooksLowStockDigestRouteImport } from './routes/api/public/hooks/low-stock-digest'
 import { Route as AuthenticatedAdminProductsIdRouteImport } from './routes/_authenticated/admin/products.$id'
 import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin/orders.$id'
@@ -182,6 +183,12 @@ const AuthenticatedAdminCategoriesRoute =
     path: '/categories',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminProductsIndexRoute =
+  AuthenticatedAdminProductsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAdminProductsRoute,
+  } as any)
 const ApiPublicHooksLowStockDigestRoute =
   ApiPublicHooksLowStockDigestRouteImport.update({
     id: '/api/public/hooks/low-stock-digest',
@@ -252,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -276,7 +284,6 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
-  '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
@@ -285,6 +292,7 @@ export interface FileRoutesByTo {
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -321,6 +329,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
   '/_authenticated/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -357,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/orders/$id'
     | '/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/admin/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -381,7 +391,6 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/inventory'
     | '/admin/orders'
-    | '/admin/products'
     | '/orders/$id'
     | '/admin'
     | '/admin/inventory/$id'
@@ -390,6 +399,7 @@ export interface FileRouteTypes {
     | '/admin/orders/$id'
     | '/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/admin/products'
   id:
     | '__root__'
     | '/'
@@ -425,6 +435,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/orders/$id'
     | '/_authenticated/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/_authenticated/admin/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -635,6 +646,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCategoriesRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/products/': {
+      id: '/_authenticated/admin/products/'
+      path: '/'
+      fullPath: '/admin/products/'
+      preLoaderRoute: typeof AuthenticatedAdminProductsIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminProductsRoute
+    }
     '/api/public/hooks/low-stock-digest': {
       id: '/api/public/hooks/low-stock-digest'
       path: '/api/public/hooks/low-stock-digest'
@@ -716,11 +734,13 @@ const AuthenticatedAdminOrdersRouteWithChildren =
 
 interface AuthenticatedAdminProductsRouteChildren {
   AuthenticatedAdminProductsIdRoute: typeof AuthenticatedAdminProductsIdRoute
+  AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
 }
 
 const AuthenticatedAdminProductsRouteChildren: AuthenticatedAdminProductsRouteChildren =
   {
     AuthenticatedAdminProductsIdRoute: AuthenticatedAdminProductsIdRoute,
+    AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
   }
 
 const AuthenticatedAdminProductsRouteWithChildren =
