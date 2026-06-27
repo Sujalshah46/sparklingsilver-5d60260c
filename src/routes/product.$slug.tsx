@@ -32,11 +32,11 @@ const productQuery = (slug: string) =>
 export const Route = createFileRoute("/product/$slug")({
   head: ({ params, loaderData }) => {
     const p = (loaderData as { product?: { name: string; sku: string; description: string | null; price: number | string; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
-    const title = p ? `${p.name} — Sparkling Jewellers` : "Jewellery — Sparkling Jewellers";
+    const title = p ? `${p.name} — Sparkling Silver` : "Jewellery — Sparkling Silver";
     const rawDesc = (p?.description ?? "").trim();
     const desc = rawDesc
       ? rawDesc.slice(0, 158)
-      : `Shop ${p?.name ?? "premium jewellery"} at Sparkling Jewellers. BIS hallmarked, transparent pricing.`;
+      : `Shop ${p?.name ?? "premium jewellery"} at Sparkling Silver. BIS hallmarked, transparent pricing.`;
     const url = `https://sparkling-jewellers-llp.lovable.app/product/${params.slug}`;
     const img = p?.image_url
       ? (p.image_url.startsWith("http") ? p.image_url : `https://sparkling-jewellers-llp.lovable.app${p.image_url}`)
@@ -66,7 +66,7 @@ export const Route = createFileRoute("/product/$slug")({
                 sku: p.sku,
                 image: img,
                 description: rawDesc || p.name,
-                brand: { "@type": "Brand", name: "Sparkling Jewellers LLP" },
+                brand: { "@type": "Brand", name: "Sparkling Silver LLP" },
                 offers: {
                   "@type": "Offer",
                   url,

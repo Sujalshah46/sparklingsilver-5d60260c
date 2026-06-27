@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
-const TITLE = "Jewellery Guides & Buying Tips — Sparkling Jewellers";
+const TITLE = "Jewellery Guides & Buying Tips — Sparkling Silver";
 const DESC = "Practical guides on gold pricing, purity, hallmarking and choosing the right jewellery for every occasion.";
 
 const POSTS = [
@@ -41,7 +41,7 @@ function BlogIndex() {
     <MobileShell title="Guides">
       <div className="space-y-4 p-4">
         <h1 className="font-serif text-2xl font-bold text-foreground">Jewellery Guides</h1>
-        <p className="text-sm text-muted-foreground">Buyer's guides from Sparkling Jewellers — pricing, purity and certification, clearly explained.</p>
+        <p className="text-sm text-muted-foreground">Buyer's guides from Sparkling Silver — pricing, purity and certification, clearly explained.</p>
         <ul className="space-y-3 pt-2">
           {POSTS.map((p) => (
             <li key={p.slug} className="rounded-xl border border-border bg-card p-4">

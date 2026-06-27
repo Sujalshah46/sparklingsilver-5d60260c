@@ -12,8 +12,8 @@ const ratesQuery = queryOptions({
   },
 });
 
-const GR_TITLE = "Today's Gold Rate — 22K & 18K | Sparkling Jewellers";
-const GR_DESC = "Live 24K, 22K and 18K gold and silver rates per gram in India, with a 30-day price chart from Sparkling Jewellers.";
+const GR_TITLE = "Today's Gold Rate — 22K & 18K | Sparkling Silver";
+const GR_DESC = "Live 24K, 22K and 18K gold and silver rates per gram in India, with a 30-day price chart from Sparkling Silver.";
 
 export const Route = createFileRoute("/gold-rate")({
   head: () => ({

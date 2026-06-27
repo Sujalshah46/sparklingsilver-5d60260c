@@ -55,7 +55,7 @@ export function lowStockAlertHtml(item: { name: string; sku: string; qty: number
         <tr><td style="padding:6px 0;color:#666">Current qty</td><td style="padding:6px 0"><b>${item.qty}</b></td></tr>
         <tr><td style="padding:6px 0;color:#666">Threshold</td><td style="padding:6px 0">${item.threshold}</td></tr>
       </table>
-      <p style="margin-top:20px;font-size:12px;color:#999">Sparkling Jewellers — automated inventory alert</p>
+      <p style="margin-top:20px;font-size:12px;color:#999">Sparkling Silver — automated inventory alert</p>
     </div>`;
 }
 

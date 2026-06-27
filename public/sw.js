@@ -1,11 +1,11 @@
-/* Sparkling Jewellers — push notification service worker */
+/* Sparkling Silver — push notification service worker */
 self.addEventListener("install", (e) => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil(self.clients.claim()));
 
 self.addEventListener("push", (event) => {
   let data = {};
-  try { data = event.data ? event.data.json() : {}; } catch (_) { data = { title: "Sparkling Jewellers", body: event.data ? event.data.text() : "" }; }
-  const title = data.title || "Sparkling Jewellers";
+  try { data = event.data ? event.data.json() : {}; } catch (_) { data = { title: "Sparkling Silver", body: event.data ? event.data.text() : "" }; }
+  const title = data.title || "Sparkling Silver";
   const options = {
     body: data.body || "",
     icon: "/favicon.ico",
