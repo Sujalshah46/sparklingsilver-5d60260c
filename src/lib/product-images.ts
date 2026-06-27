@@ -1,4 +1,5 @@
 // Maps DB image_url (filename) to bundled Vite asset URL
+import categoryPlaceholder from "@/assets/category-placeholder.jpg";
 import ring from "@/assets/product-1-ring.jpg";
 import necklace from "@/assets/product-2-necklace.jpg";
 import earrings from "@/assets/product-3-earrings.jpg";
@@ -308,14 +309,17 @@ const map: Record<string, string> = {
   "prod-s-10.jpg": ps10,
 };
 
-export function resolveProductImage(filename: string | null | undefined): string {
-  if (!filename) return ring;
+export function resolveProductImage(
+  filename: string | null | undefined,
+  fallback: string = ring,
+): string {
+  if (!filename) return fallback;
   if (
     filename.startsWith("http://") ||
     filename.startsWith("https://") ||
     filename.startsWith("/") ||
     filename.startsWith("data:")
   ) return filename;
-  return map[filename] ?? ring;
+  return map[filename] ?? fallback;
 }
 
