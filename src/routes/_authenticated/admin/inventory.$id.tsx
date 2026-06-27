@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { setStock, updateThreshold } from "@/lib/inventory.functions";
+import { resolveProductImage } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
@@ -92,7 +93,7 @@ function StockDetail() {
         <Link to="/admin/inventory" className="text-xs text-muted-foreground hover:text-foreground">← Inventory</Link>
 
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
-          <img src={product.image_url} alt={product.name} className="h-20 w-20 rounded-lg object-cover" />
+          <img src={resolveProductImage(product.image_url)} alt={product.name} onError={(e) => { (e.currentTarget as HTMLImageElement).src = resolveProductImage(null); }} className="h-20 w-20 rounded-lg object-cover" />
           <div className="min-w-0">
             <p className="font-serif text-base font-semibold">{product.name}</p>
             <p className="text-xs text-muted-foreground">{product.sku}</p>
