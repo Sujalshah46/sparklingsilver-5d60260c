@@ -334,13 +334,21 @@ export function resolveProductImage(
   filename: string | null | undefined,
   fallback: string = ring,
 ): string {
-  if (!filename) return fallback;
+  const value = filename?.trim();
+  if (!value) return fallback;
+
+  const pathWithoutQuery = value.split(/[?#]/)[0] ?? value;
+  const basename = decodeURIComponent(pathWithoutQuery.split("/").pop() ?? pathWithoutQuery);
+  if (map[basename]) return map[basename];
+
   if (
-    filename.startsWith("http://") ||
-    filename.startsWith("https://") ||
-    filename.startsWith("/") ||
-    filename.startsWith("data:")
-  ) return filename;
-  return map[filename] ?? fallback;
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("/") ||
+    value.startsWith("data:") ||
+    value.startsWith("blob:")
+  ) return value;
+
+  return map[value] ?? fallback;
 }
 

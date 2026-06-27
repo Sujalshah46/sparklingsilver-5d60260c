@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { setStock, updateThreshold } from "@/lib/inventory.functions";
-import { resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
@@ -93,7 +93,22 @@ function StockDetail() {
         <Link to="/admin/inventory" className="text-xs text-muted-foreground hover:text-foreground">← Inventory</Link>
 
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
-          <img src={resolveProductImage(product.image_url)} alt={product.name} onError={(e) => { (e.currentTarget as HTMLImageElement).src = resolveProductImage(null); }} className="h-20 w-20 rounded-lg object-cover" />
+          <img
+            src={resolveProductImage(product.image_url, categoryPlaceholder)}
+            alt={product.name}
+            loading="lazy"
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.dataset.fallback === "1") {
+                img.alt = "";
+                img.style.visibility = "hidden";
+                return;
+              }
+              img.dataset.fallback = "1";
+              img.src = categoryPlaceholder;
+            }}
+            className="h-20 w-20 shrink-0 rounded-lg bg-secondary object-cover"
+          />
           <div className="min-w-0">
             <p className="font-serif text-base font-semibold">{product.name}</p>
             <p className="text-xs text-muted-foreground">{product.sku}</p>
