@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Minus, Plus, Search, AlertTriangle, PackageX } from "lucide-react";
 import { toast } from "sonner";
 import { adjustStock } from "@/lib/inventory.functions";
+import { resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   head: () => ({ meta: [{ title: "Admin — Inventory" }] }),
