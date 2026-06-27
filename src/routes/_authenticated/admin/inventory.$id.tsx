@@ -116,6 +116,7 @@ function StockDetail() {
             <Link to="/admin/products/$id" params={{ id }}
               className="mt-2 inline-block text-[11px] text-burgundy hover:underline">Edit product details →</Link>
           </div>
+        </div>
 
         <div className="rounded-xl border border-border bg-card p-3 space-y-3">
           <div>
