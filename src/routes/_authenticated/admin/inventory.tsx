@@ -171,8 +171,10 @@ function InventoryPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="mt-2 flex justify-end">
+                  <div className="mt-2 flex justify-end gap-3">
                     <Link to="/admin/inventory/$id" params={{ id: p.id }}
+                      className="text-[11px] text-muted-foreground hover:underline">Stock log →</Link>
+                    <Link to="/admin/products/$id" params={{ id: p.id }}
                       className="text-[11px] text-burgundy hover:underline">Edit details →</Link>
                   </div>
                 </li>
