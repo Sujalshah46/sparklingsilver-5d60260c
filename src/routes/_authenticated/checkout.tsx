@@ -62,7 +62,9 @@ function Checkout() {
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
     onError: (err: unknown) => {
-      toast.error(err instanceof Error ? err.message : "Could not place order");
+      import("@/lib/errors").then(({ getErrorMessage }) =>
+        toast.error(getErrorMessage(err, "Could not place order")),
+      );
     },
   });
 
