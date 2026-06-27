@@ -146,18 +146,6 @@ function Home() {
 
       {/* OUR COLLECTION — 3-col photo grid */}
       <section className="pt-6">
-        <SectionHeader title="Our Collection" to="/catalogue" />
-        <div className="mt-3 grid grid-cols-3 gap-[2px]">
-          {data.categories.map((c) => {
-            const count = data.counts.get(c.id) ?? 0;
-            return (
-              <CategoryTile
-                key={c.id}
-                slug={c.slug}
-                name={c.name}
-                image={
-      {/* OUR COLLECTION — 3-col photo grid */}
-      <section className="pt-6">
         <div className="flex items-center justify-between gap-2 px-3">
           <div className="flex-1">
             <SectionHeader title="Our Collection" to="/catalogue" />
