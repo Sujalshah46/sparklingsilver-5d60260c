@@ -46,7 +46,7 @@ function ImportPage() {
   const [errors, setErrors] = useState<RowError[]>([]);
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ updated: number; notFound: number; results: ResultRow[] } | null>(null);
+  const [result, setResult] = useState<{ updated: number; notFound: number; failed?: number; results: ResultRow[] } | null>(null);
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
