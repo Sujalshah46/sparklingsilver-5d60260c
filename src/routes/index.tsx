@@ -107,6 +107,18 @@ function SectionHeader({ title, total, to }: { title: string; total?: number | s
 
 function Home() {
   const { data } = useSuspenseQuery(homeQuery);
+  const [style, setStyle] = useState<"premium" | "classic">("premium");
+  useEffect(() => {
+    const saved = (typeof window !== "undefined" && localStorage.getItem("sj.categoryStyle")) as
+      | "premium"
+      | "classic"
+      | null;
+    if (saved === "premium" || saved === "classic") setStyle(saved);
+  }, []);
+  const updateStyle = (s: "premium" | "classic") => {
+    setStyle(s);
+    try { localStorage.setItem("sj.categoryStyle", s); } catch {}
+  };
   const newArrivals = (data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new).slice(0, 10).length
     ? data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new)
     : data.products
