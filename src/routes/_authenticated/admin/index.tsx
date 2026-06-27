@@ -183,7 +183,18 @@ function AdminDashboard() {
                       params={{ id: p.id }}
                       className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 transition hover:border-gold"
                     >
-                      <img src={p.image_url} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
+                      <img
+                        src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                        alt={p.name}
+                        loading="lazy"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }
+                          img.dataset.fallback = "1";
+                          img.src = categoryPlaceholder;
+                        }}
+                        className="h-10 w-10 rounded-md bg-secondary object-cover"
+                      />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{p.name}</p>
                         <p className="truncate text-[11px] text-muted-foreground">{p.sku}</p>
