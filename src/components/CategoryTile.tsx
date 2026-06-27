@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { resolveProductImage } from "@/lib/product-images";
+import { resolveProductImage, categoryPlaceholder } from "@/lib/product-images";
 
 export function CategoryTile({
   slug, name, image, count, newCount,
@@ -11,7 +11,7 @@ export function CategoryTile({
       className="group relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-[#F0F0F0]"
     >
       <img
-        src={resolveProductImage(image ?? null)}
+        src={resolveProductImage(image ?? null, categoryPlaceholder)}
         alt={name}
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
