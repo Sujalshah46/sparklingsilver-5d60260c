@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin/inventory/import")({
 
 type Row = { sku: string; quantity: number; line: number };
 type RowError = { line: number; raw: string; error: string };
-type ResultRow = { sku: string; status: "updated" | "not_found"; previous?: number; next?: number };
+type ResultRow = { sku: string; status: "updated" | "not_found" | "failed"; previous?: number; next?: number; error?: string };
 
 function parseCSV(text: string): { rows: Row[]; errors: RowError[] } {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
@@ -46,7 +46,7 @@ function ImportPage() {
   const [errors, setErrors] = useState<RowError[]>([]);
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ updated: number; notFound: number; results: ResultRow[] } | null>(null);
+  const [result, setResult] = useState<{ updated: number; notFound: number; failed?: number; results: ResultRow[] } | null>(null);
 
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -69,10 +69,12 @@ function ImportPage() {
     setSubmitting(true);
     try {
       const r = await bulk({ data: { rows: rows.map((x) => ({ sku: x.sku, quantity: x.quantity })), reason: reason || null } });
-      setResult({ updated: r.updated, notFound: r.notFound, results: r.results });
-      toast.success(`Updated ${r.updated} · ${r.notFound} not found`);
+      setResult({ updated: r.updated, notFound: r.notFound, failed: r.failed, results: r.results });
+      const failedMsg = r.failed ? ` · ${r.failed} failed` : "";
+      toast.success(`Updated ${r.updated} · ${r.notFound} not found${failedMsg}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Import failed");
+      const { getErrorMessage } = await import("@/lib/errors");
+      toast.error(getErrorMessage(e, "Import failed"));
     } finally {
       setSubmitting(false);
     }
@@ -144,9 +146,10 @@ function ImportPage() {
 
         {result && (
           <div className="space-y-2">
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Badge className="bg-green-100 text-green-900"><CheckCircle2 className="mr-1 h-3 w-3" />{result.updated} updated</Badge>
               {result.notFound > 0 && <Badge className="bg-amber-100 text-amber-900"><XCircle className="mr-1 h-3 w-3" />{result.notFound} not found</Badge>}
+              {result.failed && result.failed > 0 ? <Badge className="bg-red-100 text-red-900"><XCircle className="mr-1 h-3 w-3" />{result.failed} failed</Badge> : null}
             </div>
             <div className="max-h-72 overflow-y-auto rounded-xl border border-border bg-card">
               <table className="w-full text-xs">
@@ -157,7 +160,11 @@ function ImportPage() {
                   {result.results.map((r, i) => (
                     <tr key={i} className="border-t border-border">
                       <td className="px-3 py-1.5 font-mono">{r.sku}</td>
-                      <td className="px-3 py-1.5">{r.status === "updated" ? <span className="text-green-700">updated</span> : <span className="text-amber-700">not found</span>}</td>
+                      <td className="px-3 py-1.5">
+                        {r.status === "updated" ? <span className="text-green-700">updated</span>
+                          : r.status === "not_found" ? <span className="text-amber-700">not found</span>
+                          : <span className="text-red-700" title={r.error}>failed</span>}
+                      </td>
                       <td className="px-3 py-1.5 text-right text-muted-foreground">{r.status === "updated" ? `${r.previous} → ${r.next}` : "—"}</td>
                     </tr>
                   ))}

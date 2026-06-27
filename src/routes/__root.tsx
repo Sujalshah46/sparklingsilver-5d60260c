@@ -142,7 +142,21 @@ function RootComponent() {
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
     });
-    return () => sub.subscription.unsubscribe();
+    const onRejection = (e: PromiseRejectionEvent) => {
+      console.error("[unhandledrejection]", e.reason);
+      reportLovableError(e.reason, { mechanism: "unhandledrejection" });
+    };
+    const onError = (e: ErrorEvent) => {
+      console.error("[window.error]", e.error ?? e.message);
+      reportLovableError(e.error ?? new Error(e.message), { mechanism: "onerror" });
+    };
+    window.addEventListener("unhandledrejection", onRejection);
+    window.addEventListener("error", onError);
+    return () => {
+      sub.subscription.unsubscribe();
+      window.removeEventListener("unhandledrejection", onRejection);
+      window.removeEventListener("error", onError);
+    };
   }, [router, queryClient]);
 
   return (

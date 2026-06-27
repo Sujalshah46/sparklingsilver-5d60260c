@@ -88,9 +88,17 @@ export const placeOrder = createServerFn({ method: "POST" })
         size: it.size,
       })),
     );
-    if (itemsErr) throw new Error(itemsErr.message);
+    if (itemsErr) {
+      // Best-effort rollback so we never strand an empty order on the user's history.
+      await supabase.from("orders").delete().eq("id", order.id);
+      throw new Error(itemsErr.message);
+    }
 
-    await supabase.from("cart_items").delete().eq("user_id", userId);
+    const { error: cartClearErr } = await supabase.from("cart_items").delete().eq("user_id", userId);
+    if (cartClearErr) {
+      // Order is already placed; surface a log but don't fail the request.
+      console.error("[placeOrder] cart clear failed", cartClearErr);
+    }
 
     // Fire-and-forget push to admins (server-only module, dynamic import).
     try {
