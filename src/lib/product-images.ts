@@ -166,6 +166,16 @@ import ps7 from "@/assets/prod-s-7.jpg";
 import ps8 from "@/assets/prod-s-8.jpg";
 import ps9 from "@/assets/prod-s-9.jpg";
 import ps10 from "@/assets/prod-s-10.jpg";
+import ps11 from "@/assets/prod-s-11.jpg";
+import ps12 from "@/assets/prod-s-12.jpg";
+import ps13 from "@/assets/prod-s-13.jpg";
+import ps14 from "@/assets/prod-s-14.jpg";
+import ps15 from "@/assets/prod-s-15.jpg";
+import ps16 from "@/assets/prod-s-16.jpg";
+import ps17 from "@/assets/prod-s-17.jpg";
+import ps18 from "@/assets/prod-s-18.jpg";
+import ps19 from "@/assets/prod-s-19.jpg";
+import ps20 from "@/assets/prod-s-20.jpg";
 
 const map: Record<string, string> = {
   "product-1-ring.jpg": ring,
@@ -308,6 +318,16 @@ const map: Record<string, string> = {
   "prod-s-8.jpg": ps8,
   "prod-s-9.jpg": ps9,
   "prod-s-10.jpg": ps10,
+  "prod-s-11.jpg": ps11,
+  "prod-s-12.jpg": ps12,
+  "prod-s-13.jpg": ps13,
+  "prod-s-14.jpg": ps14,
+  "prod-s-15.jpg": ps15,
+  "prod-s-16.jpg": ps16,
+  "prod-s-17.jpg": ps17,
+  "prod-s-18.jpg": ps18,
+  "prod-s-19.jpg": ps19,
+  "prod-s-20.jpg": ps20,
 };
 
 export function resolveProductImage(
