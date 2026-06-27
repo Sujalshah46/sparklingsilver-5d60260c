@@ -156,13 +156,17 @@ function SignUpForm({ redirect }: { redirect: string }) {
       setLoading(false);
       return toast.error(error.message);
     }
-    // Update profile with extra fields
-    if (data.user) {
+    // Only attempt profile update when a session exists — otherwise (email
+    // confirmation required) RLS blocks the write and it silently fails.
+    if (data.user && data.session) {
       await supabase.from("profiles").update({ full_name: form.full_name, mobile: form.mobile, city: form.city }).eq("id", data.user.id);
+      setLoading(false);
+      toast.success("Welcome to Sparkling Silver!");
+      navigate({ to: redirect, replace: true });
+    } else {
+      setLoading(false);
+      toast.success("Check your email to confirm your account.");
     }
-    setLoading(false);
-    toast.success("Welcome to Sparkling Silver!");
-    navigate({ to: redirect, replace: true });
   };
 
   return (
