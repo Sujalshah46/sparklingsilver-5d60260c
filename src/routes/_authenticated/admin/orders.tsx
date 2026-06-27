@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { inr, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders")({
@@ -30,15 +33,18 @@ const statusColor: Record<string, string> = {
 function AdminOrders() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("pending");
+  const [search, setSearch] = useState("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("id, order_no, status, total, customer_name, customer_phone, customer_city, created_at")
+        .select("id, order_no, status, total, customer_name, customer_phone, customer_email, customer_city, created_at")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       return data ?? [];
     },
   });
@@ -66,7 +72,28 @@ function AdminOrders() {
     return () => { document.title = base; };
   }, [pendingCount]);
 
-  const filtered = (orders ?? []).filter((o) => (tab === "all" ? true : o.status === tab));
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
+    const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
+    return (orders ?? []).filter((o) => {
+      if (tab !== "all" && o.status !== tab) return false;
+      if (fromTs || toTs) {
+        const t = new Date(o.created_at).getTime();
+        if (fromTs && t < fromTs) return false;
+        if (toTs && t > toTs) return false;
+      }
+      if (q) {
+        const hay = [o.order_no, o.customer_name, o.customer_phone, o.customer_email, o.customer_city]
+          .filter(Boolean).join(" ").toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [orders, tab, search, fromDate, toDate]);
+
+  const hasFilters = !!(search || fromDate || toDate);
+  const clearAll = () => { setSearch(""); setFromDate(""); setToDate(""); };
 
   return (
     <MobileShell title="Orders">
@@ -74,6 +101,40 @@ function AdminOrders() {
         <div className="mb-3 flex items-center justify-between gap-2">
           <h1 className="font-serif text-xl font-semibold">Orders</h1>
           <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">← Dashboard</Link>
+        </div>
+
+        <div className="mb-3 space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search order #, name, phone, email, city"
+              className="h-9 pl-8 text-sm"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setFromDate(e.target.value)}
+              className="h-9 flex-1 text-xs"
+              aria-label="From date"
+            />
+            <span className="text-xs text-muted-foreground">to</span>
+            <Input
+              type="date"
+              value={toDate}
+              onChange={(e) => setToDate(e.target.value)}
+              className="h-9 flex-1 text-xs"
+              aria-label="To date"
+            />
+            {hasFilters && (
+              <Button variant="ghost" size="sm" onClick={clearAll} className="h-9 px-2">
+                <X className="h-3.5 w-3.5" />
+              </Button>
+            )}
+          </div>
         </div>
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
@@ -92,6 +153,11 @@ function AdminOrders() {
             );
           })}
         </div>
+
+        <p className="mb-2 text-[11px] text-muted-foreground">
+          {filtered.length} {filtered.length === 1 ? "order" : "orders"}
+          {hasFilters && " matching filters"}
+        </p>
 
         {filtered.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">No orders here.</p>
