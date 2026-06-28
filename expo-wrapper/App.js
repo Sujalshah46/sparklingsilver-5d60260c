@@ -3,8 +3,6 @@ import {
   ActivityIndicator,
   BackHandler,
   Platform,
-  RefreshControl,
-  ScrollView,
   StyleSheet,
   View,
 } from 'react-native';
@@ -17,7 +15,6 @@ const SITE_URL = 'https://sparkling-jewellers-llp.lovable.app';
 export default function App() {
   const webViewRef = useRef(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [canGoBack, setCanGoBack] = useState(false);
 
   // Android hardware back -> WebView back
@@ -33,22 +30,11 @@ export default function App() {
     return () => sub.remove();
   }, [canGoBack]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    webViewRef.current?.reload();
-    setTimeout(() => setRefreshing(false), 800);
-  };
-
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
         <StatusBar style="dark" />
-        <ScrollView
-          contentContainerStyle={{ flex: 1 }}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
+        <View style={styles.contentContainer}>
           <WebView
             ref={webViewRef}
             source={{ uri: SITE_URL }}
@@ -58,8 +44,8 @@ export default function App() {
             sharedCookiesEnabled
             thirdPartyCookiesEnabled
             allowsBackForwardNavigationGestures
-            pullToRefreshEnabled
-            startInLoadingState
+            pullToRefreshEnabled={true}
+            startInLoadingState={false}
             onLoadStart={() => setLoading(true)}
             onLoadEnd={() => setLoading(false)}
             onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
@@ -70,7 +56,7 @@ export default function App() {
               <ActivityIndicator size="large" color="#5BBFAD" />
             </View>
           )}
-        </ScrollView>
+        </View>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -78,6 +64,7 @@ export default function App() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
+  contentContainer: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1, backgroundColor: '#ffffff' },
   loader: {
     position: 'absolute',
