@@ -17,7 +17,7 @@ export default function App() {
   usePreventScreenCapture();
 
   const webViewRef = useRef(null);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
 
   // Android hardware back -> WebView back
@@ -44,17 +44,23 @@ export default function App() {
             originWhitelist={['*']}
             javaScriptEnabled
             domStorageEnabled
+            databaseEnabled
+            cacheEnabled={true}
+            cacheMode="LOAD_DEFAULT"
             sharedCookiesEnabled
             thirdPartyCookiesEnabled
             allowsBackForwardNavigationGestures
             pullToRefreshEnabled={true}
+            androidHardwareAccelerationDisabled={false}
+            overScrollMode="never"
+            showsVerticalScrollIndicator={false}
+            showsHorizontalScrollIndicator={false}
             startInLoadingState={false}
-            onLoadStart={() => setLoading(true)}
-            onLoadEnd={() => setLoading(false)}
+            onLoadEnd={() => setInitialLoading(false)}
             onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
             style={styles.webview}
           />
-          {loading && (
+          {initialLoading && (
             <View style={styles.loader} pointerEvents="none">
               <ActivityIndicator size="large" color="#5BBFAD" />
             </View>
