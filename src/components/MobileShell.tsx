@@ -44,7 +44,7 @@ const sideLinks: { to: string; label: string }[] = [
 function SideMenu() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin = useIsAdmin();
+  const { isAdmin } = useIsAdmin();
   return (
     <Sheet>
       <SheetTrigger asChild>
