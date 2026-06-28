@@ -9,10 +9,13 @@ import {
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
+import { usePreventScreenCapture } from 'expo-screen-capture';
 
 const SITE_URL = 'https://sparkling-jewellers-llp.lovable.app';
 
 export default function App() {
+  usePreventScreenCapture();
+
   const webViewRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
