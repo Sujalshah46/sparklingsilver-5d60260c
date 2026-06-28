@@ -16,6 +16,8 @@ import { toast } from "sonner";
 const productQuery = (slug: string) =>
   queryOptions({
     queryKey: ["product", slug],
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     queryFn: async () => {
       const { data: product } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
       if (!product) return null;

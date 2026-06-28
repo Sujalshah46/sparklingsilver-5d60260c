@@ -14,7 +14,8 @@ import { whatsappUrl } from "@/lib/site";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalogue"],
-  staleTime: 60_000,
+  staleTime: 10 * 60_000,
+  gcTime: 30 * 60_000,
   queryFn: async () => {
     const [products, categories] = await Promise.all([
       supabase.from("products").select("*").limit(120),

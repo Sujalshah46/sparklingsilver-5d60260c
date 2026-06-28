@@ -15,23 +15,18 @@ import heroDaily from "@/assets/hero-daily.jpg";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
-  staleTime: 60_000,
+  staleTime: 10 * 60_000,
+  gcTime: 30 * 60_000,
   queryFn: async () => {
-    const [categories, products, allCounts] = await Promise.all([
+    const [categories, products] = await Promise.all([
       supabase.from("categories").select("*").order("sort_order"),
       supabase.from("products").select("*").or("is_new.eq.true,is_bestseller.eq.true").limit(24),
-      supabase.from("products").select("category_id"),
     ]);
-    const counts = new Map<string, number>();
-    for (const row of (allCounts.data ?? []) as { category_id: string | null }[]) {
-      if (!row.category_id) continue;
-      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
-    }
     return {
       categories: categories.data ?? [],
       products: (products.data ?? []) as CatalogueCardData[],
-      counts,
-      total: allCounts.data?.length ?? 0,
+      counts: new Map<string, number>(),
+      total: products.data?.length ?? 0,
     };
   },
 });

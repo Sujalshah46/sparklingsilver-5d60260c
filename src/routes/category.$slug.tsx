@@ -9,7 +9,8 @@ import { whatsappUrl } from "@/lib/site";
 const categoryQuery = (slug: string) =>
   queryOptions({
     queryKey: ["category", slug],
-    staleTime: 60_000,
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
     queryFn: async () => {
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
       if (!cat) return null;
