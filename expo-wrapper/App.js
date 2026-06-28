@@ -1,6 +1,5 @@
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   BackHandler,
   Platform,
   StyleSheet,
@@ -17,7 +16,6 @@ export default function App() {
   usePreventScreenCapture();
 
   const webViewRef = useRef(null);
-  const [initialLoading, setInitialLoading] = useState(true);
   const [canGoBack, setCanGoBack] = useState(false);
 
   // Android hardware back -> WebView back
@@ -56,15 +54,9 @@ export default function App() {
             showsVerticalScrollIndicator={false}
             showsHorizontalScrollIndicator={false}
             startInLoadingState={false}
-            onLoadEnd={() => setInitialLoading(false)}
             onNavigationStateChange={(nav) => setCanGoBack(nav.canGoBack)}
             style={styles.webview}
           />
-          {initialLoading && (
-            <View style={styles.loader} pointerEvents="none">
-              <ActivityIndicator size="large" color="#5BBFAD" />
-            </View>
-          )}
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -75,10 +67,4 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   contentContainer: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1, backgroundColor: '#ffffff' },
-  loader: {
-    position: 'absolute',
-    top: 0, left: 0, right: 0, bottom: 0,
-    alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'rgba(255,255,255,0.6)',
-  },
 });
