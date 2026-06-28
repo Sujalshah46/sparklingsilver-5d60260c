@@ -1,0 +1,36 @@
+name: EAS Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'expo-wrapper/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 📦 Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: 📥 Install dependencies
+        run: |
+          cd expo-wrapper
+          npm install
+
+      - name: 🚀 Build Android APK
+        run: |
+          cd expo-wrapper
+          eas build --platform android --profile preview --non-interactive
