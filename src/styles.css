@@ -152,7 +152,7 @@
   * { border-color: var(--color-border); }
   html, body { background-color: var(--color-background); color: var(--color-foreground); }
   body { font-family: var(--font-sans); -webkit-tap-highlight-color: transparent; }
-  h1, h2, h3, h4, .font-serif { font-family: var(--font-serif); letter-spacing: -0.005em; }
+  h1, h2, h3, h4, .font-serif { font-family: var(--font-serif); letter-spacing: -0.005em; font-variant-numeric: lining-nums tabular-nums; font-feature-settings: "lnum" 1, "tnum" 1; }
 }
 
 /* =========== Custom utilities =========== */
