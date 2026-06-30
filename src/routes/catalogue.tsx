@@ -28,8 +28,8 @@ const catalogQuery = queryOptions({
   },
 });
 
-const CAT_TITLE = "Shop Gold & Diamond Jewellery — Sparkling Silver";
-const CAT_DESC = "Browse our complete wholesale jewellery catalogue. Filter by category, purity and weight.";
+const CAT_TITLE = "Shop 925 Sterling Silver Jewellery — Sparkling Silver";
+const CAT_DESC = "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.";
 
 export const Route = createFileRoute("/catalogue")({
   head: () => ({
@@ -177,9 +177,9 @@ function Catalogue() {
               </div>
             </div>
             <div>
-              <Label className="font-semibold">Karat</Label>
+              <Label className="font-semibold">Silver Purity</Label>
               <div className="mt-2 flex flex-wrap gap-2">
-                {["18K", "22K", "24K"].map((p) => {
+                {["925", "999", "800"].map((p) => {
                   const active = purities.includes(p);
                   return (
                     <button

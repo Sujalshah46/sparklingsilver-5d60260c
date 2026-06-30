@@ -10,9 +10,9 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SilverRateRouteImport } from './routes/silver-rate'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as NotificationsRouteImport } from './routes/notifications'
-import { Route as GoldRateRouteImport } from './routes/gold-rate'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CatalogueRouteImport } from './routes/catalogue'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -49,6 +49,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SilverRateRoute = SilverRateRouteImport.update({
+  id: '/silver-rate',
+  path: '/silver-rate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -57,11 +62,6 @@ const SearchRoute = SearchRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GoldRateRoute = GoldRateRouteImport.update({
-  id: '/gold-rate',
-  path: '/gold-rate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -231,9 +231,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
-  '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/silver-rate': typeof SilverRateRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/account': typeof AuthenticatedAccountRoute
@@ -266,9 +266,9 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
-  '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/silver-rate': typeof SilverRateRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
@@ -301,9 +301,9 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/catalogue': typeof CatalogueRoute
   '/contact': typeof ContactRoute
-  '/gold-rate': typeof GoldRateRoute
   '/notifications': typeof NotificationsRoute
   '/search': typeof SearchRoute
+  '/silver-rate': typeof SilverRateRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/account': typeof AuthenticatedAccountRoute
@@ -338,9 +338,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/catalogue'
     | '/contact'
-    | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/silver-rate'
     | '/sitemap.xml'
     | '/admin'
     | '/account'
@@ -373,9 +373,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/catalogue'
     | '/contact'
-    | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/silver-rate'
     | '/sitemap.xml'
     | '/account'
     | '/account-edit'
@@ -407,9 +407,9 @@ export interface FileRouteTypes {
     | '/auth'
     | '/catalogue'
     | '/contact'
-    | '/gold-rate'
     | '/notifications'
     | '/search'
+    | '/silver-rate'
     | '/sitemap.xml'
     | '/_authenticated/admin'
     | '/_authenticated/account'
@@ -444,9 +444,9 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CatalogueRoute: typeof CatalogueRoute
   ContactRoute: typeof ContactRoute
-  GoldRateRoute: typeof GoldRateRoute
   NotificationsRoute: typeof NotificationsRoute
   SearchRoute: typeof SearchRoute
+  SilverRateRoute: typeof SilverRateRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
   CategorySlugRoute: typeof CategorySlugRoute
@@ -464,6 +464,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/silver-rate': {
+      id: '/silver-rate'
+      path: '/silver-rate'
+      fullPath: '/silver-rate'
+      preLoaderRoute: typeof SilverRateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -476,13 +483,6 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gold-rate': {
-      id: '/gold-rate'
-      path: '/gold-rate'
-      fullPath: '/gold-rate'
-      preLoaderRoute: typeof GoldRateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -814,9 +814,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CatalogueRoute: CatalogueRoute,
   ContactRoute: ContactRoute,
-  GoldRateRoute: GoldRateRoute,
   NotificationsRoute: NotificationsRoute,
   SearchRoute: SearchRoute,
+  SilverRateRoute: SilverRateRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,
   CategorySlugRoute: CategorySlugRoute,

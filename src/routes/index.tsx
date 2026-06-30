@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { GoldRateStrip } from "@/components/GoldRateStrip";
+import { SilverRateStrip } from "@/components/SilverRateStrip";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { HeroSlider } from "@/components/HeroSlider";
 import { AccessBanner } from "@/components/AccessBanner";
@@ -39,7 +39,7 @@ const homeQuery = queryOptions({
 });
 
 const HOME_TITLE = "Sparkling Silver LLP — Premium Indian Jewellery";
-const HOME_DESC = "Wholesale jewellery catalogue — 22K & 18K gold, diamond and gemstone designs across rings, earrings, pendants, bangles and more.";
+const HOME_DESC = "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.";
 
 const CATEGORY_UNSPLASH = PREMIUM_CATEGORY_IMAGES;
 
@@ -129,7 +129,7 @@ function Home() {
   return (
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
-      <GoldRateStrip />
+      <SilverRateStrip />
       <HeroSlider slides={heroSlides} />
       <AccessBanner />
 

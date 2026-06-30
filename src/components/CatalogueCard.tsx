@@ -83,7 +83,7 @@ export function CatalogueCard({
         <p className="text-[12.5px] font-bold tracking-wide text-[#1A1A1A]">{p.sku}</p>
         <p><span className="font-semibold text-[#333]">Gross Wt:</span> {Number(p.gross_weight).toFixed(3)}</p>
         <p><span className="font-semibold text-[#333]">Net Wt:</span> {Number(p.net_weight).toFixed(3)}</p>
-        <p><span className="font-semibold text-[#333]">Metal Karat:</span> {String(p.purity).replace(/K$/, "")}</p>
+        <p><span className="font-semibold text-[#333]">Silver Purity:</span> {p.purity}</p>
       </div>
       {showCart && (
         <>

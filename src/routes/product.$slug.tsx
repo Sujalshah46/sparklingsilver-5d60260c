@@ -101,9 +101,9 @@ function ProductPage() {
   const product = data!.product;
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
 
-  const goldValue = Number(product.net_weight) * 6830; // 22K reference
-  const makingCharge = (goldValue * Number(product.making_charge_pct)) / 100;
-  const gst = (goldValue + makingCharge) * 0.03;
+  const silverValue = Number(product.net_weight) * 95; // 925 silver reference (₹/g)
+  const makingCharge = (silverValue * Number(product.making_charge_pct)) / 100;
+  const gst = (silverValue + makingCharge) * 0.03;
 
   const addToCart = useMutation({
     mutationFn: async () => {
@@ -178,7 +178,7 @@ function ProductPage() {
         <div className="rounded-xl border border-border bg-card p-4">
           <p className="font-semibold">Pricing Breakdown</p>
           <div className="mt-2 space-y-1 text-sm">
-            <div className="flex justify-between text-muted-foreground"><span>Gold value (ref)</span><span>{inr(goldValue)}</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Silver value (ref)</span><span>{inr(silverValue)}</span></div>
             <div className="flex justify-between text-muted-foreground"><span>Making charges ({product.making_charge_pct}%)</span><span>{inr(makingCharge)}</span></div>
             <div className="flex justify-between text-muted-foreground"><span>GST (3%)</span><span>{inr(gst)}</span></div>
             <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold"><span>Total</span><span className="text-burgundy">{inr(product.price)}</span></div>
