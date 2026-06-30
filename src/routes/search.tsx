@@ -18,7 +18,7 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
-const POPULAR = ["Bridal necklace", "Diamond ring", "Gold chain", "Kada", "Mangalsutra"];
+const POPULAR = ["Bridal necklace", "Silver ring", "Silver chain", "Kada", "Mangalsutra"];
 
 function SearchPage() {
   const [q, setQ] = useState("");

@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/admin/products/$id")({
   component: ProductForm,
 });
 
-const METALS = ["gold", "silver", "platinum", "diamond"] as const;
+const METALS = ["silver"] as const;
 
 function ProductForm() {
   const { id } = Route.useParams();

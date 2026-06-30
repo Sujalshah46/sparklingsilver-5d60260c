@@ -10,75 +10,75 @@ type Post = {
 };
 
 const POSTS: Record<string, Post> = {
-  "gold-price-calculation-guide": {
-    slug: "gold-price-calculation-guide",
-    title: "How to Calculate Gold Jewellery Price in India",
-    description: "Step-by-step guide to gold jewellery pricing in India — net weight, purity, today's rate, making charges and 3% GST, with a worked example.",
+  "silver-price-calculation-guide": {
+    slug: "silver-price-calculation-guide",
+    title: "How to Calculate Silver Jewellery Price in India",
+    description: "Step-by-step guide to silver jewellery pricing in India — net weight, purity, today's silver rate, making charges and 3% GST, with a worked example.",
     datePublished: "2026-06-24",
     body: [
-      { h2: "The four components of a gold jewellery bill", paragraphs: [
-        "Every gold jewellery bill in India is built from four parts: the gold rate on the day of purchase, the net weight of gold in the piece, the making charges your jeweller adds for craftsmanship, and 3% GST on the total. Understand these four and no jewellery bill will ever surprise you again.",
+      { h2: "The four components of a silver jewellery bill", paragraphs: [
+        "Every silver jewellery bill in India is built from four parts: the silver rate on the day of purchase, the net weight of silver in the piece, the making charges your jeweller adds for craftsmanship, and 3% GST on the total. Understand these four and no silver jewellery bill will ever surprise you again.",
       ] },
-      { h2: "Step 1 — Find today's gold rate for the right purity", paragraphs: [
-        "Indian jewellery is sold mostly in 22K (91.6% pure) and 18K (75% pure). Daily rates are quoted per gram for each purity. A 22K rate of ₹6,830/g means a gram of 22K gold costs ₹6,830 — that's your base. We publish live 22K, 18K and 24K rates on our gold rate page so you always start from a fair benchmark.",
+      { h2: "Step 1 — Find today's silver rate for the right purity", paragraphs: [
+        "Silver jewellery in India is sold mostly in 925 sterling (92.5% pure) and 999 fine (99.9% pure). Daily rates are quoted per gram. A 999 rate of ₹95/g means a gram of fine silver costs ₹95 — that's your base for sterling: ₹95 × 0.925 = ₹87.88/g for 925. We publish live silver rates on our silver rate page so you always start from a fair benchmark.",
       ] },
       { h2: "Step 2 — Use net weight, not gross weight", paragraphs: [
-        "Gross weight is the total weight of the piece, including any stones. Net weight is the gold-only weight after subtracting stone weight. You are paying gold rate × net weight, not gross weight. A ₹6,830/g rate applied to 9.2 g of net 22K gold gives ₹62,836 — that's the metal value.",
+        "Gross weight is the total weight of the piece including any stones. Net weight is the silver-only weight after subtracting stone weight. You pay silver rate × net weight, not gross weight. A ₹88/g 925 rate applied to 12 g of net silver gives ₹1,056 — that's the metal value.",
       ] },
       { h2: "Step 3 — Add making charges", paragraphs: [
-        "Making charges pay for the design, craftsmanship and wastage. They are usually a percentage of the gold value (typically 8–25% depending on intricacy) or a flat rupees-per-gram figure. On our ₹62,836 example at 12% making, that's ₹7,540.",
+        "Making charges pay for the design, craftsmanship and wastage. For silver they are usually a percentage of the metal value (typically 15–35% depending on intricacy) or a flat rupees-per-gram figure. Detailed temple-style and antique pieces sit at the higher end because of the hand-finishing involved.",
       ] },
       { h2: "Step 4 — Add 3% GST on the total", paragraphs: [
-        "GST in India on gold jewellery is 3% on the sum of metal value + making charges. (₹62,836 + ₹7,540) × 3% = ₹2,111. Final price = ₹72,487. Every product page on Sparkling Silver shows this exact breakdown so you can verify the math before you buy.",
+        "GST in India on silver jewellery is 3% on the sum of metal value + making charges. Every product page on Sparkling Silver shows this exact breakdown so you can verify the math before you buy.",
       ] },
       { h2: "Tips before you buy", paragraphs: [
-        "Insist on a BIS-hallmarked piece (look for the six-digit HUID). Confirm net weight and making-charge percentage in writing on your invoice. And remember — a higher karat (22K, 24K) is purer but softer; 18K is more durable for everyday rings and bracelets.",
+        "Look for the BIS hallmark with the purity grade (925 or 999) and a six-digit HUID. Confirm net weight and making-charge percentage in writing on your invoice. 925 sterling is the right choice for almost all wearable silver jewellery — 999 is too soft to hold detail or stones.",
       ] },
     ],
   },
-  "22k-vs-18k-gold": {
-    slug: "22k-vs-18k-gold",
-    title: "22K vs 18K Gold — Which Should You Buy?",
-    description: "22K versus 18K gold compared on purity, durability, colour, price and best use cases for Indian buyers.",
+  "925-vs-999-silver": {
+    slug: "925-vs-999-silver",
+    title: "925 Sterling vs 999 Fine Silver — Which Should You Buy?",
+    description: "925 sterling versus 999 fine silver compared on purity, durability, tarnish resistance, price and best use cases for Indian buyers.",
     datePublished: "2026-06-24",
     body: [
-      { h2: "What the karat number actually means", paragraphs: [
-        "Karat measures purity: 22K is 91.6% pure gold, 18K is 75%. The remaining metals (copper, silver, zinc, palladium) are alloys added for strength and colour. Pure 24K gold is too soft to hold gemstones or fine detail, which is why almost no jewellery is sold in 24K.",
+      { h2: "What the purity number actually means", paragraphs: [
+        "925 means 92.5% pure silver alloyed with 7.5% copper (and sometimes zinc) for strength. 999 means 99.9% pure silver — almost no alloy. The alloy in 925 is what makes sterling hard enough to hold stones, prongs and fine detail without bending out of shape.",
       ] },
-      { h2: "Durability — 18K wins for daily wear", paragraphs: [
-        "Because 18K has 25% alloy content, it's noticeably harder and more scratch-resistant than 22K. Engagement rings, tennis bracelets and any piece you'll wear every day hold their finish far longer in 18K. 22K is best for heavier traditional pieces that aren't subjected to daily knocks.",
+      { h2: "Durability — 925 wins for wearable jewellery", paragraphs: [
+        "Because 999 fine silver is so soft, it dents, scratches and warps with normal wear. 925 sterling is significantly harder, which is why every serious jewellery piece — rings, bangles, kada, mangalsutra, anklets — is made in 925. 999 is best for coins, bullion bars and a few flat decorative pieces.",
       ] },
-      { h2: "Colour — 22K is the warmer Indian yellow", paragraphs: [
-        "22K has the rich, warm yellow Indians traditionally associate with bridal and festive jewellery. 18K yellow gold is slightly paler. 18K is also available in rose and white gold, which simply isn't possible in 22K.",
+      { h2: "Tarnish — both tarnish, 925 a little faster", paragraphs: [
+        "Silver reacts with sulphur in the air to form a thin dark layer. 999 tarnishes slowly; 925 tarnishes a bit faster because of the copper content. A 30-second polish with a silver cloth restores the shine on either. Store pieces in airtight pouches when not worn.",
       ] },
-      { h2: "Price — 22K costs more per gram", paragraphs: [
-        "You're paying for the extra gold content, so 22K is meaningfully more expensive per gram than 18K. For diamond-heavy pieces, 18K can give you a bigger, more impressive design for the same budget.",
+      { h2: "Price — 999 costs more per gram", paragraphs: [
+        "You're paying for the higher silver content, so 999 is more expensive per gram than 925. For wearable jewellery the small price difference doesn't justify the loss of durability — 925 sterling is the standard worldwide for a reason.",
       ] },
       { h2: "Quick recommendation", paragraphs: [
-        "Bridal sets, bangles, mangalsutra, gifting and investment-grade pieces → 22K. Diamond rings, daily-wear chains and bracelets, modern western designs → 18K. Both are BIS-hallmarked at Sparkling Silver; the choice is about lifestyle, not quality.",
+        "Rings, earrings, bangles, kada, mangalsutra, anklets, chains, bracelets, jewellery sets → 925 sterling. Investment, gifting coins, religious idols → 999 fine. Both are BIS-hallmarked at Sparkling Silver; the choice is about use case, not quality.",
       ] },
     ],
   },
   "bis-hallmarking-explained": {
     slug: "bis-hallmarking-explained",
-    title: "BIS Hallmarking & Certification Explained",
-    description: "What the BIS hallmark on Indian gold jewellery means, the symbols on it, and how to verify HUID before you buy.",
+    title: "BIS Hallmarking for Silver Jewellery Explained",
+    description: "What the BIS hallmark on Indian silver jewellery means, the symbols on it, and how to verify HUID before you buy.",
     datePublished: "2026-06-24",
     body: [
       { h2: "What BIS hallmarking is", paragraphs: [
-        "The Bureau of Indian Standards (BIS) hallmark certifies that a piece of gold jewellery contains the purity claimed by the seller. As of 2023, hallmarking is mandatory across most of India for 14K, 18K, 20K, 22K, 23K and 24K gold jewellery sold by registered jewellers.",
+        "The Bureau of Indian Standards (BIS) hallmark certifies that a piece of silver jewellery contains the purity claimed by the seller. BIS hallmarking covers silver grades including 800, 900, 925 and 999 sold by registered jewellers.",
       ] },
-      { h2: "The three marks on every hallmarked piece", paragraphs: [
-        "Look for three laser-etched marks: the BIS triangle logo, the purity grade (e.g. 22K916 for 22K), and a six-digit alphanumeric HUID (Hallmark Unique Identification). The HUID is unique to your individual piece — no two pieces share the same code.",
+      { h2: "The marks on every hallmarked piece", paragraphs: [
+        "Look for the BIS triangle logo, the purity grade (e.g. 925 for sterling, 999 for fine), and a six-digit alphanumeric HUID (Hallmark Unique Identification). The HUID is unique to your individual piece — no two pieces share the same code.",
       ] },
       { h2: "How to verify your HUID", paragraphs: [
         "Download the official BIS Care app (Android/iOS) and enter the six-digit HUID. The app returns the jeweller's name, registration number, purity and item description. If anything doesn't match what's on your invoice, do not take delivery.",
       ] },
       { h2: "Why this protects you", paragraphs: [
-        "Pre-hallmarking, under-karating (selling 18K as 22K) cost Indian buyers thousands of crores a year. With HUID, every piece is traceable to a specific jeweller and assaying centre, and any dispute can be resolved by the BIS itself.",
+        "Pre-hallmarking, under-grading (selling 800 silver as 925) was common. With HUID, every piece is traceable to a specific jeweller and assaying centre, and any dispute can be resolved by the BIS itself.",
       ] },
       { h2: "Sparkling Silver and BIS", paragraphs: [
-        "Every gold piece we sell carries a BIS hallmark and a valid HUID; every diamond is accompanied by an IGI or GIA certificate. Ask for both at checkout — we'll happily walk you through how to verify each one.",
+        "Every silver piece we sell carries a BIS hallmark and a valid HUID. Ask for the hallmark at checkout — we'll happily walk you through how to verify it on the BIS Care app.",
       ] },
     ],
   },
@@ -98,8 +98,8 @@ export const Route = createFileRoute("/blog/$slug")({
         { name: "description", content: post.description },
         { property: "og:title", content: post.title },
         { property: "og:description", content: post.description },
-        { property: "og:type", content: "article" },
         { property: "og:url", content: url },
+        { property: "og:type", content: "article" },
         { name: "twitter:title", content: post.title },
         { name: "twitter:description", content: post.description },
       ],
@@ -124,34 +124,36 @@ export const Route = createFileRoute("/blog/$slug")({
   component: BlogPost,
   notFoundComponent: () => (
     <MobileShell title="Not found">
-      <div className="py-20 text-center text-muted-foreground">Article not found.</div>
+      <div className="p-6 text-center">
+        <p className="text-sm text-muted-foreground">Article not found.</p>
+        <Link to="/blog" className="mt-3 inline-block text-sm font-semibold text-teal">Back to guides</Link>
+      </div>
     </MobileShell>
   ),
 });
 
 function BlogPost() {
   const { slug } = Route.useParams();
-  const post = POSTS[slug];
-  if (!post) return null;
+  const post = POSTS[slug]!;
   return (
     <MobileShell title="Guide">
-      <article className="space-y-6 p-4">
+      <article className="space-y-4 p-4">
         <header>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-burgundy">Guide</p>
-          <h1 className="mt-2 font-serif text-2xl font-bold text-foreground sm:text-3xl">{post.title}</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Sparkling Silver Guide</p>
+          <h1 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">{post.title}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{post.description}</p>
         </header>
         {post.body.map((section) => (
           <section key={section.h2} className="space-y-2">
             <h2 className="font-serif text-lg font-semibold text-foreground">{section.h2}</h2>
             {section.paragraphs.map((p, i) => (
-              <p key={i} className="text-sm leading-relaxed text-foreground/90">{p}</p>
+              <p key={i} className="text-sm leading-relaxed text-muted-foreground">{p}</p>
             ))}
           </section>
         ))}
-        <footer className="border-t border-border pt-4 text-sm">
-          <Link to="/blog" className="text-burgundy font-semibold">← Back to all guides</Link>
-        </footer>
+        <div className="pt-4">
+          <Link to="/blog" className="text-sm font-semibold text-teal">← All guides</Link>
+        </div>
       </article>
     </MobileShell>
   );

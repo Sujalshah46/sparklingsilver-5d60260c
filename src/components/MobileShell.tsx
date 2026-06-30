@@ -36,7 +36,7 @@ const sideLinks: { to: string; label: string }[] = [
   { to: "/orders", label: "My Orders" },
   { to: "/wishlist", label: "Wishlist" },
   { to: "/account", label: "My Account" },
-  { to: "/gold-rate", label: "Gold Rate" },
+  { to: "/silver-rate", label: "Silver Rate" },
   { to: "/contact", label: "Contact Us" },
   { to: "/blog", label: "Blog" },
 ];
