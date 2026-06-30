@@ -5,7 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useCartWeight } from "@/hooks/use-cart-weight";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import type { ReactNode } from "react";
 
@@ -53,6 +54,10 @@ function SideMenu() {
         </button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[78vw] max-w-[320px] p-0">
+        <VisuallyHidden>
+          <SheetTitle>Main menu</SheetTitle>
+          <SheetDescription>Navigate to sections of Sparkling Silver LLP.</SheetDescription>
+        </VisuallyHidden>
         <div className="flex h-14 items-center justify-between border-b border-[#E5E5E5] px-4">
           <div className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">Menu</div>
           <ThemeToggle />
