@@ -56,7 +56,7 @@ function AccountPage() {
         <section className="mt-4 grid grid-cols-3 gap-2">
           <QuickLink to="/orders" icon={ShoppingBag} label="Orders" />
           <QuickLink to="/wishlist" icon={Heart} label="Wishlist" />
-          <QuickLink to="/gold-rate" icon={Gift} label="Gold Rate" />
+          <QuickLink to="/silver-rate" icon={Gift} label="Silver Rate" />
         </section>
 
         <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
