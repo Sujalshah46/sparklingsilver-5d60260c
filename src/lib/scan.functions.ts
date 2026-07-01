@@ -74,6 +74,8 @@ export const scanAdjustStock = createServerFn({ method: "POST" })
 // ---------- Quick create from barcode ----------
 const createSchema = z.object({
   barcode: z.string().trim().min(1).max(128),
+  label_code: z.string().trim().max(64).optional().nullable(),
+  gross_weight: z.number().nonnegative().optional().nullable(),
   name: z.string().trim().min(1).max(200),
   sku: z.string().trim().min(1).max(64),
   price: z.number().nonnegative(),
@@ -82,6 +84,7 @@ const createSchema = z.object({
   image_url: z.string().trim().min(1).default("/placeholder.svg"),
   category_id: z.string().uuid().optional().nullable(),
 });
+
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `p-${Date.now()}`;
