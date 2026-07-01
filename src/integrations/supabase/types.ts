@@ -390,6 +390,7 @@ export type Database = {
           is_bestseller: boolean | null
           is_new: boolean | null
           is_trending: boolean | null
+          label_code: string | null
           low_stock_threshold: number
           making_charge_pct: number | null
           metal: Database["public"]["Enums"]["metal_type"]
@@ -422,6 +423,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          label_code?: string | null
           low_stock_threshold?: number
           making_charge_pct?: number | null
           metal?: Database["public"]["Enums"]["metal_type"]
@@ -454,6 +456,7 @@ export type Database = {
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          label_code?: string | null
           low_stock_threshold?: number
           making_charge_pct?: number | null
           metal?: Database["public"]["Enums"]["metal_type"]
