@@ -316,7 +316,7 @@ function ProductPanel({
   onClose: () => void;
   onAdjust: (delta: number) => void;
   onEditToggle: () => void;
-  onEditSave: (patch: { name?: string; price?: number; description?: string | null; image_url?: string; category_id?: string | null }) => void;
+  onEditSave: (patch: { name?: string; price?: number; description?: string | null; image_url?: string; category_id?: string | null; label_code?: string | null; gross_weight?: number }) => void;
 }) {
   const [qty, setQty] = useState(1);
   const [name, setName] = useState(product.name);
@@ -324,12 +324,17 @@ function ProductPanel({
   const [desc, setDesc] = useState(product.description ?? "");
   const [image, setImage] = useState(product.image_url ?? "");
   const [catId, setCatId] = useState(product.category_id ?? "");
+  const [labelCode, setLabelCode] = useState(product.label_code ?? "");
+  const [grossWt, setGrossWt] = useState(product.gross_weight != null ? String(product.gross_weight) : "");
 
   useEffect(() => {
     setName(product.name); setPrice(String(product.price));
     setDesc(product.description ?? ""); setImage(product.image_url ?? "");
     setCatId(product.category_id ?? "");
+    setLabelCode(product.label_code ?? "");
+    setGrossWt(product.gross_weight != null ? String(product.gross_weight) : "");
   }, [product.id]);
+
 
   const stock = product.stock_quantity ?? 0;
   const low = (product.low_stock_threshold ?? 0) >= stock;
