@@ -108,6 +108,7 @@ export const scanCreateProduct = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabase.from("products").insert({
       barcode: data.barcode,
+      label_code: data.label_code ?? null,
       name: data.name,
       sku: data.sku,
       slug,
@@ -118,10 +119,11 @@ export const scanCreateProduct = createServerFn({ method: "POST" })
       category_id: data.category_id ?? null,
       metal: "silver",
       purity: "925",
-      gross_weight: 0,
+      gross_weight: data.gross_weight ?? 0,
       net_weight: 0,
-    }).select("id, name, sku, barcode, price, image_url, stock_quantity, low_stock_threshold, updated_at").single();
+    }).select("id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at").single();
     if (error) throw new Error(error.message);
+
 
     await supabase.from("stock_movements").insert({
       product_id: row.id,
