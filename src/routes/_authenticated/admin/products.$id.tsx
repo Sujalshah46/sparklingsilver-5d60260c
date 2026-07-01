@@ -70,6 +70,7 @@ function ProductForm() {
         sku: product.sku ?? "",
         description: product.description ?? "",
         category_id: product.category_id ?? "",
+        subcategory_id: (product as any).subcategory_id ?? "",
         metal: product.metal ?? "silver",
         purity: product.purity ?? "925",
         gross_weight: Number(product.gross_weight ?? 0),
