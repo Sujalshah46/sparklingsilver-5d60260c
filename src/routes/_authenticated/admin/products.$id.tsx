@@ -45,9 +45,17 @@ function ProductForm() {
     },
   });
 
+  const { data: subs } = useQuery({
+    queryKey: ["admin-subcategories-list"],
+    queryFn: async () => {
+      const { data } = await supabase.from("subcategories").select("id, name").order("sort_order");
+      return data ?? [];
+    },
+  });
+
   const [form, setForm] = useState<any>({
     name: "", slug: "", sku: "", description: "",
-    category_id: "", metal: "silver", purity: "925",
+    category_id: "", subcategory_id: "", metal: "silver", purity: "925",
     gross_weight: 0, net_weight: 0, stone_weight: 0, stone_type: "",
     price: 0, making_charge_pct: 0, moq: 1,
     image_url: "", stock_quantity: 0, low_stock_threshold: 5,
