@@ -377,6 +377,7 @@ export type Database = {
       }
       products: {
         Row: {
+          barcode: string | null
           category_id: string | null
           collection_id: string | null
           created_at: string
@@ -405,8 +406,10 @@ export type Database = {
           stone_type: string | null
           stone_weight: number | null
           subcategory_id: string | null
+          updated_at: string
         }
         Insert: {
+          barcode?: string | null
           category_id?: string | null
           collection_id?: string | null
           created_at?: string
@@ -435,8 +438,10 @@ export type Database = {
           stone_type?: string | null
           stone_weight?: number | null
           subcategory_id?: string | null
+          updated_at?: string
         }
         Update: {
+          barcode?: string | null
           category_id?: string | null
           collection_id?: string | null
           created_at?: string
@@ -465,6 +470,7 @@ export type Database = {
           stone_type?: string | null
           stone_weight?: number | null
           subcategory_id?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
@@ -558,6 +564,7 @@ export type Database = {
       }
       stock_movements: {
         Row: {
+          action_type: Database["public"]["Enums"]["stock_action_type"] | null
           created_at: string
           created_by: string | null
           delta: number
@@ -568,6 +575,7 @@ export type Database = {
           reason: string | null
         }
         Insert: {
+          action_type?: Database["public"]["Enums"]["stock_action_type"] | null
           created_at?: string
           created_by?: string | null
           delta: number
@@ -578,6 +586,7 @@ export type Database = {
           reason?: string | null
         }
         Update: {
+          action_type?: Database["public"]["Enums"]["stock_action_type"] | null
           created_at?: string
           created_by?: string | null
           delta?: number
@@ -689,6 +698,7 @@ export type Database = {
         | "pending"
         | "accepted"
         | "rejected"
+      stock_action_type: "increment" | "decrement" | "edit" | "created" | "set"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -830,6 +840,7 @@ export const Constants = {
         "accepted",
         "rejected",
       ],
+      stock_action_type: ["increment", "decrement", "edit", "created", "set"],
     },
   },
 } as const
