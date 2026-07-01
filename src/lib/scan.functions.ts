@@ -146,11 +146,13 @@ export const scanEditProduct = createServerFn({ method: "POST" })
     await ensureAdmin(supabase, userId);
     const { error } = await supabase.from("products").update(data.patch).eq("id", data.product_id);
     if (error) throw new Error(error.message);
+    const { data: cur } = await supabase.from("products").select("stock_quantity").eq("id", data.product_id).maybeSingle();
+    const q = cur?.stock_quantity ?? 0;
     await supabase.from("stock_movements").insert({
       product_id: data.product_id,
       delta: 0,
-      previous_qty: null,
-      new_qty: null,
+      previous_qty: q,
+      new_qty: q,
       reason: `Edited: ${Object.keys(data.patch).join(", ")}`,
       action_type: "edit",
       created_by: userId,
