@@ -18,6 +18,7 @@ const baseFields = {
   sku: z.string().trim().min(1).max(64),
   description: z.string().trim().max(4000).optional().nullable(),
   category_id: z.string().uuid().optional().nullable(),
+  subcategory_id: z.string().uuid().optional().nullable(),
   collection_id: z.string().uuid().optional().nullable(),
   metal: z.enum(["gold", "silver", "platinum", "diamond"]),
   purity: z.string().trim().min(1).max(32),
