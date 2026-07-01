@@ -124,6 +124,36 @@ export type Database = {
         }
         Relationships: []
       }
+      category_subcategories: {
+        Row: {
+          category_id: string
+          subcategory_id: string
+        }
+        Insert: {
+          category_id: string
+          subcategory_id: string
+        }
+        Update: {
+          category_id?: string
+          subcategory_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "category_subcategories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "category_subcategories_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collections: {
         Row: {
           banner_url: string | null
@@ -374,6 +404,7 @@ export type Database = {
           stock_quantity: number
           stone_type: string | null
           stone_weight: number | null
+          subcategory_id: string | null
         }
         Insert: {
           category_id?: string | null
@@ -403,6 +434,7 @@ export type Database = {
           stock_quantity?: number
           stone_type?: string | null
           stone_weight?: number | null
+          subcategory_id?: string | null
         }
         Update: {
           category_id?: string | null
@@ -432,6 +464,7 @@ export type Database = {
           stock_quantity?: number
           stone_type?: string | null
           stone_weight?: number | null
+          subcategory_id?: string | null
         }
         Relationships: [
           {
@@ -446,6 +479,13 @@ export type Database = {
             columns: ["collection_id"]
             isOneToOne: false
             referencedRelation: "collections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_subcategory_id_fkey"
+            columns: ["subcategory_id"]
+            isOneToOne: false
+            referencedRelation: "subcategories"
             referencedColumns: ["id"]
           },
         ]
@@ -556,6 +596,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subcategories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

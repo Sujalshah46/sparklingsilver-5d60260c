@@ -45,9 +45,17 @@ function ProductForm() {
     },
   });
 
+  const { data: subs } = useQuery({
+    queryKey: ["admin-subcategories-list"],
+    queryFn: async () => {
+      const { data } = await supabase.from("subcategories").select("id, name").order("sort_order");
+      return data ?? [];
+    },
+  });
+
   const [form, setForm] = useState<any>({
     name: "", slug: "", sku: "", description: "",
-    category_id: "", metal: "silver", purity: "925",
+    category_id: "", subcategory_id: "", metal: "silver", purity: "925",
     gross_weight: 0, net_weight: 0, stone_weight: 0, stone_type: "",
     price: 0, making_charge_pct: 0, moq: 1,
     image_url: "", stock_quantity: 0, low_stock_threshold: 5,
@@ -62,6 +70,7 @@ function ProductForm() {
         sku: product.sku ?? "",
         description: product.description ?? "",
         category_id: product.category_id ?? "",
+        subcategory_id: (product as any).subcategory_id ?? "",
         metal: product.metal ?? "silver",
         purity: product.purity ?? "925",
         gross_weight: Number(product.gross_weight ?? 0),
@@ -90,6 +99,7 @@ function ProductForm() {
       const payload = {
         ...form,
         category_id: form.category_id || null,
+        subcategory_id: form.subcategory_id || null,
         gross_weight: Number(form.gross_weight),
         net_weight: Number(form.net_weight),
         stone_weight: form.stone_weight ? Number(form.stone_weight) : null,
@@ -141,6 +151,14 @@ function ProductForm() {
               value={form.category_id} onChange={(e) => up("category_id", e.target.value)}>
               <option value="">— None —</option>
               {(cats ?? []).map((c: any) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </Field>
+
+          <Field label="Subcategory">
+            <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              value={form.subcategory_id} onChange={(e) => up("subcategory_id", e.target.value)}>
+              <option value="">— None —</option>
+              {(subs ?? []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
             </select>
           </Field>
 
