@@ -353,8 +353,13 @@ function ProductPanel({
             <Badge className={stock === 0 ? "bg-destructive/15 text-destructive" : low ? "bg-amber-100 text-amber-900" : "bg-green-100 text-green-900"}>
               Stock {stock}
             </Badge>
+            {product.label_code && <Badge variant="outline" className="font-mono">{product.label_code}</Badge>}
+            {product.gross_weight != null && Number(product.gross_weight) > 0 && (
+              <Badge variant="outline">GrossWt {Number(product.gross_weight).toFixed(3)}g</Badge>
+            )}
             {product.updated_at && <span className="text-[10px] text-muted-foreground">Updated {formatDate(product.updated_at)}</span>}
           </div>
+
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
       </div>
