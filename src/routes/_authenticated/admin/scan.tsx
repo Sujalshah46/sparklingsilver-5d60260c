@@ -395,6 +395,14 @@ function ProductPanel({
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </FieldRow>
+          <div className="grid grid-cols-2 gap-2">
+            <FieldRow label="Label code">
+              <Input value={labelCode} onChange={(e) => setLabelCode(e.target.value.toUpperCase())} placeholder="AR(CH)-196" className="font-mono" />
+            </FieldRow>
+            <FieldRow label="Gross wt (g)">
+              <Input type="number" step="0.001" value={grossWt} onChange={(e) => setGrossWt(e.target.value)} placeholder="156.000" />
+            </FieldRow>
+          </div>
           <FieldRow label="Image URL"><Input value={image} onChange={(e) => setImage(e.target.value)} /></FieldRow>
           <FieldRow label="Description">
             <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} className="w-full rounded-md border border-input bg-transparent p-2 text-sm" />
@@ -404,9 +412,12 @@ function ProductPanel({
               name, price: Number(price) || 0, description: desc || null,
               image_url: image || "/placeholder.svg",
               category_id: catId || null,
+              label_code: labelCode.trim() ? labelCode.trim() : null,
+              gross_weight: grossWt ? Number(grossWt) : undefined,
             })} className="bg-burgundy hover:bg-burgundy/90">Save</Button>
             <Button size="sm" variant="outline" onClick={onEditToggle}>Cancel</Button>
           </div>
+
         </div>
       )}
     </div>
