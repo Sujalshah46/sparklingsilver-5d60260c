@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { inr, formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, Boxes, AlertTriangle, ImageIcon } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
@@ -158,6 +158,7 @@ function AdminDashboard() {
           <div className="grid grid-cols-2 gap-2">
             <QuickAction to="/admin/orders" icon={ShoppingBag} label="Manage orders" badge={stats?.pending} />
             <QuickAction to="/admin/products" icon={Package} label="Products" badge={stats?.productCount} />
+            <QuickAction to="/admin/scan" icon={ScanLine} label="Scan inventory" />
             <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
             <QuickAction to="/admin/categories" icon={ImageIcon} label="Category images" />
           </div>
