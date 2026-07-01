@@ -15,20 +15,27 @@ async function ensureAdmin(supabase: any, userId: string) {
 // ---------- Lookup by barcode ----------
 const lookupSchema = z.object({ barcode: z.string().trim().min(1).max(128) });
 
+// Printed tag pattern: e.g. AR(CH)-196, AS(NK)-1002
+const LABEL_RE = /^[A-Z]{1,4}\([A-Z]{1,4}\)-\d+$/i;
+
 export const lookupByBarcode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => lookupSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
+    const raw = data.barcode.trim();
+    const isLabel = LABEL_RE.test(raw);
+    const cols = "id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories(name), subcategories(name)";
     const { data: product, error } = await supabase
       .from("products")
-      .select("id, name, sku, barcode, price, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories(name), subcategories(name)")
-      .eq("barcode", data.barcode)
+      .select(cols)
+      .or(isLabel ? `label_code.eq.${raw},barcode.eq.${raw}` : `barcode.eq.${raw},label_code.eq.${raw},sku.eq.${raw}`)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return { found: !!product, product };
+    return { found: !!product, product, parsedLabel: isLabel ? raw : null };
   });
+
 
 // ---------- Adjust stock via scan (writes action_type) ----------
 const adjustSchema = z.object({
