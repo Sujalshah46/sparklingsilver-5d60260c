@@ -15,20 +15,27 @@ async function ensureAdmin(supabase: any, userId: string) {
 // ---------- Lookup by barcode ----------
 const lookupSchema = z.object({ barcode: z.string().trim().min(1).max(128) });
 
+// Printed tag pattern: e.g. AR(CH)-196, AS(NK)-1002
+const LABEL_RE = /^[A-Z]{1,4}\([A-Z]{1,4}\)-\d+$/i;
+
 export const lookupByBarcode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => lookupSchema.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
+    const raw = data.barcode.trim();
+    const isLabel = LABEL_RE.test(raw);
+    const cols = "id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories(name), subcategories(name)";
     const { data: product, error } = await supabase
       .from("products")
-      .select("id, name, sku, barcode, price, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories(name), subcategories(name)")
-      .eq("barcode", data.barcode)
+      .select(cols)
+      .or(isLabel ? `label_code.eq.${raw},barcode.eq.${raw}` : `barcode.eq.${raw},label_code.eq.${raw},sku.eq.${raw}`)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return { found: !!product, product };
+    return { found: !!product, product, parsedLabel: isLabel ? raw : null };
   });
+
 
 // ---------- Adjust stock via scan (writes action_type) ----------
 const adjustSchema = z.object({
@@ -67,6 +74,8 @@ export const scanAdjustStock = createServerFn({ method: "POST" })
 // ---------- Quick create from barcode ----------
 const createSchema = z.object({
   barcode: z.string().trim().min(1).max(128),
+  label_code: z.string().trim().max(64).optional().nullable(),
+  gross_weight: z.number().nonnegative().optional().nullable(),
   name: z.string().trim().min(1).max(200),
   sku: z.string().trim().min(1).max(64),
   price: z.number().nonnegative(),
@@ -75,6 +84,7 @@ const createSchema = z.object({
   image_url: z.string().trim().min(1).default("/placeholder.svg"),
   category_id: z.string().uuid().optional().nullable(),
 });
+
 
 function slugify(s: string) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80) || `p-${Date.now()}`;
@@ -98,6 +108,7 @@ export const scanCreateProduct = createServerFn({ method: "POST" })
 
     const { data: row, error } = await supabase.from("products").insert({
       barcode: data.barcode,
+      label_code: data.label_code ?? null,
       name: data.name,
       sku: data.sku,
       slug,
@@ -108,10 +119,11 @@ export const scanCreateProduct = createServerFn({ method: "POST" })
       category_id: data.category_id ?? null,
       metal: "silver",
       purity: "925",
-      gross_weight: 0,
+      gross_weight: data.gross_weight ?? 0,
       net_weight: 0,
-    }).select("id, name, sku, barcode, price, image_url, stock_quantity, low_stock_threshold, updated_at").single();
+    }).select("id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at").single();
     if (error) throw new Error(error.message);
+
 
     await supabase.from("stock_movements").insert({
       product_id: row.id,
@@ -135,6 +147,8 @@ const editSchema = z.object({
     description: z.string().trim().max(4000).optional().nullable(),
     image_url: z.string().trim().min(1).optional(),
     category_id: z.string().uuid().optional().nullable(),
+    label_code: z.string().trim().max(64).optional().nullable(),
+    gross_weight: z.number().nonnegative().optional(),
   }),
 });
 

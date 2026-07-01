@@ -25,6 +25,8 @@ type Product = {
   name: string;
   sku: string;
   barcode: string | null;
+  label_code?: string | null;
+  gross_weight?: number | null;
   price: number;
   image_url: string | null;
   stock_quantity: number | null;
@@ -34,6 +36,9 @@ type Product = {
   category_id?: string | null;
   categories?: { name: string } | null;
 };
+
+const LABEL_RE = /^[A-Z]{1,4}\([A-Z]{1,4}\)-\d+$/i;
+
 
 type FeedEntry = {
   id: string;
@@ -311,7 +316,7 @@ function ProductPanel({
   onClose: () => void;
   onAdjust: (delta: number) => void;
   onEditToggle: () => void;
-  onEditSave: (patch: { name?: string; price?: number; description?: string | null; image_url?: string; category_id?: string | null }) => void;
+  onEditSave: (patch: { name?: string; price?: number; description?: string | null; image_url?: string; category_id?: string | null; label_code?: string | null; gross_weight?: number }) => void;
 }) {
   const [qty, setQty] = useState(1);
   const [name, setName] = useState(product.name);
@@ -319,12 +324,17 @@ function ProductPanel({
   const [desc, setDesc] = useState(product.description ?? "");
   const [image, setImage] = useState(product.image_url ?? "");
   const [catId, setCatId] = useState(product.category_id ?? "");
+  const [labelCode, setLabelCode] = useState(product.label_code ?? "");
+  const [grossWt, setGrossWt] = useState(product.gross_weight != null ? String(product.gross_weight) : "");
 
   useEffect(() => {
     setName(product.name); setPrice(String(product.price));
     setDesc(product.description ?? ""); setImage(product.image_url ?? "");
     setCatId(product.category_id ?? "");
+    setLabelCode(product.label_code ?? "");
+    setGrossWt(product.gross_weight != null ? String(product.gross_weight) : "");
   }, [product.id]);
+
 
   const stock = product.stock_quantity ?? 0;
   const low = (product.low_stock_threshold ?? 0) >= stock;
@@ -348,8 +358,13 @@ function ProductPanel({
             <Badge className={stock === 0 ? "bg-destructive/15 text-destructive" : low ? "bg-amber-100 text-amber-900" : "bg-green-100 text-green-900"}>
               Stock {stock}
             </Badge>
+            {product.label_code && <Badge variant="outline" className="font-mono">{product.label_code}</Badge>}
+            {product.gross_weight != null && Number(product.gross_weight) > 0 && (
+              <Badge variant="outline">GrossWt {Number(product.gross_weight).toFixed(3)}g</Badge>
+            )}
             {product.updated_at && <span className="text-[10px] text-muted-foreground">Updated {formatDate(product.updated_at)}</span>}
           </div>
+
         </div>
         <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
       </div>
@@ -380,6 +395,14 @@ function ProductPanel({
               {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </FieldRow>
+          <div className="grid grid-cols-2 gap-2">
+            <FieldRow label="Label code">
+              <Input value={labelCode} onChange={(e) => setLabelCode(e.target.value.toUpperCase())} placeholder="AR(CH)-196" className="font-mono" />
+            </FieldRow>
+            <FieldRow label="Gross wt (g)">
+              <Input type="number" step="0.001" value={grossWt} onChange={(e) => setGrossWt(e.target.value)} placeholder="156.000" />
+            </FieldRow>
+          </div>
           <FieldRow label="Image URL"><Input value={image} onChange={(e) => setImage(e.target.value)} /></FieldRow>
           <FieldRow label="Description">
             <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={3} className="w-full rounded-md border border-input bg-transparent p-2 text-sm" />
@@ -389,9 +412,12 @@ function ProductPanel({
               name, price: Number(price) || 0, description: desc || null,
               image_url: image || "/placeholder.svg",
               category_id: catId || null,
+              label_code: labelCode.trim() ? labelCode.trim() : null,
+              gross_weight: grossWt ? Number(grossWt) : undefined,
             })} className="bg-burgundy hover:bg-burgundy/90">Save</Button>
             <Button size="sm" variant="outline" onClick={onEditToggle}>Cancel</Button>
           </div>
+
         </div>
       )}
     </div>
@@ -413,15 +439,18 @@ function CreatePanel({
   barcode: string;
   categories: { id: string; name: string }[];
   onCancel: () => void;
-  onCreate: (p: { name: string; sku: string; price: number; stock_quantity: number; description?: string | null; image_url: string; category_id?: string | null }) => void;
+  onCreate: (p: { name: string; sku: string; price: number; stock_quantity: number; description?: string | null; image_url: string; category_id?: string | null; label_code?: string | null; gross_weight?: number | null }) => void;
 }) {
+  const scannedIsLabel = LABEL_RE.test(barcode);
   const [name, setName] = useState("");
-  const [sku, setSku] = useState(barcode);
+  const [sku, setSku] = useState(scannedIsLabel ? barcode : "");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("1");
   const [desc, setDesc] = useState("");
   const [image, setImage] = useState("/placeholder.svg");
   const [catId, setCatId] = useState("");
+  const [labelCode, setLabelCode] = useState(scannedIsLabel ? barcode : "");
+  const [grossWt, setGrossWt] = useState("");
 
   return (
     <div className="rounded-xl border border-dashed border-burgundy/40 bg-burgundy/5 p-3">
@@ -431,12 +460,23 @@ function CreatePanel({
         </p>
         <button onClick={onCancel} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
       </div>
-      <p className="mt-0.5 text-[11px] text-muted-foreground">Barcode: <span className="font-mono">{barcode}</span></p>
+      <p className="mt-0.5 text-[11px] text-muted-foreground">
+        Barcode: <span className="font-mono">{barcode}</span>
+        {scannedIsLabel && <span className="ml-1 text-burgundy">· printed label detected</span>}
+      </p>
       <div className="mt-3 space-y-2">
         <FieldRow label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} /></FieldRow>
         <div className="grid grid-cols-2 gap-2">
           <FieldRow label="SKU"><Input value={sku} onChange={(e) => setSku(e.target.value)} /></FieldRow>
           <FieldRow label="Price"><Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} /></FieldRow>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <FieldRow label="Label code">
+            <Input value={labelCode} onChange={(e) => setLabelCode(e.target.value.toUpperCase())} placeholder="AR(CH)-196" className="font-mono" />
+          </FieldRow>
+          <FieldRow label="Gross wt (g)">
+            <Input type="number" step="0.001" value={grossWt} onChange={(e) => setGrossWt(e.target.value)} placeholder="156.000" />
+          </FieldRow>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <FieldRow label="Initial stock"><Input type="number" value={stock} onChange={(e) => setStock(e.target.value)} /></FieldRow>
@@ -462,10 +502,13 @@ function CreatePanel({
               description: desc || null,
               image_url: image || "/placeholder.svg",
               category_id: catId || null,
+              label_code: labelCode.trim() ? labelCode.trim() : null,
+              gross_weight: grossWt ? Number(grossWt) : null,
             });
           }} className="bg-burgundy hover:bg-burgundy/90">Create product</Button>
           <Button size="sm" variant="outline" onClick={onCancel}>Cancel</Button>
         </div>
+
       </div>
     </div>
   );
