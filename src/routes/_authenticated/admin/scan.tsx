@@ -443,13 +443,10 @@ function CreatePanel({
 }) {
   const scannedIsLabel = LABEL_RE.test(barcode);
   const [name, setName] = useState("");
-  const [sku, setSku] = useState(scannedIsLabel ? barcode : "");
-  const [price, setPrice] = useState("");
+  const [sku, setSku] = useState(barcode);
   const [stock, setStock] = useState("1");
-  const [desc, setDesc] = useState("");
   const [image, setImage] = useState("/placeholder.svg");
   const [catId, setCatId] = useState("");
-  const [labelCode, setLabelCode] = useState(scannedIsLabel ? barcode : "");
   const [grossWt, setGrossWt] = useState("");
 
   return (
@@ -467,12 +464,8 @@ function CreatePanel({
       <div className="mt-3 space-y-2">
         <FieldRow label="Name"><Input value={name} onChange={(e) => setName(e.target.value)} /></FieldRow>
         <div className="grid grid-cols-2 gap-2">
-          <FieldRow label="SKU"><Input value={sku} onChange={(e) => setSku(e.target.value)} /></FieldRow>
-          <FieldRow label="Price"><Input type="number" value={price} onChange={(e) => setPrice(e.target.value)} /></FieldRow>
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <FieldRow label="Label code">
-            <Input value={labelCode} onChange={(e) => setLabelCode(e.target.value.toUpperCase())} placeholder="AR(CH)-196" className="font-mono" />
+          <FieldRow label="SKU">
+            <Input value={sku} onChange={(e) => setSku(e.target.value.toUpperCase())} placeholder="AR(CH)-196" className="font-mono" />
           </FieldRow>
           <FieldRow label="Gross wt (g)">
             <Input type="number" step="0.001" value={grossWt} onChange={(e) => setGrossWt(e.target.value)} placeholder="156.000" />
@@ -488,21 +481,19 @@ function CreatePanel({
           </FieldRow>
         </div>
         <FieldRow label="Image URL"><Input value={image} onChange={(e) => setImage(e.target.value)} /></FieldRow>
-        <FieldRow label="Description">
-          <textarea value={desc} onChange={(e) => setDesc(e.target.value)} rows={2} className="w-full rounded-md border border-input bg-transparent p-2 text-sm" />
-        </FieldRow>
         <div className="flex gap-2">
           <Button size="sm" onClick={() => {
-            if (!name.trim() || !sku.trim() || !price) { toast.error("Name, SKU and price are required"); return; }
+            if (!name.trim() || !sku.trim()) { toast.error("Name and SKU are required"); return; }
+            const skuTrimmed = sku.trim();
             onCreate({
               name: name.trim(),
-              sku: sku.trim(),
-              price: Number(price) || 0,
+              sku: skuTrimmed,
+              price: 0,
               stock_quantity: Number(stock) || 0,
-              description: desc || null,
+              description: null,
               image_url: image || "/placeholder.svg",
               category_id: catId || null,
-              label_code: labelCode.trim() ? labelCode.trim() : null,
+              label_code: LABEL_RE.test(skuTrimmed) ? skuTrimmed : null,
               gross_weight: grossWt ? Number(grossWt) : null,
             });
           }} className="bg-burgundy hover:bg-burgundy/90">Create product</Button>
