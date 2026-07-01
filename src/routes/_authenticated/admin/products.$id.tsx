@@ -154,6 +154,14 @@ function ProductForm() {
             </select>
           </Field>
 
+          <Field label="Subcategory">
+            <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+              value={form.subcategory_id} onChange={(e) => up("subcategory_id", e.target.value)}>
+              <option value="">— None —</option>
+              {(subs ?? []).map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+          </Field>
+
           <div className="grid grid-cols-2 gap-3">
             <Field label="Metal">
               <select className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
