@@ -148,7 +148,7 @@ const editSchema = z.object({
     image_url: z.string().trim().min(1).optional(),
     category_id: z.string().uuid().optional().nullable(),
     label_code: z.string().trim().max(64).optional().nullable(),
-    gross_weight: z.number().nonnegative().optional().nullable(),
+    gross_weight: z.number().nonnegative().optional(),
   }),
 });
 
