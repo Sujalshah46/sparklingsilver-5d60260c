@@ -99,6 +99,7 @@ function ProductForm() {
       const payload = {
         ...form,
         category_id: form.category_id || null,
+        subcategory_id: form.subcategory_id || null,
         gross_weight: Number(form.gross_weight),
         net_weight: Number(form.net_weight),
         stone_weight: form.stone_weight ? Number(form.stone_weight) : null,
