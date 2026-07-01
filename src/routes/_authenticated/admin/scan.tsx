@@ -25,6 +25,8 @@ type Product = {
   name: string;
   sku: string;
   barcode: string | null;
+  label_code?: string | null;
+  gross_weight?: number | null;
   price: number;
   image_url: string | null;
   stock_quantity: number | null;
@@ -34,6 +36,9 @@ type Product = {
   category_id?: string | null;
   categories?: { name: string } | null;
 };
+
+const LABEL_RE = /^[A-Z]{1,4}\([A-Z]{1,4}\)-\d+$/i;
+
 
 type FeedEntry = {
   id: string;
