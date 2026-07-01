@@ -176,6 +176,26 @@ import ps17 from "@/assets/prod-s-17.jpg";
 import ps18 from "@/assets/prod-s-18.jpg";
 import ps19 from "@/assets/prod-s-19.jpg";
 import ps20 from "@/assets/prod-s-20.jpg";
+import pOwnAntiqueBj01 from "@/assets/prod-own-antique-bj-01.jpg";
+import pOwnAntiqueBt185 from "@/assets/prod-own-antique-bt-185.jpg";
+import pOwnAntiqueBt187 from "@/assets/prod-own-antique-bt-187.jpg";
+import pOwnAntiqueCh142 from "@/assets/prod-own-antique-ch-142.jpg";
+import pOwnAntiqueLs405 from "@/assets/prod-own-antique-ls-405.jpg";
+import pOwnCzBng84 from "@/assets/prod-own-cz-bng-84.jpg";
+import pOwnCzBt154 from "@/assets/prod-own-cz-bt-154.jpg";
+import pOwnCzCh102 from "@/assets/prod-own-cz-ch-102.jpg";
+import pOwnCzCh99 from "@/assets/prod-own-cz-ch-99.jpg";
+import pOwnCzLs333 from "@/assets/prod-own-cz-ls-333.jpg";
+import pOwnCzLs370 from "@/assets/prod-own-cz-ls-370.jpg";
+import pOwnOpenCloseBr05 from "@/assets/prod-own-openclose-br-05.jpg";
+import pOwnOpenCloseBt192 from "@/assets/prod-own-openclose-bt-192.jpg";
+import pOwnOpenCloseCh151 from "@/assets/prod-own-openclose-ch-151.jpg";
+import pOwnOpenCloseNk700 from "@/assets/prod-own-openclose-nk-700.jpg";
+import pOwnVictoriaBt181 from "@/assets/prod-own-victoria-bt-181.jpg";
+import pOwnVictoriaCh100 from "@/assets/prod-own-victoria-ch-100.jpg";
+import pOwnVictoriaNk716 from "@/assets/prod-own-victoria-nk-716.jpg";
+import pOwnVictoriaPs370 from "@/assets/prod-own-victoria-ps-370.jpg";
+
 
 const map: Record<string, string> = {
   "product-1-ring.jpg": ring,
@@ -328,6 +348,25 @@ const map: Record<string, string> = {
   "prod-s-18.jpg": ps18,
   "prod-s-19.jpg": ps19,
   "prod-s-20.jpg": ps20,
+  "prod-own-antique-bj-01.jpg": pOwnAntiqueBj01,
+  "prod-own-antique-bt-185.jpg": pOwnAntiqueBt185,
+  "prod-own-antique-bt-187.jpg": pOwnAntiqueBt187,
+  "prod-own-antique-ch-142.jpg": pOwnAntiqueCh142,
+  "prod-own-antique-ls-405.jpg": pOwnAntiqueLs405,
+  "prod-own-cz-bng-84.jpg": pOwnCzBng84,
+  "prod-own-cz-bt-154.jpg": pOwnCzBt154,
+  "prod-own-cz-ch-102.jpg": pOwnCzCh102,
+  "prod-own-cz-ch-99.jpg": pOwnCzCh99,
+  "prod-own-cz-ls-333.jpg": pOwnCzLs333,
+  "prod-own-cz-ls-370.jpg": pOwnCzLs370,
+  "prod-own-openclose-br-05.jpg": pOwnOpenCloseBr05,
+  "prod-own-openclose-bt-192.jpg": pOwnOpenCloseBt192,
+  "prod-own-openclose-ch-151.jpg": pOwnOpenCloseCh151,
+  "prod-own-openclose-nk-700.jpg": pOwnOpenCloseNk700,
+  "prod-own-victoria-bt-181.jpg": pOwnVictoriaBt181,
+  "prod-own-victoria-ch-100.jpg": pOwnVictoriaCh100,
+  "prod-own-victoria-nk-716.jpg": pOwnVictoriaNk716,
+  "prod-own-victoria-ps-370.jpg": pOwnVictoriaPs370,
 };
 
 export function resolveProductImage(
