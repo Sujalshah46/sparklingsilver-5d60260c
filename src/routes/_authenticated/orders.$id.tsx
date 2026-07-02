@@ -7,8 +7,7 @@ import { inr, formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { whatsappUrl } from "@/lib/site";
-import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck, MessageCircle } from "lucide-react";
+import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
   head: () => ({ meta: [{ title: "Order Details — Sparkling Silver" }] }),
