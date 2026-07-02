@@ -7,8 +7,7 @@ import { inr, formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { whatsappUrl } from "@/lib/site";
-import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck, MessageCircle } from "lucide-react";
+import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
   head: () => ({ meta: [{ title: "Order Details — Sparkling Silver" }] }),
@@ -61,7 +60,8 @@ function OrderDetail() {
   const isCancelled = status === "cancelled" || status === "rejected";
   const activeIdx = TIMELINE.findIndex((s) => s.key === status);
   const ship = data.shipping_address as { recipient_name: string; mobile: string; line1: string; line2?: string; city: string; state: string; pincode: string };
-  const waMsg = `Hello Sparkling Silver, I have a question about my order ${data.order_no}.`;
+
+
 
   return (
     <MobileShell title={data.order_no}>
@@ -150,12 +150,6 @@ function OrderDetail() {
             </div>
           </div>
         </section>
-
-        <Button asChild variant="outline" className="w-full">
-          <a href={whatsappUrl(waMsg)} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="mr-2 h-4 w-4" /> Ask about this order on WhatsApp
-          </a>
-        </Button>
       </div>
     </MobileShell>
   );
