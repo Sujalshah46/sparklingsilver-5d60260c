@@ -63,6 +63,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => statusInput.parse(d))
   .handler(async ({ data, context }) => {
+    assertNoWhatsAppNotifier(data);
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
 
