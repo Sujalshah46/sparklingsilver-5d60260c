@@ -56,12 +56,13 @@ function AdminOrderDetail() {
   }, [id, qc]);
 
   useEffect(() => { if (order?.admin_notes) setNotes(order.admin_notes); }, [order?.admin_notes]);
+  useEffect(() => { if (order?.tracking_number) setTracking(order.tracking_number); }, [order?.tracking_number]);
 
   const mutate = useMutation({
-    mutationFn: async (status: "accepted" | "rejected" | "dispatched" | "delivered" | "cancelled") =>
-      update({ data: { order_id: id, status, admin_notes: notes || null } }),
+    mutationFn: async (status: OrderStatus) =>
+      update({ data: { order_id: id, status, admin_notes: notes || null, tracking_number: tracking || null } }),
     onSuccess: (_d, status) => {
-      toast.success(`Order ${status}`);
+      toast.success(`Order ${status.replace(/_/g, " ")}`);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     },
