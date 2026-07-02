@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 function Checkout() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [orderNo, setOrderNo] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<{ id: string; order_no: string } | null>(null);
   const [form, setForm] = useState({
     customer_name: "",
     customer_phone: "",
