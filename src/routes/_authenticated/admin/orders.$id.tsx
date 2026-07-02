@@ -10,8 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Check, X, ArrowLeft, Truck, PackageCheck } from "lucide-react";
+import { Check, X, ArrowLeft, Truck, PackageCheck, ClipboardCheck, Package, Bike } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
+
+type OrderStatus = "pending" | "accepted" | "rejected" | "confirmed" | "processing" | "ready" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled";
+
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
   head: () => ({ meta: [{ title: "Order — Admin" }] }),
