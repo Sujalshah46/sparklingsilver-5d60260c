@@ -60,7 +60,8 @@ function OrderDetail() {
   const isCancelled = status === "cancelled" || status === "rejected";
   const activeIdx = TIMELINE.findIndex((s) => s.key === status);
   const ship = data.shipping_address as { recipient_name: string; mobile: string; line1: string; line2?: string; city: string; state: string; pincode: string };
-  const waMsg = `Hello Sparkling Silver, I have a question about my order ${data.order_no}.`;
+
+
 
   return (
     <MobileShell title={data.order_no}>
