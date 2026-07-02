@@ -68,29 +68,38 @@ function Checkout() {
     },
   });
 
-  if (orderNo) {
+  if (placed) {
+    const placedOn = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    const itemCount = (items ?? []).reduce((n, it) => n + it.quantity, 0);
     return (
-      <MobileShell title="Order Received">
+      <MobileShell title="Order Placed">
         <div className="p-6 text-center">
           <CheckCircle2 className="mx-auto h-16 w-16 text-burgundy" />
-          <h2 className="mt-4 font-serif text-2xl font-bold">Order received!</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Order number</p>
-          <p className="font-serif text-xl font-semibold gold-text">{orderNo}</p>
-          <div className="mx-auto mt-6 max-w-sm rounded-xl border border-border bg-card p-4 text-left text-sm">
+          <h2 className="mt-4 font-serif text-2xl font-bold">Order Placed!</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Order ID</p>
+          <p className="font-serif text-xl font-semibold gold-text">{placed.order_no}</p>
+
+          <div className="mx-auto mt-6 max-w-sm rounded-xl border border-border bg-card p-4 text-left text-sm space-y-1.5">
+            <div className="flex justify-between"><span className="text-muted-foreground">Order Date</span><span className="font-medium">{placedOn}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Total Items</span><span className="font-medium">{itemCount}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">Pending (To be confirmed)</span></div>
+          </div>
+
+          <div className="mx-auto mt-4 max-w-sm rounded-xl border border-burgundy/20 bg-burgundy/5 p-3 text-left text-xs text-burgundy">
             <div className="flex items-start gap-2">
-              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />
-              <p>
-                Your order is <span className="font-semibold">pending review</span>. Our team
-                will contact you on the phone number provided to confirm pricing and arrange
-                payment & delivery.
-              </p>
+              <Clock className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>Our team will review your order and contact you to confirm pricing, payment & delivery. You'll get updates in-app at each stage.</p>
             </div>
           </div>
+
           <div className="mt-6 flex flex-col gap-2">
             <Button asChild className="bg-burgundy hover:bg-burgundy/90">
-              <Link to="/orders">View My Orders</Link>
+              <Link to="/orders/$id" params={{ id: placed.id }}>View Order Details</Link>
             </Button>
             <Button asChild variant="outline">
+              <Link to="/orders">My Orders</Link>
+            </Button>
+            <Button asChild variant="ghost">
               <Link to="/catalogue">Continue Shopping</Link>
             </Button>
           </div>
