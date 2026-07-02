@@ -97,7 +97,16 @@ function Checkout() {
             <Button asChild className="bg-burgundy hover:bg-burgundy/90">
               <Link to="/orders/$id" params={{ id: placed.id }}>View Order Details</Link>
             </Button>
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" className="border-green-600 text-green-700 hover:bg-green-50">
+              <a
+                href={whatsappUrl(`Hello Sparkling Silver, I just placed order ${placed.order_no}. Please confirm.`)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <MessageCircle className="mr-2 h-4 w-4" /> Notify us on WhatsApp
+              </a>
+            </Button>
+            <Button asChild variant="ghost">
               <Link to="/orders">My Orders</Link>
             </Button>
             <Button asChild variant="ghost">
