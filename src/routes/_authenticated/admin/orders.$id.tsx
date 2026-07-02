@@ -9,9 +9,14 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Check, X, ArrowLeft, Truck, PackageCheck } from "lucide-react";
+import { Check, X, ArrowLeft, Truck, PackageCheck, ClipboardCheck, Package, Bike } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
+
+type OrderStatus = "pending" | "accepted" | "rejected" | "confirmed" | "processing" | "ready" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled";
+
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
   head: () => ({ meta: [{ title: "Order — Admin" }] }),
@@ -22,7 +27,9 @@ function AdminOrderDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const [notes, setNotes] = useState("");
+  const [tracking, setTracking] = useState("");
   const update = useServerFn(updateOrderStatus);
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order", id],
@@ -50,12 +57,13 @@ function AdminOrderDetail() {
   }, [id, qc]);
 
   useEffect(() => { if (order?.admin_notes) setNotes(order.admin_notes); }, [order?.admin_notes]);
+  useEffect(() => { if (order?.tracking_number) setTracking(order.tracking_number); }, [order?.tracking_number]);
 
   const mutate = useMutation({
-    mutationFn: async (status: "accepted" | "rejected" | "dispatched" | "delivered" | "cancelled") =>
-      update({ data: { order_id: id, status, admin_notes: notes || null } }),
+    mutationFn: async (status: OrderStatus) =>
+      update({ data: { order_id: id, status, admin_notes: notes || null, tracking_number: tracking || null } }),
     onSuccess: (_d, status) => {
-      toast.success(`Order ${status}`);
+      toast.success(`Order ${status.replace(/_/g, " ")}`);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     },
@@ -139,6 +147,16 @@ function AdminOrderDetail() {
         </section>
 
         <section className="rounded-xl border border-border bg-card p-4 text-sm">
+          <h3 className="mb-2 font-serif text-base font-semibold">Tracking / AWB</h3>
+          <Input
+            value={tracking}
+            onChange={(e) => setTracking(e.target.value)}
+            maxLength={120}
+            placeholder="Enter tracking ID / AWB (required before Out for Delivery)"
+          />
+        </section>
+
+        <section className="rounded-xl border border-border bg-card p-4 text-sm">
           <h3 className="mb-2 font-serif text-base font-semibold">Admin notes</h3>
           <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} placeholder="Internal notes (visible to admins only)" />
         </section>
@@ -155,16 +173,36 @@ function AdminOrderDetail() {
             </div>
           )}
           {order.status === "accepted" && (
+            <Button disabled={mutate.isPending} onClick={() => mutate.mutate("confirmed")} className="w-full bg-burgundy hover:bg-burgundy/90">
+              <ClipboardCheck className="mr-1 h-4 w-4" /> Confirm Order
+            </Button>
+          )}
+          {order.status === "confirmed" && (
+            <Button disabled={mutate.isPending} onClick={() => mutate.mutate("processing")} className="w-full bg-burgundy hover:bg-burgundy/90">
+              <Package className="mr-1 h-4 w-4" /> Start Processing
+            </Button>
+          )}
+          {order.status === "processing" && (
             <Button disabled={mutate.isPending} onClick={() => mutate.mutate("dispatched")} className="w-full bg-burgundy hover:bg-burgundy/90">
               <Truck className="mr-1 h-4 w-4" /> Mark Dispatched
             </Button>
           )}
           {order.status === "dispatched" && (
+            <Button
+              disabled={mutate.isPending || !tracking.trim()}
+              onClick={() => mutate.mutate("out_for_delivery")}
+              className="w-full bg-burgundy hover:bg-burgundy/90"
+              title={!tracking.trim() ? "Enter tracking / AWB first" : undefined}
+            >
+              <Bike className="mr-1 h-4 w-4" /> Out for Delivery
+            </Button>
+          )}
+          {order.status === "out_for_delivery" && (
             <Button disabled={mutate.isPending} onClick={() => mutate.mutate("delivered")} className="w-full bg-green-700 hover:bg-green-800">
               <PackageCheck className="mr-1 h-4 w-4" /> Mark Delivered
             </Button>
           )}
-          {(order.status === "accepted" || order.status === "dispatched") && (
+          {(["accepted","confirmed","processing","dispatched","out_for_delivery"] as OrderStatus[]).includes(order.status as OrderStatus) && (
             <Button disabled={mutate.isPending} variant="outline" onClick={() => mutate.mutate("cancelled")} className="w-full">
               Cancel order
             </Button>

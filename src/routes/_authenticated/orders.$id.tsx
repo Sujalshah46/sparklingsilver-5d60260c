@@ -1,4 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
@@ -6,13 +6,37 @@ import { useAuth } from "@/hooks/use-auth";
 import { inr, formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { whatsappUrl } from "@/lib/site";
+import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck, MessageCircle } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
   head: () => ({ meta: [{ title: "Order Details — Sparkling Silver" }] }),
   component: OrderDetail,
 });
 
-const STAGES = ["pending", "accepted", "dispatched", "delivered"];
+const TIMELINE = [
+  { key: "pending",          label: "Order Placed",       Icon: CheckCircle2 },
+  { key: "accepted",         label: "Order Received",     Icon: ClipboardCheck },
+  { key: "confirmed",        label: "Confirmed",          Icon: ClipboardCheck },
+  { key: "processing",       label: "Processing",         Icon: Package },
+  { key: "dispatched",       label: "Dispatched",         Icon: Truck },
+  { key: "out_for_delivery", label: "Out for Delivery",   Icon: Bike },
+  { key: "delivered",        label: "Delivered",          Icon: PackageCheck },
+] as const;
+
+const STATUS_LABEL: Record<string, string> = {
+  pending: "Pending",
+  accepted: "Received",
+  confirmed: "Confirmed",
+  processing: "Processing",
+  ready: "Ready",
+  dispatched: "Dispatched",
+  out_for_delivery: "Out for Delivery",
+  delivered: "Delivered",
+  rejected: "Rejected",
+  cancelled: "Cancelled",
+};
 
 function OrderDetail() {
   const { id } = Route.useParams();
@@ -33,8 +57,11 @@ function OrderDetail() {
   if (isLoading) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Loading…</p></MobileShell>;
   if (!data) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Order not found</p></MobileShell>;
 
-  const currentStage = STAGES.indexOf(data.status);
+  const status = data.status as string;
+  const isCancelled = status === "cancelled" || status === "rejected";
+  const activeIdx = TIMELINE.findIndex((s) => s.key === status);
   const ship = data.shipping_address as { recipient_name: string; mobile: string; line1: string; line2?: string; city: string; state: string; pincode: string };
+  const waMsg = `Hello Sparkling Silver, I have a question about my order ${data.order_no}.`;
 
   return (
     <MobileShell title={data.order_no}>
@@ -45,20 +72,47 @@ function OrderDetail() {
               <p className="font-serif text-lg font-semibold">{data.order_no}</p>
               <p className="text-xs text-muted-foreground">Placed on {formatDate(data.created_at)}</p>
             </div>
-            <Badge>{data.status}</Badge>
+            <Badge className="capitalize">{STATUS_LABEL[status] ?? status}</Badge>
           </div>
 
-          {data.status !== "cancelled" && (
-            <ol className="mt-5 flex justify-between text-[10px] uppercase tracking-wider">
-              {STAGES.map((s, i) => (
-                <li key={s} className="flex flex-1 flex-col items-center gap-1">
-                  <div className={`h-2 w-2 rounded-full ${i <= currentStage ? "bg-burgundy" : "bg-border"}`} />
-                  <span className={i <= currentStage ? "font-semibold text-burgundy" : "text-muted-foreground"}>{s}</span>
-                </li>
-              ))}
-            </ol>
+          {data.tracking_number && (
+            <p className="mt-3 rounded-md bg-secondary p-2 text-xs">
+              <span className="font-semibold">Tracking / AWB: </span>
+              <span className="font-mono">{data.tracking_number}</span>
+            </p>
           )}
         </div>
+
+        {!isCancelled && (
+          <section className="rounded-xl border border-border bg-card p-4">
+            <h3 className="mb-3 font-serif text-base font-semibold">Order timeline</h3>
+            <ol className="space-y-3">
+              {TIMELINE.map((s, i) => {
+                const done = activeIdx >= 0 && i <= activeIdx;
+                const current = i === activeIdx;
+                const Icon = done ? s.Icon : Circle;
+                return (
+                  <li key={s.key} className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-full border ${done ? "border-burgundy bg-burgundy text-white" : "border-border bg-background text-muted-foreground"}`}>
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className={`text-sm ${done ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{s.label}</p>
+                      {current && <p className="text-[11px] text-burgundy">Current status</p>}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        )}
+
+        {isCancelled && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            This order was {status === "rejected" ? "not accepted" : "cancelled"}.
+            {data.admin_notes && <p className="mt-2 text-xs">Reason: {data.admin_notes}</p>}
+          </div>
+        )}
 
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Items</h3>
@@ -96,6 +150,12 @@ function OrderDetail() {
             </div>
           </div>
         </section>
+
+        <Button asChild variant="outline" className="w-full">
+          <a href={whatsappUrl(waMsg)} target="_blank" rel="noopener noreferrer">
+            <MessageCircle className="mr-2 h-4 w-4" /> Ask about this order on WhatsApp
+          </a>
+        </Button>
       </div>
     </MobileShell>
   );

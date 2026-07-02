@@ -324,6 +324,7 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          tracking_number: string | null
           updated_at: string
           user_id: string
         }
@@ -347,6 +348,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
+          tracking_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -370,6 +372,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -701,6 +704,8 @@ export type Database = {
         | "pending"
         | "accepted"
         | "rejected"
+        | "confirmed"
+        | "out_for_delivery"
       stock_action_type: "increment" | "decrement" | "edit" | "created" | "set"
     }
     CompositeTypes: {
@@ -842,6 +847,8 @@ export const Constants = {
         "pending",
         "accepted",
         "rejected",
+        "confirmed",
+        "out_for_delivery",
       ],
       stock_action_type: ["increment", "decrement", "edit", "created", "set"],
     },
