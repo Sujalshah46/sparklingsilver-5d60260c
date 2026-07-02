@@ -56,7 +56,7 @@ function Checkout() {
   const placeOrder = useMutation({
     mutationFn: async () => placeOrderRpc({ data: form }),
     onSuccess: (order) => {
-      setOrderNo(order.order_no);
+      setPlaced({ id: order.id, order_no: order.order_no });
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
