@@ -2,6 +2,26 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+/**
+ * Code-level guard: WhatsApp deep-link handling MUST NOT be reachable from
+ * any admin order status-update path. WhatsApp is a one-time, user-initiated
+ * CTA on the Order Placed screen only — never a per-stage notification.
+ * This module deliberately does not import from "@/lib/site" (whatsappUrl,
+ * WHATSAPP_NUMBER). The ESLint `no-restricted-imports` rule for this file
+ * enforces this at build time; the runtime assertion below is defense in
+ * depth in case the lint rule is ever bypassed.
+ */
+function assertNoWhatsAppNotifier(payload: unknown): void {
+  if (payload && typeof payload === "object") {
+    const keys = Object.keys(payload as Record<string, unknown>).join(",").toLowerCase();
+    if (keys.includes("whatsapp") || keys.includes("wa_")) {
+      throw new Error(
+        "Admin status update rejected: WhatsApp notification channel is not permitted on status transitions.",
+      );
+    }
+  }
+}
+
 const ORDER_STATUSES = [
   "pending",
   "accepted",
@@ -43,6 +63,7 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => statusInput.parse(d))
   .handler(async ({ data, context }) => {
+    assertNoWhatsAppNotifier(data);
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
 
