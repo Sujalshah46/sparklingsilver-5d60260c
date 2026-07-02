@@ -149,12 +149,6 @@ function OrderDetail() {
             </div>
           </div>
         </section>
-
-        <Button asChild variant="outline" className="w-full">
-          <a href={whatsappUrl(waMsg)} target="_blank" rel="noopener noreferrer">
-            <MessageCircle className="mr-2 h-4 w-4" /> Ask about this order on WhatsApp
-          </a>
-        </Button>
       </div>
     </MobileShell>
   );
