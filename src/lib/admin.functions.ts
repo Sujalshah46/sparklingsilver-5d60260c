@@ -46,17 +46,15 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
 
-    const patch: Record<string, unknown> = {
+    const patch = {
       status: data.status,
       admin_notes: data.admin_notes ?? null,
-    };
-    if (data.tracking_number !== undefined) {
-      patch.tracking_number = data.tracking_number ?? null;
-    }
+      ...(data.tracking_number !== undefined ? { tracking_number: data.tracking_number ?? null } : {}),
+    } satisfies Record<string, unknown>;
 
     const { data: updated, error } = await supabase
       .from("orders")
-      .update(patch)
+      .update(patch as never)
       .eq("id", data.order_id)
       .select("id, order_no, user_id, tracking_number")
       .single();
