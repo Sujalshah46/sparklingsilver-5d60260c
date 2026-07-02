@@ -26,7 +26,9 @@ function AdminOrderDetail() {
   const { id } = Route.useParams();
   const qc = useQueryClient();
   const [notes, setNotes] = useState("");
+  const [tracking, setTracking] = useState("");
   const update = useServerFn(updateOrderStatus);
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order", id],
