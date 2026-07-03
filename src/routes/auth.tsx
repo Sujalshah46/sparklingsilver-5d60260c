@@ -44,39 +44,41 @@ function AuthPage() {
       style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
     >
 
-      <div
-        className="w-full"
-        style={{
-          backgroundColor: "#0f3d2e",
-          backgroundImage:
-            "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)",
-        }}
-      >
-
-        <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
-        </div>
-
+      <div className="mx-auto flex max-w-md flex-col items-center px-6 pt-10 text-center">
+        <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
       </div>
 
-      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-8">
-        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-          <TabsList className="grid w-full grid-cols-2 rounded-none">
-            <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
-            <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="flex-1">
-            <SignInForm redirect={redirect} />
-          </TabsContent>
-          <TabsContent value="signup" className="flex-1">
-            <SignUpForm redirect={redirect} />
-          </TabsContent>
-        </Tabs>
+      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-6">
+        <div className="rounded-lg border border-white/15 bg-white/[0.06] p-5 backdrop-blur-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)]">
+          <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+            <TabsList className="grid w-full grid-cols-2 rounded-none bg-black/25 border border-white/10 p-0 h-10">
+              <TabsTrigger
+                value="signin"
+                className="rounded-none text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#0f3d2e] data-[state=active]:shadow-none"
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger
+                value="signup"
+                className="rounded-none text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#0f3d2e] data-[state=active]:shadow-none"
+              >
+                Create Account
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="flex-1">
+              <SignInForm redirect={redirect} />
+            </TabsContent>
+            <TabsContent value="signup" className="flex-1">
+              <SignUpForm redirect={redirect} />
+            </TabsContent>
+          </Tabs>
+        </div>
 
-        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
+        <Link to="/" className="mt-6 text-center text-xs font-medium text-white/70 hover:text-white">
           ← Continue browsing as guest
         </Link>
       </div>
+
 
     </div>
   );
