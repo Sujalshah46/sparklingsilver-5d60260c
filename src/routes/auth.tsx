@@ -11,7 +11,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
-import logo from "@/assets/logo.png";
+import authBg from "@/assets/auth-bg.png.asset.json";
 
 const searchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -39,41 +39,49 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div className="min-h-screen bg-ivory">
-      <div
-        className="w-full"
-        style={{
-          backgroundColor: "#0f3d2e",
-          backgroundImage:
-            "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)",
-        }}
-      >
+    <div
+      className="relative min-h-screen w-full bg-[#0b2a20] bg-cover bg-top bg-no-repeat"
+      style={{ backgroundImage: `url(${authBg.url})` }}
+    >
+      {/* Bottom gradient scrim so the form remains readable over the image */}
+      <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-b from-transparent via-[#0b2a20]/60 to-[#061913]/95" />
 
-        <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10">
+        {/* Spacer that reveals the hero portion of the image (logo + tagline baked in) */}
+        <div className="h-[58vh] min-h-[380px]" />
+
+        <div className="rounded-2xl border border-white/10 bg-black/35 p-5 shadow-2xl backdrop-blur-md">
+          <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+            <TabsList className="grid w-full grid-cols-2 rounded-lg bg-white/5 text-white/70">
+              <TabsTrigger
+                value="signin"
+                className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white"
+              >
+                Sign In
+              </TabsTrigger>
+              <TabsTrigger
+                value="signup"
+                className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white"
+              >
+                Create Account
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="flex-1">
+              <SignInForm redirect={redirect} />
+            </TabsContent>
+            <TabsContent value="signup" className="flex-1">
+              <SignUpForm redirect={redirect} />
+            </TabsContent>
+          </Tabs>
         </div>
 
-      </div>
-
-      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-8">
-        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-          <TabsList className="grid w-full grid-cols-2 rounded-none">
-            <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
-            <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="flex-1">
-            <SignInForm redirect={redirect} />
-          </TabsContent>
-          <TabsContent value="signup" className="flex-1">
-            <SignUpForm redirect={redirect} />
-          </TabsContent>
-        </Tabs>
-
-        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="mt-6 text-center text-xs font-medium text-white/70 hover:text-white"
+        >
           ← Continue browsing as guest
         </Link>
       </div>
-
     </div>
   );
 }
@@ -84,7 +92,7 @@ function GoogleButton() {
     <Button
       type="button"
       variant="outline"
-      className="w-full"
+      className="w-full border-white/20 bg-white text-black hover:bg-white/90"
       disabled={loading}
       onClick={async () => {
         setLoading(true);
@@ -104,6 +112,10 @@ function GoogleButton() {
       Continue with Google
     </Button>
   );
+}
+
+function fieldClass() {
+  return "border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/40";
 }
 
 function SignInForm({ redirect }: { redirect: string }) {
@@ -126,17 +138,17 @@ function SignInForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="h-px flex-1 bg-white/15" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">or</span>
+        <div className="h-px flex-1 bg-white/15" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-email">Email</Label>
-        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+        <Label htmlFor="signin-email" className="text-white/80">Email</Label>
+        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={fieldClass()} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-password">Password</Label>
-        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} />
+        <Label htmlFor="signin-password" className="text-white/80">Password</Label>
+        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} className={fieldClass()} />
       </div>
       <Button
         type="submit"
@@ -146,7 +158,6 @@ function SignInForm({ redirect }: { redirect: string }) {
       >
         {loading ? "Signing in…" : "Sign In"}
       </Button>
-
     </form>
   );
 }
@@ -171,8 +182,6 @@ function SignUpForm({ redirect }: { redirect: string }) {
       setLoading(false);
       return toast.error(error.message);
     }
-    // Only attempt profile update when a session exists — otherwise (email
-    // confirmation required) RLS blocks the write and it silently fails.
     if (data.user && data.session) {
       await supabase.from("profiles").update({ full_name: form.full_name, mobile: form.mobile, city: form.city }).eq("id", data.user.id);
       setLoading(false);
@@ -188,31 +197,36 @@ function SignUpForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="h-px flex-1 bg-white/15" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">or</span>
+        <div className="h-px flex-1 bg-white/15" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-name">Full name</Label>
-        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} />
+        <Label htmlFor="su-name" className="text-white/80">Full name</Label>
+        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} className={fieldClass()} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-email">Email</Label>
-        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
+        <Label htmlFor="su-email" className="text-white/80">Email</Label>
+        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} className={fieldClass()} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-mobile">Mobile</Label>
-        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} />
+        <Label htmlFor="su-mobile" className="text-white/80">Mobile</Label>
+        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} className={fieldClass()} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-city">City</Label>
-        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} />
+        <Label htmlFor="su-city" className="text-white/80">City</Label>
+        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} className={fieldClass()} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-password">Password</Label>
-        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" />
+        <Label htmlFor="su-password" className="text-white/80">Password</Label>
+        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" className={fieldClass()} />
       </div>
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button
+        type="submit"
+        className="w-full border-0 text-white hover:brightness-110"
+        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
+        disabled={loading}
+      >
         {loading ? "Creating…" : "Create Account"}
       </Button>
     </form>
