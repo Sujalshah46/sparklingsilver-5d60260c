@@ -193,33 +193,34 @@ function SignUpForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="h-px flex-1 bg-white/20" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">or</span>
+        <div className="h-px flex-1 bg-white/20" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-name">Full name</Label>
-        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} />
+        <Label htmlFor="su-name" className={labelCls}>Full name</Label>
+        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} className={inputCls} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-email">Email</Label>
-        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
+        <Label htmlFor="su-email" className={labelCls}>Email</Label>
+        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} className={inputCls} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-mobile">Mobile</Label>
-        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} />
+        <Label htmlFor="su-mobile" className={labelCls}>Mobile</Label>
+        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} className={inputCls} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-city">City</Label>
-        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} />
+        <Label htmlFor="su-city" className={labelCls}>City</Label>
+        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} className={inputCls} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-password">Password</Label>
-        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" />
+        <Label htmlFor="su-password" className={labelCls}>Password</Label>
+        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" className={inputCls} />
       </div>
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button type="submit" className={ctaCls} disabled={loading}>
         {loading ? "Creating…" : "Create Account"}
       </Button>
     </form>
   );
 }
+
