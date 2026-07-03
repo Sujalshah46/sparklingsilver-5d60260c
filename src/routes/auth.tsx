@@ -132,30 +132,29 @@ function SignInForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="h-px flex-1 bg-white/20" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">or</span>
+        <div className="h-px flex-1 bg-white/20" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-email">Email</Label>
-        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+        <Label htmlFor="signin-email" className={labelCls}>Email</Label>
+        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputCls} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-password">Password</Label>
-        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} />
+        <Label htmlFor="signin-password" className={labelCls}>Password</Label>
+        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} className={inputCls} />
       </div>
-      <Button
-        type="submit"
-        className="w-full border-0 text-white hover:brightness-110"
-        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
-        disabled={loading}
-      >
+      <Button type="submit" className={ctaCls} disabled={loading}>
         {loading ? "Signing in…" : "Sign In"}
       </Button>
-
     </form>
   );
 }
+
+const labelCls = "text-white/85";
+const inputCls = "bg-white/10 border-white/25 text-white placeholder:text-white/40 focus-visible:ring-white/40 focus-visible:border-white/50";
+const ctaCls = "w-full border-0 bg-gradient-to-r from-[#e8c76a] via-[#d4a843] to-[#a67f22] text-[#1a1a1a] font-semibold shadow-[0_6px_20px_-6px_rgba(212,168,67,0.6)] hover:brightness-105";
+
 
 function SignUpForm({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
