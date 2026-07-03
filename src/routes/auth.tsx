@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { Mail, Lock, Eye, EyeOff, User, UserPlus, ArrowRight, ShieldCheck, Phone, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
