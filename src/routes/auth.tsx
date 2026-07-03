@@ -43,41 +43,41 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div className="relative min-h-screen w-full" style={pageBg}>
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-8">
+    <div className="relative h-[100dvh] w-full overflow-hidden" style={pageBg}>
+      <div className="mx-auto flex h-full w-full max-w-md flex-col px-5 pb-3 pt-3">
         {/* Header: logo only */}
-        <div className="flex flex-col items-center text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-28 w-auto" />
+        <div className="flex shrink-0 flex-col items-center text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-16 w-auto sm:h-20" />
         </div>
 
         {/* Glass card */}
-        <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-          <Tabs defaultValue="signin" className="flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 border-b border-white/15 bg-transparent p-0 h-auto rounded-none">
+        <div className="mt-3 flex min-h-0 flex-1 flex-col rounded-2xl border border-white/15 bg-white/[0.04] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <Tabs defaultValue="signin" className="flex min-h-0 flex-1 flex-col">
+            <TabsList className="grid w-full shrink-0 grid-cols-2 border-b border-white/15 bg-transparent p-0 h-auto rounded-none">
               <TabsTrigger
                 value="signin"
-                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-3 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-2.5 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <User className="h-4 w-4" /> Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-3 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-2.5 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <UserPlus className="h-4 w-4" /> Create Account
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="signin" className="mt-5">
+            <TabsContent value="signin" className="mt-3 flex-1 overflow-y-auto">
               <SignInForm redirect={redirect} />
             </TabsContent>
-            <TabsContent value="signup" className="mt-5">
+            <TabsContent value="signup" className="mt-3 flex-1 overflow-y-auto">
               <SignUpForm redirect={redirect} />
             </TabsContent>
           </Tabs>
 
-          <div className="mt-5 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[11px] text-white/70">
-            <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25">
-              <ShieldCheck className="h-3.5 w-3.5" />
+          <div className="mt-3 flex shrink-0 items-center justify-center gap-2 border-t border-white/10 pt-3 text-[11px] text-white/70">
+            <span className="grid h-5 w-5 place-items-center rounded-full border border-white/25">
+              <ShieldCheck className="h-3 w-3" />
             </span>
             Secure. Private. Trusted.
           </div>
@@ -85,7 +85,7 @@ function AuthPage() {
 
         <Link
           to="/"
-          className="mx-auto mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-white/85 hover:text-white"
+          className="mx-auto mt-2 inline-flex shrink-0 items-center gap-2 text-[12px] font-medium text-white/85 hover:text-white"
         >
           ← Continue browsing as guest
         </Link>
