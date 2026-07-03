@@ -43,41 +43,41 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div className="relative h-[100dvh] w-full overflow-hidden" style={pageBg}>
-      <div className="mx-auto flex h-full w-full max-w-md flex-col px-5 pb-3 pt-3">
+    <div className="relative min-h-screen w-full" style={pageBg}>
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-8">
         {/* Header: logo only */}
-        <div className="flex shrink-0 flex-col items-center text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-16 w-auto sm:h-20" />
+        <div className="flex flex-col items-center text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-28 w-auto" />
         </div>
 
         {/* Glass card */}
-        <div className="mt-3 flex min-h-0 flex-1 flex-col rounded-2xl border border-white/15 bg-white/[0.04] p-4 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
-          <Tabs defaultValue="signin" className="flex min-h-0 flex-1 flex-col">
-            <TabsList className="grid w-full shrink-0 grid-cols-2 border-b border-white/15 bg-transparent p-0 h-auto rounded-none">
+        <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <Tabs defaultValue="signin" className="flex flex-col">
+            <TabsList className="grid w-full grid-cols-2 border-b border-white/15 bg-transparent p-0 h-auto rounded-none">
               <TabsTrigger
                 value="signin"
-                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-2.5 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-3 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <User className="h-4 w-4" /> Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-2.5 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
+                className="gap-2 rounded-none border-b-2 border-transparent bg-transparent py-3 text-[13px] font-medium text-white/70 shadow-none data-[state=active]:border-white/80 data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
                 <UserPlus className="h-4 w-4" /> Create Account
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="signin" className="mt-3 flex-1 overflow-y-auto">
+            <TabsContent value="signin" className="mt-5">
               <SignInForm redirect={redirect} />
             </TabsContent>
-            <TabsContent value="signup" className="mt-3 flex-1 overflow-y-auto">
+            <TabsContent value="signup" className="mt-5">
               <SignUpForm redirect={redirect} />
             </TabsContent>
           </Tabs>
 
-          <div className="mt-3 flex shrink-0 items-center justify-center gap-2 border-t border-white/10 pt-3 text-[11px] text-white/70">
-            <span className="grid h-5 w-5 place-items-center rounded-full border border-white/25">
-              <ShieldCheck className="h-3 w-3" />
+          <div className="mt-5 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[11px] text-white/70">
+            <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25">
+              <ShieldCheck className="h-3.5 w-3.5" />
             </span>
             Secure. Private. Trusted.
           </div>
@@ -85,7 +85,7 @@ function AuthPage() {
 
         <Link
           to="/"
-          className="mx-auto mt-2 inline-flex shrink-0 items-center gap-2 text-[12px] font-medium text-white/85 hover:text-white"
+          className="mx-auto mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-white/85 hover:text-white"
         >
           ← Continue browsing as guest
         </Link>
@@ -97,7 +97,7 @@ function AuthPage() {
 /* ---------- Reusable styled controls ---------- */
 
 const silverBtn =
-  "group relative flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-[13px] font-semibold text-[#0b2a20] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:brightness-105";
+  "group relative flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-[14px] font-semibold text-[#0b2a20] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:brightness-105";
 const silverStyle: React.CSSProperties = {
   backgroundImage:
     "linear-gradient(180deg,#f6f7f8 0%,#dfe2e6 45%,#b7bdc4 55%,#e8ebee 100%)",
@@ -114,7 +114,7 @@ function Field({
       </span>
       <input
         {...props}
-        className="h-9 w-full rounded-md border border-white/20 bg-transparent pl-9 pr-3 text-[13px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
+        className="h-11 w-full rounded-md border border-white/20 bg-transparent pl-10 pr-3 text-[14px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
       />
     </div>
   );
@@ -145,7 +145,7 @@ function PasswordField({
         minLength={6}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="h-9 w-full rounded-md border border-white/20 bg-transparent pl-9 pr-9 text-[13px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
+        className="h-11 w-full rounded-md border border-white/20 bg-transparent pl-10 pr-10 text-[14px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
       />
       <button
         type="button"
@@ -160,12 +160,12 @@ function PasswordField({
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <div className="mb-1 text-[12px] font-semibold text-white">{children}</div>;
+  return <div className="mb-1.5 text-[13px] font-semibold text-white">{children}</div>;
 }
 
 function OrDivider() {
   return (
-    <div className="my-3 flex items-center gap-3">
+    <div className="my-4 flex items-center gap-3">
       <div className="h-px flex-1 bg-white/20" />
       <span className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-[10px] font-semibold tracking-wider text-white/75">
         OR
@@ -234,7 +234,7 @@ function SignInForm({ redirect }: { redirect: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={onSubmit} className="space-y-4">
       <GoogleButton />
       <OrDivider />
       <div>
@@ -302,7 +302,7 @@ function SignUpForm({ redirect }: { redirect: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={onSubmit} className="space-y-4">
       <GoogleButton />
       <OrDivider />
       <div>
