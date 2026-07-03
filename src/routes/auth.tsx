@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User, UserPlus, Phone, MapPin } from "lucide-react";
-import authBg from "@/assets/auth-bg.png.asset.json";
+import logo from "@/assets/logo.png";
 
 const searchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -26,6 +26,12 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+const pageBg: React.CSSProperties = {
+  backgroundColor: "#0b2a20",
+  backgroundImage:
+    "radial-gradient(ellipse 90% 60% at 50% 0%, #164636 0%, #0b2a20 55%, #061a13 100%)",
+};
+
 function AuthPage() {
   const search = useSearch({ from: "/auth" });
   const redirect = sanitizeRedirect(search.redirect);
@@ -37,16 +43,26 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div
-      className="relative min-h-screen w-full bg-[#0b2a20] bg-cover bg-center bg-no-repeat"
-      style={{ backgroundImage: `url(${authBg.url})` }}
-    >
-      {/* Spacer for the logo/title baked into the background image */}
-      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5">
-        <div className="h-[42vh] shrink-0" aria-hidden />
+    <div className="relative min-h-screen w-full" style={pageBg}>
+      <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-8">
+        {/* Header: logo + brand */}
+        <div className="flex flex-col items-center text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
+          <h1 className="mt-3 font-serif text-[26px] font-semibold tracking-[0.22em] text-white/95">
+            SPARKLING <span className="block">SILVER</span>
+          </h1>
+          <div className="mt-2 flex items-center gap-2 text-white/70">
+            <span className="h-px w-10 bg-white/30" />
+            <span className="text-[10px]">◆</span>
+            <span className="h-px w-10 bg-white/30" />
+          </div>
+          <p className="mt-2 text-[11px] font-medium tracking-[0.32em] text-white/70">
+            CRAFTING MASTERPIECE
+          </p>
+        </div>
 
         {/* Glass card */}
-        <div className="rounded-2xl border border-white/15 bg-[#0b2a20]/55 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
           <Tabs defaultValue="signin" className="flex flex-col">
             <TabsList className="grid w-full grid-cols-2 border-b border-white/15 bg-transparent p-0 h-auto rounded-none">
               <TabsTrigger
@@ -80,7 +96,7 @@ function AuthPage() {
 
         <Link
           to="/"
-          className="mx-auto mt-6 mb-8 inline-flex items-center gap-2 text-[13px] font-medium text-white/85 hover:text-white"
+          className="mx-auto mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-white/85 hover:text-white"
         >
           ← Continue browsing as guest
         </Link>
