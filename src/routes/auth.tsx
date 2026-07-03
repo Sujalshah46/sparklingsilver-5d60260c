@@ -97,7 +97,7 @@ function AuthPage() {
 /* ---------- Reusable styled controls ---------- */
 
 const silverBtn =
-  "group relative flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-[14px] font-semibold text-[#0b2a20] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:brightness-105";
+  "group relative flex w-full items-center justify-center gap-2 rounded-md px-4 py-2.5 text-[13px] font-semibold text-[#0b2a20] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:brightness-105";
 const silverStyle: React.CSSProperties = {
   backgroundImage:
     "linear-gradient(180deg,#f6f7f8 0%,#dfe2e6 45%,#b7bdc4 55%,#e8ebee 100%)",
@@ -114,7 +114,7 @@ function Field({
       </span>
       <input
         {...props}
-        className="h-11 w-full rounded-md border border-white/20 bg-transparent pl-10 pr-3 text-[14px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
+        className="h-9 w-full rounded-md border border-white/20 bg-transparent pl-9 pr-3 text-[13px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
       />
     </div>
   );
@@ -145,7 +145,7 @@ function PasswordField({
         minLength={6}
         autoComplete={autoComplete}
         placeholder={placeholder}
-        className="h-11 w-full rounded-md border border-white/20 bg-transparent pl-10 pr-10 text-[14px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
+        className="h-9 w-full rounded-md border border-white/20 bg-transparent pl-9 pr-9 text-[13px] text-white placeholder:text-white/45 outline-none transition focus:border-white/60"
       />
       <button
         type="button"
@@ -160,12 +160,12 @@ function PasswordField({
 }
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <div className="mb-1.5 text-[13px] font-semibold text-white">{children}</div>;
+  return <div className="mb-1 text-[12px] font-semibold text-white">{children}</div>;
 }
 
 function OrDivider() {
   return (
-    <div className="my-4 flex items-center gap-3">
+    <div className="my-3 flex items-center gap-3">
       <div className="h-px flex-1 bg-white/20" />
       <span className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-[10px] font-semibold tracking-wider text-white/75">
         OR
@@ -234,7 +234,7 @@ function SignInForm({ redirect }: { redirect: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-3">
       <GoogleButton />
       <OrDivider />
       <div>
@@ -302,7 +302,7 @@ function SignUpForm({ redirect }: { redirect: string }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={onSubmit} className="space-y-3">
       <GoogleButton />
       <OrDivider />
       <div>
