@@ -39,7 +39,11 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div className="min-h-screen bg-ivory">
+    <div
+      className="min-h-screen"
+      style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
+    >
+
       <div
         className="w-full"
         style={{
