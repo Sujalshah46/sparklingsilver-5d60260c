@@ -141,9 +141,15 @@ function SignInForm({ redirect }: { redirect: string }) {
         <Label htmlFor="signin-password">Password</Label>
         <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} />
       </div>
-      <Button type="submit" className="w-full" disabled={loading}>
+      <Button
+        type="submit"
+        className="w-full border-0 text-white hover:brightness-110"
+        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
+        disabled={loading}
+      >
         {loading ? "Signing in…" : "Sign In"}
       </Button>
+
     </form>
   );
 }
