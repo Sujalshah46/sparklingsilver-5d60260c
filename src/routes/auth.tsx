@@ -40,30 +40,33 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-        <div className="-mx-6 mb-6 flex flex-col items-center bg-black px-6 py-8 text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
-          <p className="mt-3 text-xs font-medium uppercase tracking-[0.3em] text-white/70">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col">
+        <div className="relative flex flex-col items-center bg-black px-6 pb-10 pt-12 text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
+          <p className="mt-4 text-[11px] font-medium uppercase tracking-[0.4em] text-white/75">
             Where Every Piece Tells a Story
           </p>
+          <div className="mt-6 h-px w-16 bg-teal/70" />
         </div>
 
-        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Create Account</TabsTrigger>
-          </TabsList>
-          <TabsContent value="signin" className="flex-1">
-            <SignInForm redirect={redirect} />
-          </TabsContent>
-          <TabsContent value="signup" className="flex-1">
-            <SignUpForm redirect={redirect} />
-          </TabsContent>
-        </Tabs>
+        <div className="flex flex-1 flex-col px-6 pb-10 pt-8">
+          <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+            <TabsList className="grid w-full grid-cols-2 rounded-none">
+              <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
+              <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
+            </TabsList>
+            <TabsContent value="signin" className="flex-1">
+              <SignInForm redirect={redirect} />
+            </TabsContent>
+            <TabsContent value="signup" className="flex-1">
+              <SignUpForm redirect={redirect} />
+            </TabsContent>
+          </Tabs>
 
-        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
-          ← Continue browsing as guest
-        </Link>
+          <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
+            ← Continue browsing as guest
+          </Link>
+        </div>
       </div>
     </div>
   );
