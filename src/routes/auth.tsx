@@ -40,7 +40,15 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      <div className="w-full bg-black">
+      <div
+        className="w-full"
+        style={{
+          backgroundColor: "#0f3d2e",
+          backgroundImage:
+            "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)",
+        }}
+      >
+
         <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
           <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
           <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.38em] text-white/75">
