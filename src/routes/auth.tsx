@@ -41,12 +41,12 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-ivory">
       <div className="mx-auto flex min-h-screen max-w-md flex-col">
-        <div className="relative flex flex-col items-center bg-black px-6 pb-5 pt-6 text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-16 w-auto" />
-          <p className="mt-2 text-[10px] font-medium uppercase tracking-[0.35em] text-white/75">
+        <div className="relative flex flex-col items-center bg-black px-6 pb-7 pt-9 text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
+          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.38em] text-white/75">
             Where Every Piece Tells a Story
           </p>
-          <div className="mt-3 h-px w-12 bg-teal/70" />
+          <div className="mt-4 h-px w-14 bg-teal/70" />
         </div>
 
         <div className="flex flex-1 flex-col px-6 pb-10 pt-8">
