@@ -122,3 +122,7 @@
   .ss-input-wrap { height: 58px; padding: 0 16px; }
   .ss-chat { width: 72px; height: 72px; }
 }
+
+.ss-eye-btn { margin-left: auto; background: transparent; border: 0; padding: 0; display: inline-flex; align-items: center; color: inherit; cursor: pointer; }
+.ss-eye-btn:focus-visible { outline: 2px solid var(--silver); outline-offset: 2px; border-radius: 4px; }
+.ss-google:disabled, .ss-submit:disabled { opacity: .7; cursor: not-allowed; }
