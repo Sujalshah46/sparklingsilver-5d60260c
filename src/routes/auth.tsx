@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User, UserPlus, Phone, MapPin } from "lucide-react";
-import authDecorBg from "@/assets/auth-decor-bg.png.asset.json";
+import logo from "@/assets/logo.png";
 
 const searchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -28,10 +28,8 @@ export const Route = createFileRoute("/auth")({
 
 const pageBg: React.CSSProperties = {
   backgroundColor: "#0b2a20",
-  backgroundImage: `url(${authDecorBg.url})`,
-  backgroundSize: "cover",
-  backgroundPosition: "center",
-  backgroundRepeat: "no-repeat",
+  backgroundImage:
+    "radial-gradient(ellipse 90% 60% at 50% 0%, #164636 0%, #0b2a20 55%, #061a13 100%)",
 };
 
 function AuthPage() {
@@ -47,8 +45,10 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen w-full" style={pageBg}>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-8">
-        {/* Header: decorative imagery is baked into the background */}
-        <div className="h-[46vh]" aria-hidden />
+        {/* Header: logo only */}
+        <div className="flex flex-col items-center text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-28 w-auto" />
+        </div>
 
         {/* Glass card */}
         <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
