@@ -39,46 +39,40 @@ function AuthPage() {
   }, [isAuthenticated, loading, navigate, redirect]);
 
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
-    >
+    <div className="min-h-screen bg-ivory">
+      <div
+        className="w-full"
+        style={{
+          backgroundColor: "#0f3d2e",
+          backgroundImage:
+            "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)",
+        }}
+      >
 
-      <div className="mx-auto flex max-w-md flex-col items-center px-6 pt-10 text-center">
-        <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
-      </div>
-
-      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-6">
-        <div className="rounded-lg border border-white/15 bg-white/[0.06] p-5 backdrop-blur-sm shadow-[0_10px_40px_-10px_rgba(0,0,0,0.6)]">
-          <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-            <TabsList className="grid w-full grid-cols-2 rounded-none bg-black/25 border border-white/10 p-0 h-10">
-              <TabsTrigger
-                value="signin"
-                className="rounded-none text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#0f3d2e] data-[state=active]:shadow-none"
-              >
-                Sign In
-              </TabsTrigger>
-              <TabsTrigger
-                value="signup"
-                className="rounded-none text-white/70 data-[state=active]:bg-white data-[state=active]:text-[#0f3d2e] data-[state=active]:shadow-none"
-              >
-                Create Account
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin" className="flex-1">
-              <SignInForm redirect={redirect} />
-            </TabsContent>
-            <TabsContent value="signup" className="flex-1">
-              <SignUpForm redirect={redirect} />
-            </TabsContent>
-          </Tabs>
+        <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
         </div>
 
-        <Link to="/" className="mt-6 text-center text-xs font-medium text-white/70 hover:text-white">
+      </div>
+
+      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-8">
+        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+          <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
+            <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin" className="flex-1">
+            <SignInForm redirect={redirect} />
+          </TabsContent>
+          <TabsContent value="signup" className="flex-1">
+            <SignUpForm redirect={redirect} />
+          </TabsContent>
+        </Tabs>
+
+        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
           ← Continue browsing as guest
         </Link>
       </div>
-
 
     </div>
   );
@@ -132,29 +126,30 @@ function SignInForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/20" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">or</span>
-        <div className="h-px flex-1 bg-white/20" />
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-email" className={labelCls}>Email</Label>
-        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={inputCls} />
+        <Label htmlFor="signin-email">Email</Label>
+        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-password" className={labelCls}>Password</Label>
-        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} className={inputCls} />
+        <Label htmlFor="signin-password">Password</Label>
+        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} />
       </div>
-      <Button type="submit" className={ctaCls} disabled={loading}>
+      <Button
+        type="submit"
+        className="w-full border-0 text-white hover:brightness-110"
+        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
+        disabled={loading}
+      >
         {loading ? "Signing in…" : "Sign In"}
       </Button>
+
     </form>
   );
 }
-
-const labelCls = "text-white/85";
-const inputCls = "bg-white/10 border-white/25 text-white placeholder:text-white/40 focus-visible:ring-white/40 focus-visible:border-white/50";
-const ctaCls = "w-full border-0 bg-gradient-to-r from-[#e8c76a] via-[#d4a843] to-[#a67f22] text-[#1a1a1a] font-semibold shadow-[0_6px_20px_-6px_rgba(212,168,67,0.6)] hover:brightness-105";
-
 
 function SignUpForm({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
@@ -193,34 +188,33 @@ function SignUpForm({ redirect }: { redirect: string }) {
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/20" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">or</span>
-        <div className="h-px flex-1 bg-white/20" />
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">or</span>
+        <div className="h-px flex-1 bg-border" />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-name" className={labelCls}>Full name</Label>
-        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} className={inputCls} />
+        <Label htmlFor="su-name">Full name</Label>
+        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-email" className={labelCls}>Email</Label>
-        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} className={inputCls} />
+        <Label htmlFor="su-email">Email</Label>
+        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-mobile" className={labelCls}>Mobile</Label>
-        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} className={inputCls} />
+        <Label htmlFor="su-mobile">Mobile</Label>
+        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-city" className={labelCls}>City</Label>
-        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} className={inputCls} />
+        <Label htmlFor="su-city">City</Label>
+        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-password" className={labelCls}>Password</Label>
-        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" className={inputCls} />
+        <Label htmlFor="su-password">Password</Label>
+        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" />
       </div>
-      <Button type="submit" className={ctaCls} disabled={loading}>
+      <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Creating…" : "Create Account"}
       </Button>
     </form>
   );
 }
-
