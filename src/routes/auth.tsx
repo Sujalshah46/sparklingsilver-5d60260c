@@ -50,12 +50,9 @@ function AuthPage() {
       >
 
         <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
-          <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.38em] text-white/75">
-            Where Every Piece Tells a Story
-          </p>
-          <div className="mt-4 h-px w-14 bg-teal/70" />
+          <img src={logo} alt="Sparkling Silver" className="h-32 w-auto" />
         </div>
+
       </div>
 
       <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-8">
