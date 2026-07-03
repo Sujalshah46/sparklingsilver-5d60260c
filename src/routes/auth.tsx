@@ -41,9 +41,9 @@ function AuthPage() {
   return (
     <div className="min-h-screen bg-ivory">
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-        <div className="flex flex-col items-center pb-6 text-center">
+        <div className="-mx-6 mb-6 flex flex-col items-center bg-black px-6 py-8 text-center">
           <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
-          <p className="mt-1 text-xs font-medium uppercase tracking-[0.3em] text-muted-foreground">
+          <p className="mt-3 text-xs font-medium uppercase tracking-[0.3em] text-white/70">
             Where Every Piece Tells a Story
           </p>
         </div>
