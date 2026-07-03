@@ -40,34 +40,35 @@ function AuthPage() {
 
   return (
     <div className="min-h-screen bg-ivory">
-      <div className="mx-auto flex min-h-screen max-w-md flex-col">
-        <div className="relative flex flex-col items-center bg-black px-6 pb-7 pt-9 text-center">
+      <div className="w-full bg-black">
+        <div className="mx-auto flex max-w-md flex-col items-center px-6 pb-7 pt-9 text-center">
           <img src={logo} alt="Sparkling Silver" className="h-20 w-auto" />
           <p className="mt-3 text-[11px] font-medium uppercase tracking-[0.38em] text-white/75">
             Where Every Piece Tells a Story
           </p>
           <div className="mt-4 h-px w-14 bg-teal/70" />
         </div>
-
-        <div className="flex flex-1 flex-col px-6 pb-10 pt-8">
-          <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-            <TabsList className="grid w-full grid-cols-2 rounded-none">
-              <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
-              <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
-            </TabsList>
-            <TabsContent value="signin" className="flex-1">
-              <SignInForm redirect={redirect} />
-            </TabsContent>
-            <TabsContent value="signup" className="flex-1">
-              <SignUpForm redirect={redirect} />
-            </TabsContent>
-          </Tabs>
-
-          <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
-            ← Continue browsing as guest
-          </Link>
-        </div>
       </div>
+
+      <div className="mx-auto flex max-w-md flex-col px-6 pb-10 pt-8">
+        <Tabs defaultValue="signin" className="flex flex-1 flex-col">
+          <TabsList className="grid w-full grid-cols-2 rounded-none">
+            <TabsTrigger value="signin" className="rounded-none">Sign In</TabsTrigger>
+            <TabsTrigger value="signup" className="rounded-none">Create Account</TabsTrigger>
+          </TabsList>
+          <TabsContent value="signin" className="flex-1">
+            <SignInForm redirect={redirect} />
+          </TabsContent>
+          <TabsContent value="signup" className="flex-1">
+            <SignUpForm redirect={redirect} />
+          </TabsContent>
+        </Tabs>
+
+        <Link to="/" className="mt-6 text-center text-xs font-medium text-muted-foreground hover:text-foreground">
+          ← Continue browsing as guest
+        </Link>
+      </div>
+
     </div>
   );
 }
