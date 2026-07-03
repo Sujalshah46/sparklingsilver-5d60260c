@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-r
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
-import { Button } from "@/components/ui/button";
+import { Mail, Lock, Eye, EyeOff, User, UserPlus, ArrowRight, ShieldCheck, Phone, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,7 +11,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
-import authBg from "@/assets/auth-bg.png.asset.json";
+import logo from "@/assets/logo.png";
 
 const searchSchema = z.object({
   redirect: fallback(z.string(), "/").default("/"),
@@ -40,30 +40,81 @@ function AuthPage() {
 
   return (
     <div
-      className="relative min-h-screen w-full bg-[#0b2a20] bg-cover bg-top bg-no-repeat"
-      style={{ backgroundImage: `url(${authBg.url})` }}
+      className="relative min-h-screen w-full overflow-hidden"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 0%, #1a5943 0%, #0f3d2e 40%, #071a13 100%)",
+      }}
     >
-      {/* Bottom gradient scrim so the form remains readable over the image */}
-      <div className="absolute inset-x-0 bottom-0 h-[70%] bg-gradient-to-b from-transparent via-[#0b2a20]/60 to-[#061913]/95" />
+      {/* Ambient light streaks */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-60"
+        style={{
+          background:
+            "linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.06) 55%, transparent 70%), linear-gradient(200deg, transparent 60%, rgba(255,255,255,0.04) 75%, transparent 90%)",
+        }}
+      />
+      {/* Soft leaf shadow vignette */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_120%,rgba(0,0,0,0.55),transparent_60%)]" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10">
-        {/* Spacer that reveals the hero portion of the image (logo + tagline baked in) */}
-        <div className="h-[58vh] min-h-[380px]" />
+      <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 pb-10 pt-10">
+        {/* Hero: logo + wordmark + tagline */}
+        <div className="flex flex-col items-center text-center">
+          <img src={logo} alt="Sparkling Silver" className="h-28 w-auto drop-shadow-[0_6px_16px_rgba(0,0,0,0.5)]" />
+          <div className="mt-4 flex items-center gap-3 text-white">
+            <Sparkle />
+            <h1
+              className="text-2xl font-light tracking-[0.35em]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(180deg,#ffffff 0%,#e6e6e6 45%,#9a9a9a 100%)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                color: "transparent",
+              }}
+            >
+              SPARKLING
+            </h1>
+            <Sparkle />
+          </div>
+          <h2
+            className="mt-1 text-2xl font-light tracking-[0.35em]"
+            style={{
+              backgroundImage:
+                "linear-gradient(180deg,#ffffff 0%,#e6e6e6 45%,#9a9a9a 100%)",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            SILVER
+          </h2>
 
-        <div className="rounded-2xl border border-white/10 bg-black/35 p-5 shadow-2xl backdrop-blur-md">
+          <div className="mt-3 flex items-center gap-3">
+            <div className="h-px w-16 bg-gradient-to-r from-transparent to-white/40" />
+            <span className="text-white/70">◆</span>
+            <div className="h-px w-16 bg-gradient-to-l from-transparent to-white/40" />
+          </div>
+          <p className="mt-2 text-[11px] font-medium uppercase tracking-[0.4em] text-white/70">
+            Crafting Masterpiece
+          </p>
+        </div>
+
+        {/* Glass form card */}
+        <div className="relative mt-8 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl">
           <Tabs defaultValue="signin" className="flex flex-1 flex-col">
-            <TabsList className="grid w-full grid-cols-2 rounded-lg bg-white/5 text-white/70">
+            <TabsList className="grid w-full grid-cols-2 rounded-lg bg-transparent p-0 text-white/60">
               <TabsTrigger
                 value="signin"
-                className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white"
+                className="group flex items-center gap-2 rounded-none border-b border-white/10 bg-transparent pb-3 pt-2 text-sm font-medium data-[state=active]:border-white data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
-                Sign In
+                <User className="h-4 w-4" /> Sign In
               </TabsTrigger>
               <TabsTrigger
                 value="signup"
-                className="rounded-md data-[state=active]:bg-white/10 data-[state=active]:text-white"
+                className="group flex items-center gap-2 rounded-none border-b border-white/10 bg-transparent pb-3 pt-2 text-sm font-medium data-[state=active]:border-white data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:shadow-none"
               >
-                Create Account
+                <UserPlus className="h-4 w-4" /> Create Account
               </TabsTrigger>
             </TabsList>
             <TabsContent value="signin" className="flex-1">
@@ -73,6 +124,13 @@ function AuthPage() {
               <SignUpForm redirect={redirect} />
             </TabsContent>
           </Tabs>
+
+          <div className="mt-6 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[11px] tracking-wide text-white/60">
+            <span className="grid h-6 w-6 place-items-center rounded-full border border-white/20">
+              <ShieldCheck className="h-3.5 w-3.5" />
+            </span>
+            Secure. Private. Trusted.
+          </div>
         </div>
 
         <Link
@@ -86,13 +144,54 @@ function AuthPage() {
   );
 }
 
+function Sparkle() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-3 w-3 text-white/80" fill="currentColor" aria-hidden>
+      <path d="M12 2l1.6 6.4L20 10l-6.4 1.6L12 18l-1.6-6.4L4 10l6.4-1.6L12 2z" />
+    </svg>
+  );
+}
+
+/* --- Silver metallic button --- */
+function SilverButton({
+  children,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return (
+    <button
+      {...props}
+      className={
+        "group relative inline-flex h-11 w-full items-center justify-center gap-2 overflow-hidden rounded-md border border-white/40 text-sm font-medium text-neutral-900 shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition active:translate-y-px disabled:opacity-60 " +
+        (props.className ?? "")
+      }
+      style={{
+        backgroundImage:
+          "linear-gradient(180deg,#fafafa 0%,#dcdcdc 45%,#a8a8a8 55%,#efefef 100%)",
+      }}
+    >
+      <span className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-white/50 opacity-0 transition group-hover:translate-x-[400%] group-hover:opacity-100" />
+      {children}
+    </button>
+  );
+}
+
+function fieldClass() {
+  return "h-11 rounded-md border-white/20 bg-white/[0.03] pl-10 text-white placeholder:text-white/40 focus-visible:ring-white/40";
+}
+
+function FieldIcon({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/50">
+      {children}
+    </span>
+  );
+}
+
 function GoogleButton() {
   const [loading, setLoading] = useState(false);
   return (
-    <Button
+    <SilverButton
       type="button"
-      variant="outline"
-      className="w-full border-white/20 bg-white text-black hover:bg-white/90"
       disabled={loading}
       onClick={async () => {
         setLoading(true);
@@ -106,22 +205,31 @@ function GoogleButton() {
         toast.success("Welcome to Sparkling!");
       }}
     >
-      <svg viewBox="0 0 24 24" className="mr-2 h-4 w-4" aria-hidden>
-        <path fill="#EA4335" d="M12 11v3.2h4.4c-.2 1.1-1.4 3.2-4.4 3.2-2.6 0-4.8-2.2-4.8-4.9s2.1-4.9 4.8-4.9c1.5 0 2.5.6 3.1 1.2l2.1-2C15.9 5.6 14.1 5 12 5c-3.9 0-7 3.1-7 7s3.1 7 7 7c4 0 6.7-2.8 6.7-6.8 0-.5-.1-.8-.1-1.2H12z"/>
+      <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
+        <path fill="#EA4335" d="M12 11v3.2h4.4c-.2 1.1-1.4 3.2-4.4 3.2-2.6 0-4.8-2.2-4.8-4.9s2.1-4.9 4.8-4.9c1.5 0 2.5.6 3.1 1.2l2.1-2C15.9 5.6 14.1 5 12 5c-3.9 0-7 3.1-7 7s3.1 7 7 7c4 0 6.7-2.8 6.7-6.8 0-.5-.1-.8-.1-1.2H12z" />
       </svg>
       Continue with Google
-    </Button>
+    </SilverButton>
   );
 }
 
-function fieldClass() {
-  return "border-white/20 bg-white/5 text-white placeholder:text-white/40 focus-visible:ring-white/40";
+function OrDivider() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="h-px flex-1 bg-white/15" />
+      <span className="grid h-8 w-8 place-items-center rounded-full border border-white/20 text-[10px] font-semibold uppercase tracking-wider text-white/70">
+        OR
+      </span>
+      <div className="h-px flex-1 bg-white/15" />
+    </div>
+  );
 }
 
 function SignInForm({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -137,27 +245,32 @@ function SignInForm({ redirect }: { redirect: string }) {
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/15" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">or</span>
-        <div className="h-px flex-1 bg-white/15" />
+      <OrDivider />
+
+      <div className="space-y-2">
+        <Label htmlFor="signin-email" className="text-white/85">Email</Label>
+        <div className="relative">
+          <FieldIcon><Mail className="h-4 w-4" /></FieldIcon>
+          <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="Enter your email" className={fieldClass()} />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="signin-email" className="text-white/80">Email</Label>
-        <Input id="signin-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" className={fieldClass()} />
+        <Label htmlFor="signin-password" className="text-white/85">Password</Label>
+        <div className="relative">
+          <FieldIcon><Lock className="h-4 w-4" /></FieldIcon>
+          <Input id="signin-password" type={showPw ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} placeholder="Enter your password" className={fieldClass() + " pr-10"} />
+          <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white" aria-label={showPw ? "Hide password" : "Show password"}>
+            {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+        <div className="flex justify-end">
+          <button type="button" className="text-xs text-white/70 hover:text-white">Forgot Password?</button>
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="signin-password" className="text-white/80">Password</Label>
-        <Input id="signin-password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" minLength={6} className={fieldClass()} />
-      </div>
-      <Button
-        type="submit"
-        className="w-full border-0 text-white hover:brightness-110"
-        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
-        disabled={loading}
-      >
-        {loading ? "Signing in…" : "Sign In"}
-      </Button>
+
+      <SilverButton type="submit" disabled={loading}>
+        {loading ? "Signing in…" : "Sign In"} <ArrowRight className="h-4 w-4" />
+      </SilverButton>
     </form>
   );
 }
@@ -165,6 +278,7 @@ function SignInForm({ redirect }: { redirect: string }) {
 function SignUpForm({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [form, setForm] = useState({ full_name: "", email: "", password: "", mobile: "", city: "" });
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -196,39 +310,50 @@ function SignUpForm({ redirect }: { redirect: string }) {
   return (
     <form onSubmit={onSubmit} className="mt-6 space-y-4">
       <GoogleButton />
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-white/15" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-white/50">or</span>
-        <div className="h-px flex-1 bg-white/15" />
+      <OrDivider />
+
+      <div className="space-y-2">
+        <Label htmlFor="su-name" className="text-white/85">Full name</Label>
+        <div className="relative">
+          <FieldIcon><User className="h-4 w-4" /></FieldIcon>
+          <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} placeholder="Your full name" className={fieldClass()} />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-name" className="text-white/80">Full name</Label>
-        <Input id="su-name" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required maxLength={100} className={fieldClass()} />
+        <Label htmlFor="su-email" className="text-white/85">Email</Label>
+        <div className="relative">
+          <FieldIcon><Mail className="h-4 w-4" /></FieldIcon>
+          <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} placeholder="Enter your email" className={fieldClass()} />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-email" className="text-white/80">Email</Label>
-        <Input id="su-email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required maxLength={255} className={fieldClass()} />
+        <Label htmlFor="su-mobile" className="text-white/85">Mobile</Label>
+        <div className="relative">
+          <FieldIcon><Phone className="h-4 w-4" /></FieldIcon>
+          <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} placeholder="Your mobile number" className={fieldClass()} />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-mobile" className="text-white/80">Mobile</Label>
-        <Input id="su-mobile" type="tel" inputMode="tel" value={form.mobile} onChange={(e) => setForm({ ...form, mobile: e.target.value })} maxLength={15} className={fieldClass()} />
+        <Label htmlFor="su-city" className="text-white/85">City</Label>
+        <div className="relative">
+          <FieldIcon><MapPin className="h-4 w-4" /></FieldIcon>
+          <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} placeholder="Your city" className={fieldClass()} />
+        </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="su-city" className="text-white/80">City</Label>
-        <Input id="su-city" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} maxLength={80} className={fieldClass()} />
+        <Label htmlFor="su-password" className="text-white/85">Password</Label>
+        <div className="relative">
+          <FieldIcon><Lock className="h-4 w-4" /></FieldIcon>
+          <Input id="su-password" type={showPw ? "text" : "password"} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" placeholder="Create a password" className={fieldClass() + " pr-10"} />
+          <button type="button" onClick={() => setShowPw(v => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60 hover:text-white" aria-label={showPw ? "Hide password" : "Show password"}>
+            {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="su-password" className="text-white/80">Password</Label>
-        <Input id="su-password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required minLength={6} autoComplete="new-password" className={fieldClass()} />
-      </div>
-      <Button
-        type="submit"
-        className="w-full border-0 text-white hover:brightness-110"
-        style={{ backgroundImage: "radial-gradient(ellipse at center, #1a5943 0%, #0f3d2e 55%, #082418 100%)" }}
-        disabled={loading}
-      >
-        {loading ? "Creating…" : "Create Account"}
-      </Button>
+
+      <SilverButton type="submit" disabled={loading}>
+        {loading ? "Creating…" : "Create Account"} <ArrowRight className="h-4 w-4" />
+      </SilverButton>
     </form>
   );
 }
