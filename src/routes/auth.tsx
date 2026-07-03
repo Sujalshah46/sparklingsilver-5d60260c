@@ -45,20 +45,9 @@ function AuthPage() {
   return (
     <div className="relative min-h-screen w-full" style={pageBg}>
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pb-8 pt-8">
-        {/* Header: logo + brand */}
+        {/* Header: logo only */}
         <div className="flex flex-col items-center text-center">
-          <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
-          <h1 className="mt-3 font-serif text-[26px] font-semibold tracking-[0.22em] text-white/95">
-            SPARKLING <span className="block">SILVER</span>
-          </h1>
-          <div className="mt-2 flex items-center gap-2 text-white/70">
-            <span className="h-px w-10 bg-white/30" />
-            <span className="text-[10px]">◆</span>
-            <span className="h-px w-10 bg-white/30" />
-          </div>
-          <p className="mt-2 text-[11px] font-medium tracking-[0.32em] text-white/70">
-            CRAFTING MASTERPIECE
-          </p>
+          <img src={logo} alt="Sparkling Silver" className="h-28 w-auto" />
         </div>
 
         {/* Glass card */}
