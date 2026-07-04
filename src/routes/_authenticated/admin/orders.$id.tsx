@@ -87,7 +87,11 @@ function AdminOrderDetail() {
             </div>
             <Badge className="capitalize">{order.status}</Badge>
           </div>
-          <StageTracker status={order.status as OrderStatus} />
+          <OrderStageTracker
+            status={order.status as OrderStatus}
+            history={(order as { stage_history?: unknown }).stage_history}
+          />
+
         </div>
 
 
