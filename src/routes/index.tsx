@@ -173,7 +173,7 @@ function Home() {
             </button>
           </div>
         </div>
-        <div className="mt-3 grid grid-cols-3 gap-[2px]">
+        <div className="mt-3 flex flex-col gap-3 px-3">
           {data.categories.map((c) => {
             const count = data.counts.get(c.id) ?? 0;
             const dbImage = (c as unknown as { image_url?: string | null }).image_url;
