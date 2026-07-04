@@ -6,7 +6,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
@@ -22,7 +22,7 @@ const catalogQuery = queryOptions({
       supabase.from("categories").select("*").order("sort_order"),
     ]);
     return {
-      products: (products.data ?? []) as (CatalogueCardData & { category_id: string; price: number })[],
+      products: (products.data ?? []) as (CatalogueCardData & { category_id: string })[],
       categories: categories.data ?? [],
     };
   },
@@ -51,7 +51,7 @@ function Catalogue() {
   const [sort, setSort] = useState("newest");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [purities, setPurities] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState(300000);
+  
   const [view, setView] = useState<"grid2" | "grid1">("grid2");
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -60,14 +60,12 @@ function Catalogue() {
     let list = data.products;
     if (categoryIds.length) list = list.filter((p) => p.category_id && categoryIds.includes(p.category_id));
     if (purities.length) list = list.filter((p) => purities.includes((p as unknown as { purity: string }).purity));
-    list = list.filter((p) => Number(p.price) <= maxPrice);
     switch (sort) {
-      case "price-asc": list = [...list].sort((a, b) => Number(a.price) - Number(b.price)); break;
-      case "price-desc": list = [...list].sort((a, b) => Number(b.price) - Number(a.price)); break;
-      case "weight": list = [...list].sort((a, b) => Number(b.net_weight) - Number(a.net_weight)); break;
+      case "weight-desc": list = [...list].sort((a, b) => Number(b.net_weight) - Number(a.net_weight)); break;
+      case "weight-asc": list = [...list].sort((a, b) => Number(a.net_weight) - Number(b.net_weight)); break;
     }
     return list;
-  }, [data.products, categoryIds, purities, maxPrice, sort]);
+  }, [data.products, categoryIds, purities, sort]);
 
   return (
     <MobileShell title="Catalogue">
@@ -140,9 +138,8 @@ function Catalogue() {
           <div className="grid gap-1 py-2">
             {[
               { v: "newest", l: "Newest" },
-              { v: "price-asc", l: "Price: Low → High" },
-              { v: "price-desc", l: "Price: High → Low" },
-              { v: "weight", l: "Weight" },
+              { v: "weight-desc", l: "Weight: High → Low" },
+              { v: "weight-asc", l: "Weight: Low → High" },
             ].map((o) => (
               <button
                 key={o.v}
@@ -193,13 +190,9 @@ function Catalogue() {
                 })}
               </div>
             </div>
-            <div>
-              <Label className="font-semibold">Max Price: ₹{maxPrice.toLocaleString("en-IN")}</Label>
-              <Slider value={[maxPrice]} onValueChange={(v) => setMaxPrice(v[0])} min={10000} max={300000} step={5000} className="mt-3" />
-            </div>
           </div>
           <SheetFooter className="flex-row gap-2">
-            <Button variant="outline" className="flex-1 rounded-[2px]" onClick={() => { setCategoryIds([]); setPurities([]); setMaxPrice(300000); }}>Reset</Button>
+            <Button variant="outline" className="flex-1 rounded-[2px]" onClick={() => { setCategoryIds([]); setPurities([]); }}>Reset</Button>
             <Button className="flex-1 rounded-[2px] bg-teal hover:bg-teal-dark" onClick={() => setFilterOpen(false)}>Apply</Button>
           </SheetFooter>
         </SheetContent>
