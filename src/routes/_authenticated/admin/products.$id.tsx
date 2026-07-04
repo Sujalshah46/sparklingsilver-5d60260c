@@ -174,8 +174,6 @@ function ProductForm() {
             <Field label="Net weight (g)"><Input type="number" step="0.01" value={form.net_weight} onChange={(e) => up("net_weight", e.target.value)} /></Field>
             <Field label="Stone weight (g)"><Input type="number" step="0.01" value={form.stone_weight} onChange={(e) => up("stone_weight", e.target.value)} /></Field>
             <Field label="Stone type"><Input value={form.stone_type} onChange={(e) => up("stone_type", e.target.value)} /></Field>
-            <Field label="Price (₹)"><Input type="number" step="1" value={form.price} onChange={(e) => up("price", e.target.value)} required /></Field>
-            <Field label="Making %"><Input type="number" step="0.1" value={form.making_charge_pct} onChange={(e) => up("making_charge_pct", e.target.value)} /></Field>
             <Field label="MOQ"><Input type="number" step="1" value={form.moq} onChange={(e) => up("moq", e.target.value)} /></Field>
             <Field label="Low-stock threshold"><Input type="number" step="1" value={form.low_stock_threshold} onChange={(e) => up("low_stock_threshold", e.target.value)} /></Field>
             {isNew && (
