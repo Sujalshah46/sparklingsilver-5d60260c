@@ -15,7 +15,18 @@ export const Route = createFileRoute("/_authenticated/admin/orders")({
   component: AdminOrders,
 });
 
-const STATUS_TABS = ["pending", "accepted", "rejected", "all"] as const;
+const STATUS_TABS = [
+  "pending",
+  "accepted",
+  "confirmed",
+  "processing",
+  "dispatched",
+  "out_for_delivery",
+  "delivered",
+  "rejected",
+  "cancelled",
+  "all",
+] as const;
 type Tab = (typeof STATUS_TABS)[number];
 
 const statusColor: Record<string, string> = {
