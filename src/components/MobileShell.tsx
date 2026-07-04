@@ -124,7 +124,7 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-[1fr_1fr_1fr_auto] items-center"
+        className="mx-auto grid max-w-2xl grid-cols-4 items-center"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
         <Link
