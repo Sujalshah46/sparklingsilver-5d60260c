@@ -1,0 +1,306 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  adminListUsers,
+  adminListResetRequests,
+  adminCreateUser,
+  adminResetPassword,
+  adminSetUserStatus,
+  adminSendCredentials,
+  adminResolveResetRequest,
+} from "@/lib/users.functions";
+import { MobileShell } from "@/components/MobileShell";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
+} from "@/components/ui/dialog";
+import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2 } from "lucide-react";
+import { toast } from "sonner";
+import { formatDate } from "@/lib/format";
+
+export const Route = createFileRoute("/_authenticated/admin/users")({
+  head: () => ({ meta: [{ title: "Admin — Users" }] }),
+  component: AdminUsersPage,
+});
+
+type UserRow = {
+  id: string; username: string | null; business_name: string | null; contact_person: string | null;
+  email: string | null; mobile: string | null; status: string; must_change_password: boolean; created_at: string;
+};
+
+function AdminUsersPage() {
+  const qc = useQueryClient();
+  const listUsers = useServerFn(adminListUsers);
+  const listReqs = useServerFn(adminListResetRequests);
+
+  const users = useQuery({ queryKey: ["admin-users"], queryFn: () => listUsers() });
+  const reqs = useQuery({ queryKey: ["admin-reset-requests"], queryFn: () => listReqs() });
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [credsView, setCredsView] = useState<{ username: string; email: string; password: string; user_id: string } | null>(null);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+    qc.invalidateQueries({ queryKey: ["admin-reset-requests"] });
+  };
+
+  return (
+    <MobileShell title="Users">
+      <div className="p-4 space-y-4">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <h1 className="font-serif text-2xl font-semibold">Users</h1>
+            <p className="text-xs text-muted-foreground">Admin-created buyer accounts</p>
+          </div>
+          <Button size="sm" onClick={() => setShowCreate(true)}><UserPlus className="mr-1 h-4 w-4" /> New</Button>
+        </div>
+
+        <Tabs defaultValue="users">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="users">All Users</TabsTrigger>
+            <TabsTrigger value="requests">
+              Reset Requests
+              {(reqs.data ?? []).filter((r: any) => r.status === "pending").length > 0 && (
+                <span className="ml-1 rounded-full bg-burgundy px-1.5 text-[10px] font-semibold text-white">
+                  {(reqs.data ?? []).filter((r: any) => r.status === "pending").length}
+                </span>
+              )}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users" className="space-y-2">
+            {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+            {(users.data ?? []).map((u: UserRow) => (
+              <UserCard key={u.id} u={u} onDone={invalidate} onShowCreds={setCredsView} />
+            ))}
+            {users.data && users.data.length === 0 && (
+              <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No users yet. Tap New to create one.</p>
+            )}
+          </TabsContent>
+
+          <TabsContent value="requests" className="space-y-2">
+            {reqs.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+            {(reqs.data ?? []).map((r: any) => (
+              <ResetRequestCard key={r.id} r={r} onDone={invalidate} onShowCreds={setCredsView} />
+            ))}
+            {reqs.data && reqs.data.length === 0 && (
+              <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No requests.</p>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      <CreateUserDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onCreated={(c) => { setCredsView(c); invalidate(); }}
+      />
+      <CredentialsDialog creds={credsView} onOpenChange={(o) => !o && setCredsView(null)} />
+    </MobileShell>
+  );
+}
+
+function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; onShowCreds: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
+  const reset = useServerFn(adminResetPassword);
+  const setStatus = useServerFn(adminSetUserStatus);
+  const [busy, setBusy] = useState(false);
+
+  const onReset = async () => {
+    setBusy(true);
+    try {
+      const r = await reset({ data: { user_id: u.id } });
+      onShowCreds({ user_id: u.id, username: u.username ?? "", email: u.email ?? "", password: r.password });
+      toast.success("New password generated");
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
+  const onToggle = async () => {
+    setBusy(true);
+    try {
+      const next = u.status === "active" ? "inactive" : "active";
+      await setStatus({ data: { user_id: u.id, status: next } });
+      toast.success(next === "active" ? "Reactivated" : "Deactivated");
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="truncate font-serif text-sm font-semibold">{u.business_name ?? u.contact_person ?? u.email}</p>
+          <p className="truncate text-[11px] text-muted-foreground">@{u.username ?? "—"} · {u.email}</p>
+          <p className="text-[11px] text-muted-foreground">Created {formatDate(u.created_at)}</p>
+        </div>
+        <Badge className={u.status === "active" ? "bg-green-100 text-green-900" : "bg-red-100 text-red-900"}>
+          {u.status}
+        </Badge>
+      </div>
+      <div className="mt-2 flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" disabled={busy} onClick={onReset}><KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password</Button>
+        <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
+          <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function ResetRequestCard({ r, onDone, onShowCreds }: { r: any; onDone: () => void; onShowCreds: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
+  const reset = useServerFn(adminResetPassword);
+  const resolve = useServerFn(adminResolveResetRequest);
+  const [busy, setBusy] = useState(false);
+
+  const onResetAndResolve = async () => {
+    if (!r.user_id) return toast.error("No linked user for this email");
+    setBusy(true);
+    try {
+      const p = await reset({ data: { user_id: r.user_id } });
+      await resolve({ data: { request_id: r.id } });
+      onShowCreds({ user_id: r.user_id, username: "", email: r.email, password: p.password });
+      toast.success("Reset & resolved");
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <p className="text-sm font-medium">{r.email}</p>
+          <p className="text-[11px] text-muted-foreground">{formatDate(r.created_at)}</p>
+          {r.note && <p className="mt-1 text-[11px] text-muted-foreground">"{r.note}"</p>}
+        </div>
+        <Badge className={r.status === "pending" ? "bg-amber-100 text-amber-900" : "bg-green-100 text-green-900"}>
+          {r.status}
+        </Badge>
+      </div>
+      {r.status === "pending" && (
+        <div className="mt-2">
+          <Button size="sm" disabled={busy} onClick={onResetAndResolve}>
+            <RefreshCw className="mr-1 h-3.5 w-3.5" /> Reset & Send
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CreateUserDialog({ open, onOpenChange, onCreated }: { open: boolean; onOpenChange: (b: boolean) => void; onCreated: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
+  const create = useServerFn(adminCreateUser);
+  const [form, setForm] = useState({ business_name: "", contact_person: "", email: "", mobile: "", note: "" });
+  const [busy, setBusy] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true);
+    try {
+      const r = await create({ data: {
+        business_name: form.business_name, contact_person: form.contact_person, email: form.email,
+        mobile: form.mobile || undefined, note: form.note || undefined,
+      } });
+      onOpenChange(false);
+      setForm({ business_name: "", contact_person: "", email: "", mobile: "", note: "" });
+      onCreated({ user_id: r.user_id, username: r.username, email: r.email, password: r.password });
+      toast.success("User created");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create buyer account</DialogTitle>
+          <DialogDescription>System generates a unique username and strong password.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <Field label="Business name" value={form.business_name} onChange={(v) => setForm({ ...form, business_name: v })} required />
+          <Field label="Contact person" value={form.contact_person} onChange={(v) => setForm({ ...form, contact_person: v })} required />
+          <Field label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} required />
+          <Field label="Phone" value={form.mobile} onChange={(v) => setForm({ ...form, mobile: v })} />
+          <Field label="Note (optional)" value={form.note} onChange={(v) => setForm({ ...form, note: v })} />
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={busy}>{busy ? "Creating…" : "Create user"}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Field({ label, value, onChange, type = "text", required = false }: { label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean }) {
+  return (
+    <div>
+      <Label className="mb-1 block">{label}</Label>
+      <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} required={required} />
+    </div>
+  );
+}
+
+function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string; email: string; password: string; user_id: string } | null; onOpenChange: (b: boolean) => void }) {
+  const send = useServerFn(adminSendCredentials);
+  const [sending, setSending] = useState(false);
+  if (!creds) return null;
+
+  const copy = (v: string, label: string) => {
+    navigator.clipboard.writeText(v);
+    toast.success(`${label} copied`);
+  };
+  const onSend = async () => {
+    setSending(true);
+    try {
+      const r = await send({ data: { user_id: creds.user_id, password: creds.password } });
+      if (r.skipped) toast.warning("Email connector not configured — share manually");
+      else if (r.ok) toast.success("Credentials emailed");
+      else toast.error(r.error ?? "Send failed");
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setSending(false); }
+  };
+
+  return (
+    <Dialog open={!!creds} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2"><CheckCircle2 className="h-5 w-5 text-green-700" /> Credentials ready</DialogTitle>
+          <DialogDescription>Copy these now or send them to the user. They can't be retrieved later.</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-2 rounded-md border bg-muted/40 p-3 text-sm">
+          {creds.username && (
+            <Row label="Username" value={creds.username} onCopy={() => copy(creds.username, "Username")} />
+          )}
+          <Row label="Email" value={creds.email} onCopy={() => copy(creds.email, "Email")} />
+          <Row label="Password" value={creds.password} onCopy={() => copy(creds.password, "Password")} mono />
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button onClick={onSend} disabled={sending}>
+            <Send className="mr-1 h-4 w-4" /> {sending ? "Sending…" : "Send credentials (Email)"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function Row({ label, value, onCopy, mono = false }: { label: string; value: string; onCopy: () => void; mono?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <div className="min-w-0">
+        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        <p className={`truncate ${mono ? "font-mono" : ""}`}>{value}</p>
+      </div>
+      <Button size="icon" variant="ghost" onClick={onCopy}><Copy className="h-4 w-4" /></Button>
+    </div>
+  );
+}
