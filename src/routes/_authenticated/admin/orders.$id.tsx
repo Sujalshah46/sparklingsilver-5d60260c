@@ -13,8 +13,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Check, X, ArrowLeft, Truck, PackageCheck, ClipboardCheck, Package, Bike } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
-
-type OrderStatus = "pending" | "accepted" | "rejected" | "confirmed" | "processing" | "ready" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled";
+import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
 
 
 
@@ -88,7 +87,11 @@ function AdminOrderDetail() {
             </div>
             <Badge className="capitalize">{order.status}</Badge>
           </div>
-          <StageTracker status={order.status as OrderStatus} />
+          <OrderStageTracker
+            status={order.status as OrderStatus}
+            history={(order as { stage_history?: unknown }).stage_history}
+          />
+
         </div>
 
 
@@ -221,59 +224,6 @@ function Row({ label, value }: { label: string; value: string }) {
       <span className="text-muted-foreground">{label}</span>
       <span className="font-medium">{value}</span>
     </div>
-  );
-}
-
-const STAGES: { key: OrderStatus; label: string }[] = [
-  { key: "pending", label: "Received" },
-  { key: "accepted", label: "Reviewed" },
-  { key: "confirmed", label: "Confirmed" },
-  { key: "processing", label: "Processing" },
-  { key: "dispatched", label: "Dispatched" },
-  { key: "out_for_delivery", label: "Out for Delivery" },
-  { key: "delivered", label: "Delivered" },
-];
-
-function StageTracker({ status }: { status: OrderStatus }) {
-  if (status === "rejected" || status === "cancelled") {
-    return (
-      <p className="mt-3 rounded-md bg-destructive/10 p-2 text-center text-xs font-medium capitalize text-destructive">
-        Order {status}
-      </p>
-    );
-  }
-  const idx = STAGES.findIndex((s) => s.key === status);
-  const current = idx < 0 ? 0 : idx;
-  return (
-    <ol className="mt-4 flex items-center gap-1 overflow-x-auto pb-1">
-      {STAGES.map((s, i) => {
-        const done = i < current;
-        const active = i === current;
-        return (
-          <li key={s.key} className="flex flex-1 items-center gap-1 min-w-max">
-            <div className="flex flex-col items-center gap-1">
-              <span
-                className={`grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold ${
-                  done
-                    ? "bg-green-700 text-white"
-                    : active
-                    ? "bg-burgundy text-white ring-4 ring-burgundy/15"
-                    : "bg-secondary text-muted-foreground"
-                }`}
-              >
-                {done ? "✓" : i + 1}
-              </span>
-              <span className={`text-[9px] leading-tight text-center ${active ? "font-semibold text-burgundy" : "text-muted-foreground"}`}>
-                {s.label}
-              </span>
-            </div>
-            {i < STAGES.length - 1 && (
-              <span className={`mb-4 h-0.5 flex-1 ${i < current ? "bg-green-700" : "bg-border"}`} />
-            )}
-          </li>
-        );
-      })}
-    </ol>
   );
 }
 

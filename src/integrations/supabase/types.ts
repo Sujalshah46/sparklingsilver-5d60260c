@@ -321,6 +321,7 @@ export type Database = {
           payment_method: string | null
           payment_status: string | null
           shipping_address: Json
+          stage_history: Json
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -345,6 +346,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           shipping_address: Json
+          stage_history?: Json
           status?: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -369,6 +371,7 @@ export type Database = {
           payment_method?: string | null
           payment_status?: string | null
           shipping_address?: Json
+          stage_history?: Json
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
