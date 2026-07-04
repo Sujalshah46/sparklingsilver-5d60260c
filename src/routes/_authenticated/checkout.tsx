@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
-import { inr } from "@/lib/format";
+
 import { placeOrder as placeOrderFn } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,12 +46,11 @@ function Checkout() {
     },
   });
 
-  const subtotal = (items ?? []).reduce(
-    (s, it) => s + Number(it.product?.price ?? 0) * it.quantity,
+  const totalPieces = (items ?? []).reduce((n, it) => n + it.quantity, 0);
+  const totalNetWt = (items ?? []).reduce(
+    (s, it) => s + Number(it.product?.net_weight ?? 0) * it.quantity,
     0,
   );
-  const gst = subtotal * 0.03;
-  const total = subtotal + gst;
 
   const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
@@ -86,12 +85,7 @@ function Checkout() {
             <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">Pending (To be confirmed)</span></div>
           </div>
 
-          <div className="mx-auto mt-4 max-w-sm rounded-xl border border-burgundy/20 bg-burgundy/5 p-3 text-left text-xs text-burgundy">
-            <div className="flex items-start gap-2">
-              <Clock className="mt-0.5 h-4 w-4 shrink-0" />
-              <p>Our team will review your order and contact you to confirm pricing, payment & delivery. You'll get updates in-app at each stage.</p>
-            </div>
-          </div>
+              <p>Our team will review your order and contact you on WhatsApp to confirm the details & delivery. You'll get updates in-app at each stage.</p>
 
           <div className="mt-6 flex flex-col gap-2">
             <Button asChild className="bg-burgundy hover:bg-burgundy/90">
