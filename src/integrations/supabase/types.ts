@@ -378,6 +378,39 @@ export type Database = {
         }
         Relationships: []
       }
+      password_reset_requests: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           barcode: string | null
@@ -507,37 +540,49 @@ export type Database = {
           business_name: string | null
           business_type: Database["public"]["Enums"]["business_type"] | null
           city: string | null
+          contact_person: string | null
           created_at: string
           email: string | null
           full_name: string | null
           gstin: string | null
           id: string
           mobile: string | null
+          must_change_password: boolean
+          status: string
           updated_at: string
+          username: string | null
         }
         Insert: {
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           city?: string | null
+          contact_person?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           gstin?: string | null
           id: string
           mobile?: string | null
+          must_change_password?: boolean
+          status?: string
           updated_at?: string
+          username?: string | null
         }
         Update: {
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           city?: string | null
+          contact_person?: string | null
           created_at?: string
           email?: string | null
           full_name?: string | null
           gstin?: string | null
           id?: string
           mobile?: string | null
+          must_change_password?: boolean
+          status?: string
           updated_at?: string
+          username?: string | null
         }
         Relationships: []
       }
@@ -633,6 +678,33 @@ export type Database = {
           name?: string
           slug?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      user_activity_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string
+          id: string
+          meta: Json
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string
+          id?: string
+          meta?: Json
+          user_id?: string | null
         }
         Relationships: []
       }
