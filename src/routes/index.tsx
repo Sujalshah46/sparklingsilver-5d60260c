@@ -129,7 +129,7 @@ function Home() {
   return (
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
-      <SilverRateStrip />
+      
       <HeroSlider slides={heroSlides} />
       <AccessBanner />
 
