@@ -46,8 +46,8 @@ function CartPage() {
 
   const items = data ?? [];
   const totalPieces = items.reduce((n, it) => n + it.quantity, 0);
-  const totalNetWt = items.reduce(
-    (s, it) => s + Number(it.product?.net_weight ?? 0) * it.quantity,
+  const totalGrossWt = items.reduce(
+    (s, it) => s + Number(it.product?.gross_weight ?? 0) * it.quantity,
     0,
   );
 
@@ -74,7 +74,6 @@ function CartPage() {
                       <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product?.name}</p>
                       <p className="text-[11px] text-muted-foreground">{it.product?.purity}{it.size ? ` · Size ${it.size}` : ""}</p>
                       <p className="mt-1 text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Gross Wt:</span> {Number(it.product?.gross_weight ?? 0).toFixed(3)} g</p>
-                      <p className="text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Net Wt:</span> {Number(it.product?.net_weight ?? 0).toFixed(3)} g</p>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center rounded-full border border-border">
@@ -92,7 +91,7 @@ function CartPage() {
             <div className="mt-4 rounded-xl border border-border bg-card p-4">
               <div className="space-y-1 text-sm">
                 <Row label="Total pieces" value={String(totalPieces)} />
-                <Row label="Total net weight" value={`${totalNetWt.toFixed(3)} g`} />
+                <Row label="Total gross weight" value={`${totalGrossWt.toFixed(3)} g`} />
               </div>
               <p className="mt-3 text-[11px] text-muted-foreground">
                 Our team will confirm your order details on WhatsApp after checkout.

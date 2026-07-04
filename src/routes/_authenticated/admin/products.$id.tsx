@@ -56,7 +56,7 @@ function ProductForm() {
   const [form, setForm] = useState<any>({
     name: "", slug: "", sku: "", description: "",
     category_id: "", subcategory_id: "", metal: "silver", purity: "925",
-    gross_weight: 0, net_weight: 0, stone_weight: 0, stone_type: "",
+    gross_weight: 0, stone_weight: 0, stone_type: "",
     price: 0, making_charge_pct: 0, moq: 1,
     image_url: "", stock_quantity: 0, low_stock_threshold: 5,
     is_new: false, is_bestseller: false, is_trending: false,
@@ -74,7 +74,6 @@ function ProductForm() {
         metal: product.metal ?? "silver",
         purity: product.purity ?? "925",
         gross_weight: Number(product.gross_weight ?? 0),
-        net_weight: Number(product.net_weight ?? 0),
         stone_weight: Number(product.stone_weight ?? 0),
         stone_type: product.stone_type ?? "",
         price: Number(product.price ?? 0),
@@ -101,7 +100,7 @@ function ProductForm() {
         category_id: form.category_id || null,
         subcategory_id: form.subcategory_id || null,
         gross_weight: Number(form.gross_weight),
-        net_weight: Number(form.net_weight),
+        net_weight: Number(form.gross_weight),
         stone_weight: form.stone_weight ? Number(form.stone_weight) : null,
         stone_type: form.stone_type || null,
         price: Number(form.price),
@@ -171,7 +170,6 @@ function ProductForm() {
             </Field>
             <Field label="Purity"><Input value={form.purity} onChange={(e) => up("purity", e.target.value)} /></Field>
             <Field label="Gross weight (g)"><Input type="number" step="0.01" value={form.gross_weight} onChange={(e) => up("gross_weight", e.target.value)} /></Field>
-            <Field label="Net weight (g)"><Input type="number" step="0.01" value={form.net_weight} onChange={(e) => up("net_weight", e.target.value)} /></Field>
             <Field label="Stone weight (g)"><Input type="number" step="0.01" value={form.stone_weight} onChange={(e) => up("stone_weight", e.target.value)} /></Field>
             <Field label="Stone type"><Input value={form.stone_type} onChange={(e) => up("stone_type", e.target.value)} /></Field>
             <Field label="MOQ"><Input type="number" step="1" value={form.moq} onChange={(e) => up("moq", e.target.value)} /></Field>

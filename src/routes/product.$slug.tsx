@@ -140,7 +140,7 @@ function ProductPage() {
 
         <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-3 text-center text-xs">
           <div><p className="text-muted-foreground">Gross Wt</p><p className="mt-0.5 font-semibold">{grams(product.gross_weight)}</p></div>
-          <div><p className="text-muted-foreground">Net Wt</p><p className="mt-0.5 font-semibold">{grams(product.net_weight)}</p></div>
+          
           <div><p className="text-muted-foreground">Stone Wt</p><p className="mt-0.5 font-semibold">{grams(product.stone_weight ?? 0)}</p></div>
         </div>
 

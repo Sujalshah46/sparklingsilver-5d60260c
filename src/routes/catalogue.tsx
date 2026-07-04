@@ -61,8 +61,8 @@ function Catalogue() {
     if (categoryIds.length) list = list.filter((p) => p.category_id && categoryIds.includes(p.category_id));
     if (purities.length) list = list.filter((p) => purities.includes((p as unknown as { purity: string }).purity));
     switch (sort) {
-      case "weight-desc": list = [...list].sort((a, b) => Number(b.net_weight) - Number(a.net_weight)); break;
-      case "weight-asc": list = [...list].sort((a, b) => Number(a.net_weight) - Number(b.net_weight)); break;
+      case "weight-desc": list = [...list].sort((a, b) => Number(b.gross_weight) - Number(a.gross_weight)); break;
+      case "weight-asc": list = [...list].sort((a, b) => Number(a.gross_weight) - Number(b.gross_weight)); break;
     }
     return list;
   }, [data.products, categoryIds, purities, sort]);
