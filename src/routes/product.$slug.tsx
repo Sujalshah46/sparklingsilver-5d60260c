@@ -138,11 +138,11 @@ function ProductPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-3 text-center text-xs">
-          <div><p className="text-muted-foreground">Gross Wt</p><p className="mt-0.5 font-semibold">{grams(product.gross_weight)}</p></div>
-          
-          <div><p className="text-muted-foreground">Stone Wt</p><p className="mt-0.5 font-semibold">{grams(product.stone_weight ?? 0)}</p></div>
+        <div className="rounded-xl border border-gold/40 bg-card p-4 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Gross Weight</p>
+          <p className="mt-1 font-serif text-2xl font-bold text-foreground">{grams(product.gross_weight)}</p>
         </div>
+
 
         {product.sizes && product.sizes.length > 0 && (
           <div>
