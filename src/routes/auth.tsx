@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
@@ -70,13 +70,6 @@ function AuthPage() {
             Secure. Private. Trusted.
           </div>
         </div>
-
-        <Link
-          to="/"
-          className="mx-auto mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-white/85 hover:text-white"
-        >
-          ← Continue browsing as guest
-        </Link>
       </div>
     </div>
   );
