@@ -123,9 +123,6 @@ function OrderDetail() {
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
                   <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>
-                  {it.net_weight != null && (
-                    <p className="mt-1 text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Net Wt:</span> {Number(it.net_weight).toFixed(3)} g</p>
-                  )}
                 </div>
               </div>
             ))}
