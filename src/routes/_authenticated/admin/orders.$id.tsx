@@ -13,8 +13,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Check, X, ArrowLeft, Truck, PackageCheck, ClipboardCheck, Package, Bike } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
-
-type OrderStatus = "pending" | "accepted" | "rejected" | "confirmed" | "processing" | "ready" | "dispatched" | "out_for_delivery" | "delivered" | "cancelled";
+import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
 
 
 
