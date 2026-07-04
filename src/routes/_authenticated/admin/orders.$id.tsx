@@ -137,8 +137,6 @@ function AdminOrderDetail() {
                   <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>
                   <p className="mt-1 text-[11px] text-[#555]">
                     <span className="font-semibold text-[#333]">Gross:</span> {Number((it as { gross_weight?: number | string | null }).gross_weight ?? 0).toFixed(3)} g
-                    <span className="mx-1.5">·</span>
-                    <span className="font-semibold text-[#333]">Net:</span> {Number((it as { net_weight?: number | string | null }).net_weight ?? 0).toFixed(3)} g
                   </p>
                 </div>
               </div>

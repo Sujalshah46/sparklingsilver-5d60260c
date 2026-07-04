@@ -47,8 +47,8 @@ function Checkout() {
   });
 
   const totalPieces = (items ?? []).reduce((n, it) => n + it.quantity, 0);
-  const totalNetWt = (items ?? []).reduce(
-    (s, it) => s + Number(it.product?.net_weight ?? 0) * it.quantity,
+  const totalGrossWt = (items ?? []).reduce(
+    (s, it) => s + Number(it.product?.gross_weight ?? 0) * it.quantity,
     0,
   );
 
@@ -205,7 +205,7 @@ function Checkout() {
         <div className="rounded-xl border border-border bg-card p-4 text-sm">
           <Row label="Items" value={String(items.length)} />
           <Row label="Total pieces" value={String(totalPieces)} />
-          <Row label="Total net weight" value={`${totalNetWt.toFixed(3)} g`} />
+          <Row label="Total gross weight" value={`${totalGrossWt.toFixed(3)} g`} />
         </div>
 
         <Button

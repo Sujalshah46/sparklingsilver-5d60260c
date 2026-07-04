@@ -15,7 +15,7 @@ export type CatalogueCardData = {
   purity: string;
   metal?: string | null;
   gross_weight: number | string;
-  net_weight: number | string;
+  
   image_url: string | null;
 };
 
@@ -82,7 +82,7 @@ export function CatalogueCard({
       <div className={`space-y-0.5 px-2 py-2 text-center ${compact ? "text-[10.5px]" : "text-[11px]"} text-[#555]`}>
         <p className="text-[12.5px] font-bold tracking-wide text-[#1A1A1A]">{p.sku}</p>
         <p><span className="font-semibold text-[#333]">Gross Wt:</span> {Number(p.gross_weight).toFixed(3)}</p>
-        <p><span className="font-semibold text-[#333]">Net Wt:</span> {Number(p.net_weight).toFixed(3)}</p>
+        
         <p><span className="font-semibold text-[#333]">Silver Purity:</span> {p.purity}</p>
       </div>
       {showCart && (
