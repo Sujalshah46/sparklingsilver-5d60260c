@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { inr, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ function AdminOrders() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("id, order_no, status, total, customer_name, customer_phone, customer_email, customer_city, created_at")
+        .select("id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at")
         .order("created_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -195,7 +195,6 @@ function AdminOrders() {
                     </div>
                     <div className="flex flex-col items-end gap-1">
                       <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
-                      <span className="font-serif text-sm font-semibold text-burgundy">{inr(o.total)}</span>
                     </div>
                   </div>
                 </Link>
