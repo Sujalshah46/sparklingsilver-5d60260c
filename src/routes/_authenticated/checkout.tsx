@@ -85,7 +85,12 @@ function Checkout() {
             <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="font-medium">Pending (To be confirmed)</span></div>
           </div>
 
+          <div className="mx-auto mt-4 max-w-sm rounded-xl border border-burgundy/20 bg-burgundy/5 p-3 text-left text-xs text-burgundy">
+            <div className="flex items-start gap-2">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0" />
               <p>Our team will review your order and contact you on WhatsApp to confirm the details & delivery. You'll get updates in-app at each stage.</p>
+            </div>
+          </div>
 
           <div className="mt-6 flex flex-col gap-2">
             <Button asChild className="bg-burgundy hover:bg-burgundy/90">
@@ -144,8 +149,7 @@ function Checkout() {
         }}
       >
         <div className="rounded-xl border border-burgundy/20 bg-burgundy/5 p-3 text-xs text-burgundy">
-          No online payment. We'll review your order and contact you to confirm
-          pricing, payment & delivery.
+          Our team will review your order and contact you on WhatsApp to confirm the details & delivery.
         </div>
 
         <div className="space-y-3">
@@ -200,15 +204,8 @@ function Checkout() {
 
         <div className="rounded-xl border border-border bg-card p-4 text-sm">
           <Row label="Items" value={String(items.length)} />
-          <Row label="Subtotal" value={inr(subtotal)} />
-          <Row label="GST (3%)" value={inr(gst)} />
-          <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold">
-            <span>Estimated total</span>
-            <span className="font-serif text-burgundy">{inr(total)}</span>
-          </div>
-          <p className="mt-2 text-[11px] text-muted-foreground">
-            Final price will be confirmed by our team based on current gold rate.
-          </p>
+          <Row label="Total pieces" value={String(totalPieces)} />
+          <Row label="Total net weight" value={`${totalNetWt.toFixed(3)} g`} />
         </div>
 
         <Button
