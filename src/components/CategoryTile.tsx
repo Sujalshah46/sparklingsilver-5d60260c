@@ -12,7 +12,7 @@ export function CategoryTile({
       params={{ slug }}
       className="group relative flex w-full flex-col overflow-hidden rounded-sm border border-slate-100/70 bg-[#F8F7F2] shadow-sm transition-shadow hover:shadow-md"
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#EAE9E4]">
+      <div className="relative aspect-[2/1] w-full overflow-hidden bg-[#EAE9E4]">
         <img
           src={src}
           alt={name}
