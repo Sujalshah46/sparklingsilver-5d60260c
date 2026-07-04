@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
-import { inr, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -123,7 +123,6 @@ function OrderDetail() {
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
                   <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>
-                  <p className="mt-1 font-semibold text-burgundy">{inr(Number(it.unit_price) * it.quantity)}</p>
                 </div>
               </div>
             ))}
@@ -138,23 +137,8 @@ function OrderDetail() {
           </div>
         </section>
 
-        <section>
-          <h3 className="mb-2 font-serif text-base font-semibold">Payment</h3>
-          <div className="rounded-xl border border-border bg-card p-4 text-sm">
-            <p>Method: <span className="font-semibold capitalize">{data.payment_method ?? "—"}</span></p>
-            <p>Status: <span className="font-semibold capitalize">{data.payment_status}</span></p>
-            <div className="mt-3 space-y-1 border-t border-border pt-3 text-muted-foreground">
-              <Row label="Subtotal" value={inr(data.subtotal)} />
-              <Row label="GST" value={inr(data.gst)} />
-              <div className="mt-1 flex justify-between text-base font-semibold text-foreground"><span>Total</span><span className="font-serif text-burgundy">{inr(data.total)}</span></div>
-            </div>
-          </div>
-        </section>
       </div>
     </MobileShell>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between"><span>{label}</span><span>{value}</span></div>;
-}

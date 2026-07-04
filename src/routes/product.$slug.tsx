@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { resolveProductImage } from "@/lib/product-images";
-import { inr, grams } from "@/lib/format";
+import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
@@ -33,12 +33,12 @@ const productQuery = (slug: string) =>
 
 export const Route = createFileRoute("/product/$slug")({
   head: ({ params, loaderData }) => {
-    const p = (loaderData as { product?: { name: string; sku: string; description: string | null; price: number | string; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
+    const p = (loaderData as { product?: { name: string; sku: string; description: string | null; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = p ? `${p.name} — Sparkling Silver` : "Jewellery — Sparkling Silver";
     const rawDesc = (p?.description ?? "").trim();
     const desc = rawDesc
       ? rawDesc.slice(0, 158)
-      : `Shop ${p?.name ?? "premium jewellery"} at Sparkling Silver. BIS hallmarked, transparent pricing.`;
+      : `${p?.name ?? "Premium 925 sterling silver jewellery"} at Sparkling Silver — BIS hallmarked wholesale designs.`;
     const url = `https://sparkling-jewellers-llp.lovable.app/product/${params.slug}`;
     const img = p?.image_url
       ? (p.image_url.startsWith("http") ? p.image_url : `https://sparkling-jewellers-llp.lovable.app${p.image_url}`)
@@ -69,15 +69,6 @@ export const Route = createFileRoute("/product/$slug")({
                 image: img,
                 description: rawDesc || p.name,
                 brand: { "@type": "Brand", name: "Sparkling Silver LLP" },
-                offers: {
-                  "@type": "Offer",
-                  url,
-                  priceCurrency: "INR",
-                  price: String(p.price),
-                  availability: p.in_stock
-                    ? "https://schema.org/InStock"
-                    : "https://schema.org/OutOfStock",
-                },
               }),
             },
           ]
@@ -101,9 +92,6 @@ function ProductPage() {
   const product = data!.product;
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
 
-  const silverValue = Number(product.net_weight) * 95; // 925 silver reference (₹/g)
-  const makingCharge = (silverValue * Number(product.making_charge_pct)) / 100;
-  const gst = (silverValue + makingCharge) * 0.03;
 
   const addToCart = useMutation({
     mutationFn: async () => {
@@ -148,8 +136,6 @@ function ProductPage() {
             {product.stone_type && <Badge variant="outline">{product.stone_type}</Badge>}
             {product.occasion && <Badge variant="outline">{product.occasion}</Badge>}
           </div>
-          <p className="mt-4 font-serif text-3xl font-semibold text-burgundy">{inr(product.price)}</p>
-          <p className="text-xs text-muted-foreground">Inclusive of all taxes</p>
         </div>
 
         <div className="grid grid-cols-3 gap-2 rounded-xl border border-border bg-card p-3 text-center text-xs">
@@ -175,15 +161,6 @@ function ProductPage() {
           </div>
         )}
 
-        <div className="rounded-xl border border-border bg-card p-4">
-          <p className="font-semibold">Pricing Breakdown</p>
-          <div className="mt-2 space-y-1 text-sm">
-            <div className="flex justify-between text-muted-foreground"><span>Silver value (ref)</span><span>{inr(silverValue)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Making charges ({product.making_charge_pct}%)</span><span>{inr(makingCharge)}</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>GST (3%)</span><span>{inr(gst)}</span></div>
-            <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold"><span>Total</span><span className="text-burgundy">{inr(product.price)}</span></div>
-          </div>
-        </div>
 
         {product.description && (
           <div>

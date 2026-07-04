@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { inr, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -135,21 +135,12 @@ function AdminOrderDetail() {
                 <div className="min-w-0 flex-1">
                   <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
                   <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>
-                  <p className="mt-1 font-semibold text-burgundy">{inr(Number(it.unit_price) * it.quantity)}</p>
                 </div>
               </div>
             ))}
           </div>
         </section>
 
-        <section className="rounded-xl border border-border bg-card p-4 text-sm">
-          <h3 className="mb-2 font-serif text-base font-semibold">Totals</h3>
-          <Row label="Subtotal" value={inr(order.subtotal)} />
-          <Row label="GST" value={inr(order.gst)} />
-          <div className="mt-1 flex justify-between border-t border-border pt-2 text-base font-semibold">
-            <span>Total</span><span className="font-serif text-burgundy">{inr(order.total)}</span>
-          </div>
-        </section>
 
         <section className="rounded-xl border border-border bg-card p-4 text-sm">
           <h3 className="mb-2 font-serif text-base font-semibold">Tracking / AWB</h3>

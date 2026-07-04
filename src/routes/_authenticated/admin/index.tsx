@@ -4,10 +4,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { inr, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, IndianRupee, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
@@ -30,10 +30,10 @@ function AdminDashboard() {
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
       const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList] = await Promise.all([
-        supabase.from("orders").select("id, status, total, created_at"),
+        supabase.from("orders").select("id, status, created_at"),
         supabase
           .from("orders")
-          .select("id, order_no, status, total, customer_name, customer_city, created_at")
+          .select("id, order_no, status, customer_name, customer_city, created_at")
           .order("created_at", { ascending: false })
           .limit(5),
         supabase.from("products").select("id", { count: "exact", head: true }),
@@ -52,9 +52,7 @@ function AdminDashboard() {
       const accepted = rows.filter((o) => o.status === "accepted").length;
       const last7 = rows.filter((o) => o.created_at >= since7);
       const today = rows.filter((o) => o.created_at >= sinceToday);
-      const revenue7 = last7
-        .filter((o) => ["accepted", "processing", "ready", "dispatched", "delivered"].includes(o.status))
-        .reduce((s, o) => s + Number(o.total ?? 0), 0);
+      const completedLast7 = last7.filter((o) => ["accepted", "processing", "ready", "dispatched", "delivered"].includes(o.status)).length;
 
       const invRows = inv.data ?? [];
       const lowStock = invRows.filter((p) => (p.stock_quantity ?? 0) > 0 && (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0)).length;
@@ -65,7 +63,7 @@ function AdminDashboard() {
         pending,
         accepted,
         ordersToday: today.length,
-        revenue7,
+        completedLast7,
         productCount: products.count ?? 0,
         customerCount: customers.count ?? 0,
         newEnquiries: enquiries.count ?? 0,
@@ -119,7 +117,7 @@ function AdminDashboard() {
   const statCards = [
     { label: "Pending", value: stats?.pending ?? 0, icon: Clock, accent: "text-amber-700 bg-amber-50" },
     { label: "Orders today", value: stats?.ordersToday ?? 0, icon: ShoppingBag, accent: "text-burgundy bg-burgundy/10" },
-    { label: "Revenue · 7d", value: inr(stats?.revenue7 ?? 0), icon: IndianRupee, accent: "text-green-800 bg-green-50" },
+    { label: "Completed · 7d", value: stats?.completedLast7 ?? 0, icon: Package, accent: "text-green-800 bg-green-50" },
     { label: "Total orders", value: stats?.totalOrders ?? 0, icon: Package, accent: "text-blue-800 bg-blue-50" },
     { label: "Products", value: stats?.productCount ?? 0, icon: Boxes, accent: "text-charcoal bg-gold/15" },
     { label: "Low stock", value: (stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0), icon: AlertTriangle, accent: "text-amber-800 bg-amber-50" },
@@ -241,7 +239,6 @@ function AdminDashboard() {
                       </div>
                       <div className="flex flex-col items-end gap-1">
                         <Badge className="capitalize">{o.status}</Badge>
-                        <span className="font-serif text-sm font-semibold text-burgundy">{inr(o.total)}</span>
                       </div>
                     </div>
                   </Link>
