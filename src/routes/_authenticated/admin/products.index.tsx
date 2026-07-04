@@ -28,7 +28,7 @@ function ProductsAdmin() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, sku, slug, image_url, stock_quantity, low_stock_threshold, is_new, is_bestseller, gross_weight, net_weight, categories(name)")
+        .select("id, name, sku, slug, image_url, stock_quantity, low_stock_threshold, is_new, is_bestseller, gross_weight, categories(name)")
         .order("created_at", { ascending: false });
       return data ?? [];
     },
@@ -104,7 +104,7 @@ function ProductsAdmin() {
                       <p className="truncate text-[11px] text-muted-foreground">
                         {p.sku} · {p.categories?.name ?? "—"}
                       </p>
-                      <p className="mt-0.5 text-[11px] text-[#555]">Gross: {Number(p.gross_weight ?? 0).toFixed(3)} g · Net: {Number(p.net_weight ?? 0).toFixed(3)} g</p>
+                      <p className="mt-0.5 text-[11px] text-[#555]">Gross: {Number(p.gross_weight ?? 0).toFixed(3)} g</p>
                       <div className="mt-1 flex flex-wrap items-center gap-1">
                         {out && <Badge className="bg-destructive/15 text-destructive"><PackageX className="mr-1 h-3 w-3" />Out</Badge>}
                         {low && <Badge className="bg-amber-100 text-amber-900"><AlertTriangle className="mr-1 h-3 w-3" />Low ({qty})</Badge>}
