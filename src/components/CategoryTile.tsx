@@ -10,24 +10,34 @@ export function CategoryTile({
     <Link
       to="/category/$slug"
       params={{ slug }}
-      className="group relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-[#F0F0F0]"
+      className="group relative flex flex-col overflow-hidden rounded-sm border border-slate-100/60 bg-[#F8F7F2] shadow-sm transition-shadow hover:shadow-md"
     >
-      <img
-        src={src}
-        alt={name}
-        loading="lazy"
-        onError={() => setSrc(categoryPlaceholder)}
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-      />
-      {!!newCount && newCount > 0 && (
-        <span className="absolute right-2 top-2 rounded-[4px] bg-teal px-2 py-0.5 text-[10px] font-semibold text-white">
-          +{newCount} New
-        </span>
-      )}
-      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent p-2.5">
-        <p className="text-[15px] font-semibold leading-tight text-white">{name}</p>
+      <div className="relative aspect-[4/5] overflow-hidden bg-[#EAE9E4]">
+        <img
+          src={src}
+          alt={name}
+          loading="lazy"
+          onError={() => setSrc(categoryPlaceholder)}
+          className="absolute inset-0 h-full w-full object-cover opacity-95 transition-transform duration-500 group-hover:scale-105"
+        />
+        {!!newCount && newCount > 0 && (
+          <span
+            className="absolute right-2 top-2 rounded-sm bg-[#A5D7D2] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-tight text-teal-900"
+            style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}
+          >
+            +{newCount} New
+          </span>
+        )}
+      </div>
+      <div className="bg-white p-3">
+        <h3 className="font-serif text-sm font-medium text-slate-800">{name}</h3>
         {typeof count === "number" && (
-          <p className="text-[11px] text-white/85">Designs: {count} Pcs</p>
+          <p
+            className="mt-0.5 text-[10px] text-slate-400"
+            style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}
+          >
+            Designs: {count} Pcs
+          </p>
         )}
       </div>
     </Link>
