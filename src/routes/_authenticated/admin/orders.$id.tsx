@@ -88,7 +88,9 @@ function AdminOrderDetail() {
             </div>
             <Badge className="capitalize">{order.status}</Badge>
           </div>
+          <StageTracker status={order.status as OrderStatus} />
         </div>
+
 
         <section className="rounded-xl border border-border bg-card p-4 text-sm">
           <h3 className="mb-2 font-serif text-base font-semibold">Customer</h3>
