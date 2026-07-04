@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useCartWeight } from "@/hooks/use-cart-weight";
+import { whatsappUrl } from "@/lib/site";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -123,7 +124,7 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-3 items-center"
+        className="mx-auto grid max-w-2xl grid-cols-[1fr_1fr_1fr_auto] items-center"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
         <Link
@@ -147,10 +148,22 @@ export function BottomNav() {
           </div>
           <span>Cart</span>
         </Link>
-        <div className="flex flex-col items-end justify-center pr-4 leading-none">
-          <span className="text-[18px] font-bold tabular-nums text-[#1A1A1A]">{weight.toFixed(3)}</span>
+        <div className="flex flex-col items-center justify-center leading-none">
+          <span className="text-[16px] font-bold tabular-nums text-[#1A1A1A]">{weight.toFixed(3)}</span>
           <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#777]">Total (g)</span>
         </div>
+        <a
+          href={whatsappUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Chat on WhatsApp"
+          className="mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full text-white shadow-[0_4px_12px_rgba(37,211,102,0.35)] ring-1 ring-black/10"
+          style={{ background: "linear-gradient(180deg, #25D366 0%, #1EBE5D 100%)" }}
+        >
+          <svg viewBox="0 0 32 32" className="h-6 w-6" fill="currentColor" aria-hidden="true">
+            <path d="M19.11 17.205c-.372 0-1.088 1.39-1.518 1.39a.63.63 0 0 1-.315-.1c-.802-.402-1.504-.817-2.163-1.447-.545-.516-1.146-1.29-1.46-1.963a.426.426 0 0 1-.073-.215c0-.33.99-.945.99-1.49 0-.143-.73-2.09-.832-2.335-.143-.372-.214-.487-.6-.487-.187 0-.36-.043-.53-.043-.302 0-.53.115-.746.315-.688.645-1.032 1.318-1.06 2.264v.114c-.015.99.472 1.977 1.017 2.78 1.23 1.82 2.506 3.41 4.554 4.34.616.287 2.035.888 2.708.888.66 0 1.876-.387 2.206-1.02.13-.26.155-.518.155-.79 0-.59-2.32-1.205-2.32-1.205zM16.115 0C7.246 0 .046 7.2.046 16.07c0 2.66.66 5.275 1.917 7.62L0 32l8.5-2.217a16.083 16.083 0 0 0 7.615 1.936c8.87 0 16.07-7.2 16.07-16.07S24.985 0 16.115 0z" />
+          </svg>
+        </a>
       </div>
     </nav>
   );
