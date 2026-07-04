@@ -33,6 +33,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin/orders'
@@ -167,6 +168,11 @@ const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => AuthenticatedOrdersRoute,
 } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminScanRoute = AuthenticatedAdminScanRouteImport.update({
   id: '/scan',
   path: '/scan',
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/admin/scan': typeof AuthenticatedAdminScanRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/admin/scan': typeof AuthenticatedAdminScanRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRouteWithChildren
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/admin/orders'
     | '/admin/products'
     | '/admin/scan'
+    | '/admin/users'
     | '/orders/$id'
     | '/admin/'
     | '/admin/inventory/$id'
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin/inventory'
     | '/admin/orders'
     | '/admin/scan'
+    | '/admin/users'
     | '/orders/$id'
     | '/admin'
     | '/admin/inventory/$id'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/scan'
+    | '/_authenticated/admin/users'
     | '/_authenticated/orders/$id'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/inventory/$id'
@@ -650,6 +662,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersIdRouteImport
       parentRoute: typeof AuthenticatedOrdersRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/scan': {
       id: '/_authenticated/admin/scan'
       path: '/scan'
@@ -793,6 +812,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRouteWithChildren
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
   AuthenticatedAdminScanRoute: typeof AuthenticatedAdminScanRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -805,6 +825,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminProductsRoute:
       AuthenticatedAdminProductsRouteWithChildren,
     AuthenticatedAdminScanRoute: AuthenticatedAdminScanRoute,
+    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
 
