@@ -138,10 +138,19 @@ function ProductPage() {
           </div>
         </div>
 
-        <div className="rounded-xl border border-gold/40 bg-card p-4 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Gross Weight</p>
-          <p className="mt-1 font-serif text-2xl font-bold text-foreground">{grams(product.gross_weight)}</p>
+        <div className="relative flex items-center gap-4 border border-gold/40 bg-gradient-to-br from-card via-background to-card p-4 shadow-sm">
+          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-gold/50 bg-gradient-to-tr from-background to-card shadow-inner">
+            <span className="font-serif text-[10px] font-bold tracking-widest text-burgundy">S925</span>
+          </div>
+          <div className="flex flex-1 flex-col">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">Gross Weight</span>
+            <span className="font-serif text-3xl font-semibold leading-none text-foreground">
+              {grams(product.gross_weight)}
+            </span>
+          </div>
+          <div className="absolute right-3 top-2 text-[9px] font-medium uppercase tracking-[0.2em] text-gold">Certified</div>
         </div>
+
 
 
         {product.sizes && product.sizes.length > 0 && (
