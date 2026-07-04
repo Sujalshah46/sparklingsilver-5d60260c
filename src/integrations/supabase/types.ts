@@ -254,8 +254,10 @@ export type Database = {
       }
       order_items: {
         Row: {
+          gross_weight: number | null
           id: string
           image_url: string | null
+          net_weight: number | null
           order_id: string
           product_id: string | null
           product_name: string
@@ -265,8 +267,10 @@ export type Database = {
           unit_price: number
         }
         Insert: {
+          gross_weight?: number | null
           id?: string
           image_url?: string | null
+          net_weight?: number | null
           order_id: string
           product_id?: string | null
           product_name: string
@@ -276,8 +280,10 @@ export type Database = {
           unit_price: number
         }
         Update: {
+          gross_weight?: number | null
           id?: string
           image_url?: string | null
+          net_weight?: number | null
           order_id?: string
           product_id?: string | null
           product_name?: string
