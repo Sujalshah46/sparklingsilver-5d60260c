@@ -4,12 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { resolveProductImage } from "@/lib/product-images";
-import { inr } from "@/lib/format";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { getErrorMessage } from "@/lib/errors";
+
 
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: "Cart — Sparkling Silver" }] }),
@@ -46,9 +45,11 @@ function CartPage() {
   });
 
   const items = data ?? [];
-  const subtotal = items.reduce((s, it) => s + Number(it.product?.price ?? 0) * it.quantity, 0);
-  const gst = subtotal * 0.03;
-  const total = subtotal + gst;
+  const totalPieces = items.reduce((n, it) => n + it.quantity, 0);
+  const totalNetWt = items.reduce(
+    (s, it) => s + Number(it.product?.net_weight ?? 0) * it.quantity,
+    0,
+  );
 
   return (
     <MobileShell title="Cart">
@@ -71,8 +72,9 @@ function CartPage() {
                   <div className="flex min-w-0 flex-1 flex-col justify-between">
                     <div>
                       <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product?.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{it.product?.purity} · {it.product?.net_weight}g{it.size ? ` · Size ${it.size}` : ""}</p>
-                      <p className="mt-1 font-serif font-semibold text-burgundy">{inr(it.product?.price ?? 0)}</p>
+                      <p className="text-[11px] text-muted-foreground">{it.product?.purity}{it.size ? ` · Size ${it.size}` : ""}</p>
+                      <p className="mt-1 text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Gross Wt:</span> {Number(it.product?.gross_weight ?? 0).toFixed(3)} g</p>
+                      <p className="text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Net Wt:</span> {Number(it.product?.net_weight ?? 0).toFixed(3)} g</p>
                     </div>
                     <div className="mt-2 flex items-center justify-between">
                       <div className="inline-flex items-center rounded-full border border-border">
@@ -88,14 +90,13 @@ function CartPage() {
             </div>
 
             <div className="mt-4 rounded-xl border border-border bg-card p-4">
-              <Input placeholder="Promo code (optional)" />
-              <div className="mt-4 space-y-1 text-sm">
-                <Row label="Subtotal" value={inr(subtotal)} />
-                <Row label="GST (3%)" value={inr(gst)} />
-                <div className="mt-2 flex justify-between border-t border-border pt-2 text-base font-semibold">
-                  <span>Total</span><span className="font-serif text-burgundy">{inr(total)}</span>
-                </div>
+              <div className="space-y-1 text-sm">
+                <Row label="Total pieces" value={String(totalPieces)} />
+                <Row label="Total net weight" value={`${totalNetWt.toFixed(3)} g`} />
               </div>
+              <p className="mt-3 text-[11px] text-muted-foreground">
+                Our team will confirm your order details on WhatsApp after checkout.
+              </p>
             </div>
 
             <Button asChild className="mt-4 h-12 w-full bg-burgundy text-ivory hover:bg-burgundy/90">
