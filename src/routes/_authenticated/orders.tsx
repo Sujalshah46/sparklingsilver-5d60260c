@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
-import { inr, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,7 @@ function OrdersPage() {
                     </div>
                     <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
                   </div>
-                  <p className="mt-2 font-serif text-base font-semibold text-burgundy">{inr(o.total)}</p>
+                  
                 </Link>
               </li>
             ))}
