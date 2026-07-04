@@ -145,14 +145,3 @@ function OrderDetail() {
   );
 }
 
-function _unused_Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between"><span>{label}</span><span>{value}</span></div>;
-}
-      </div>
-    </MobileShell>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between"><span>{label}</span><span>{value}</span></div>;
-}
