@@ -6,11 +6,26 @@ export const Route = createFileRoute("/api/public/hooks/low-stock-digest")({
     handlers: {
       POST: async ({ request }) => {
         try {
-          // Light auth — anon key via apikey header (per scheduled-jobs pattern)
-          const apikey = request.headers.get("apikey");
-          if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+          // Real shared secret — server-only, never shipped to clients.
+          const expected = process.env.CRON_SECRET;
+          if (!expected) {
+            console.error("[low-stock-digest] CRON_SECRET not configured");
+            return new Response("Server misconfigured", { status: 500 });
+          }
+          const provided =
+            request.headers.get("x-cron-secret") ??
+            request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
+            "";
+          const a = Buffer.from(provided);
+          const b = Buffer.from(expected);
+          if (a.length !== b.length) {
             return new Response("Unauthorized", { status: 401 });
           }
+          const { timingSafeEqual } = await import("node:crypto");
+          if (!timingSafeEqual(a, b)) {
+            return new Response("Unauthorized", { status: 401 });
+          }
+
           const url = process.env.SUPABASE_URL;
           const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
           if (!url || !serviceKey) {
