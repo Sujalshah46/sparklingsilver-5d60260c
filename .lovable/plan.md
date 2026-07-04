@@ -1,78 +1,70 @@
-# Sparkling Jewellers — Tanvi/Yug-style B2B Redesign
+# Admin-Controlled User Creation
 
-A full visual + UX overhaul. The current consumer storefront (gold/burgundy, rounded cards, prices, retail copy) becomes a clinical wholesale catalogue (mint teal, sharp flat cards, weight/karat-first, no prices in lists, weight-total bottom bar).
+Move from open signup to an admin-only user creation model matching your flowchart.
 
-## Scope
+## Auth Changes
 
-Frontend + presentation only. No schema changes, no checkout logic changes, no admin changes. Cart, wishlist, auth, routing, products, and the admin panel keep working exactly as they do today — only their skins change.
+- **Disable self-registration**: Remove the "Create Account" tab on `/auth`. Login screen shows only Email + Password + Forgot Password.
+- **Disable signups in Cloud auth settings** so the public API also rejects sign-ups.
+- **Blocked user check on login**: If `profiles.status = 'inactive'`, sign the user out immediately and show "Login blocked — Contact Admin."
+- **Force password change on first login**: If `profiles.must_change_password = true`, redirect to `/change-password` after login; block all other routes until it's set.
 
-## 1. Design tokens (`src/styles.css`)
+## Forgot Password Flow (Buyer)
 
-- Replace palette: `--primary` = mint teal `#5BBFAD`, surfaces white/`#F8F8F8`, borders `#E5E5E5`, text `#1A1A1A` / `#555` / `#999`, warning `#FFF8E1`/`#F5C518`, gold accent `#D4A843` (hero only).
-- Radius: cards `4px`, buttons `2px`. Remove heavy shadows (flat).
-- Typography: keep Playfair Display for hero only; body becomes Inter (Calibri stand-in — Calibri isn't web-licensable). Add a `.font-display` utility for hero italics.
-- Dark mode: keep tokens but de-emphasize — this aesthetic is light-first. Toggle stays functional.
-- Add `--section-accent` underline utility and `.tracking-section` (0.12em uppercase 13px teal) helper class.
+- Buyer taps "Forgot Password?" → enters email/username → a row is inserted into `password_reset_requests` (status `pending`) and admin gets an email + in-app notification.
+- No auto-reset email is sent to the buyer. Admin performs the reset from the admin panel; buyer receives the new password via email/SMS from admin.
 
-## 2. Shell — `MobileShell.tsx`
+## Admin Panel: Create & Manage Users
 
-- Top bar: 52px white, 1px bottom border. Left hamburger (opens a new Sheet side menu), center `SPARKLING JEWELLERS LLP` uppercase tracked, right account + search icons. Logo image removed from bar.
-- Side menu (Sheet): Home, Catalogue, My Orders, Wishlist, Account, Gold Rate, Contact, About; admin link if admin; version footer.
-- Bottom bar: 3 slots — HOME, CART, and a right-aligned **TOTAL** weight readout (sum of `cart_items.quantity * products.net_weight`) in grams to 3 decimals. New `useCartWeight()` hook backed by the existing cart query.
-- Theme toggle stays in the top bar (small).
+New pages under `/admin/users`:
 
-## 3. Home — `routes/index.tsx`
+1. **Create User** (`/admin/users/new`)
+   - Fields: Business Name, Contact Person, Email, Phone, Business Type/Category, Notes.
+   - System auto-generates: unique username (e.g. `sparkle_jewels01`) + strong random password.
+   - Creates the auth user via Admin API (email pre-confirmed), inserts `profiles` row with `status='active'`, `must_change_password=true`.
+   - Shows credentials once with Copy Username / Copy Password / Send Credentials (Email) buttons.
 
-- Hero: full-bleed 55vh slider, dark left-gradient overlay, Playfair italic collection name + spaced `C O L L E C T I O N` label, dash-pill indicators, 4s autoplay crossfade. Reuse existing hero assets.
-- Limited-access banner: shown when the signed-in user has no admin role and (heuristic) no orders — dismissible per session via `localStorage`. Triangle icon, `ASK FOR ACCESS` teal button → WhatsApp deep link.
-- `NEW ARRIVAL` section: teal uppercase header + underline accent, "Total Products: N" count, `VIEW ALL` outlined pill → `/catalogue?sort=newest`. Horizontal scroll row of new `CatalogueCard` (spec-only variant, no price, no CTA), with CSS ruler ticks on left + bottom edges of the image.
-- `OUR COLLECTION`: 3-col, 2px gap, full-bleed photo tiles per category with `+N New` teal badge and bottom-left white overlay (name + `Designs: N Pcs`). Square-ish, no radius.
+2. **Manage Users** (`/admin/users`)
+   - Table: Username, Business Name, Email, Status badge (Active/Inactive), Date Created, Actions.
+   - Actions per row: **Edit** details, **Deactivate/Reactivate** toggle, **Reset Password** (generates new strong password, shows + copy + email), **Send Credentials** (re-email current username + freshly reset password).
 
-## 4. Catalogue / Category — `routes/catalogue.tsx`, `routes/category.$slug.tsx`
+3. **Reset Password Flow (Admin)**
+   - Select user → click Reset → system generates new password → displayed with copy → "Send to User" emails it. Sets `must_change_password=true`.
 
-- Title bar shows `Category (N)`.
-- SORT / FILTER / VIEW STYLE tri-tab bar (full-width, dividers). SORT and FILTER open existing sheets; VIEW STYLE toggles 2-col ↔ 1-col list.
-- 2-col grid of new B2B `CatalogueCard`:
-  - Wishlist `♡` top-right.
-  - Square white image with ruler ticks.
-  - Centered product code (SKU), Gross/Net/Karat lines.
-  - Inline quantity stepper (`− [n] +`).
-  - Flush-bottom teal `ADD TO CART` bar (calls existing cart upsert with chosen qty).
-  - No price.
-- Sticky bottom CTA strip above bottom-bar: "Want to view our entire product range? — ASK FOR ACCESS".
-- Floating `⊙ ADVANCE FILTER` pill bottom-right opens the existing filter sheet.
+4. **Password Reset Requests inbox** (`/admin/users/requests`)
+   - Lists pending buyer forgot-password requests with a one-click "Reset & Send" action.
 
-## 5. Product detail — `routes/product.$slug.tsx`
+## Database (migration)
 
-- Image panel with "Tap to Zoom" hint (lightbox via existing Dialog).
-- Config panel: SKU title, size pills, karat pills (9/14/18/20/22 — filtered to product's available metal), PIC quantity stepper, remarks textarea (stored on cart row's existing `notes`-style field if available, else local state passed at add-to-cart time — verify via `code--view`).
-- Specs grid: Category / Code / Gross / Net / Pieces / Karat with zebra rows.
-- Two stacked full-width CTAs: outlined `ADD TO SHORTLIST` (wishlist) + filled teal `ADD TO CART`. Existing pricing-breakdown block hidden in this redesign (kept in code, gated behind a `showPricing` flag = false by default for B2B feel).
+- `profiles`: add `username text unique`, `status text default 'active' check in ('active','inactive')`, `must_change_password bool default false`, `business_name`, `contact_person`, `business_type`.
+- `password_reset_requests` table: `id, user_id, email, status ('pending'|'resolved'), created_at, resolved_at, resolved_by`. RLS: user can insert own; admin can select/update all.
+- `user_activity_log` table: `id, user_id, action, meta jsonb, created_at`. Logs login, password change, admin resets, status toggles. Admin-read only.
+- Add GRANTs + RLS policies per Lovable rules.
 
-## 6. Search — `routes/search.tsx`
+## Server Functions (admin-only, `requireSupabaseAuth` + `has_role('admin')` check)
 
-- Convert to a modal-style layout: dark overlay backdrop, centered card, left filter-type rail (Code/Name/Category), right input, full-width teal `SEARCH` button. Existing query logic untouched.
+- `adminCreateUser({ businessName, contactPerson, email, phone, businessType })` → returns `{ username, password }`.
+- `adminResetPassword({ userId })` → returns `{ password }`, sets `must_change_password=true`.
+- `adminSetUserStatus({ userId, status })`.
+- `adminSendCredentials({ userId, password })` → emails via Lovable email infra.
+- `adminListUsers()`, `adminListResetRequests()`, `adminResolveResetRequest({ requestId })`.
+- `submitPasswordResetRequest({ emailOrUsername })` (public) → inserts request + notifies admin.
+- `changeOwnPassword({ newPassword })` → updates password, clears `must_change_password`, logs activity.
 
-## 7. Cleanup
+## Buyer-side New Route
 
-- Remove burgundy usage from `ProductCard`, hero, CTAs, badges. Replace `bg-burgundy` / `text-burgundy` / `bg-gold` references with semantic `primary`/`accent`/`muted` classes.
-- Remove `Bestseller` / `New` pill colors from old palette; new style uses teal `+N New` badge on category tiles only.
-- Hide price in list contexts; keep price on product detail (gated) and cart/checkout where it's required for orders.
-- WhatsApp FAB recolored to mint teal.
+- `/change-password` (authenticated, ungated by must-change flag) — form to set new password, then redirects home.
 
-## 8. Out of scope (won't change)
+## Emails
 
-- Database, RLS, server functions, checkout flow, admin panel, push, SEO metadata, security findings.
-- Calibri font (not web-licensable) — Inter is the documented substitute.
-- Dark theme is preserved but the redesign is tuned for light.
+- Auth email infra scaffold (if not already set) for: "Your Sparkling Silver credentials", "Your password has been reset", plus admin notification "New password reset request".
 
-## Technical notes
+## Removals / Edits
 
-- Ruler ticks: pure CSS via `repeating-linear-gradient` on a wrapper around the image; numbers via a small absolutely-positioned `<ol>` with `aria-hidden`.
-- Cart weight total: derive from existing `["cart"]` query; add `useMemo` selector in `MobileShell`. No new queries.
-- `localStorage` keys: `sj.dismissed.accessBanner`, `sj.viewStyle`.
-- Files I'll edit (no new routes): `src/styles.css`, `src/components/MobileShell.tsx`, `src/components/ProductCard.tsx` (kept for back-compat) + new `src/components/CatalogueCard.tsx`, `src/components/HeroSlider.tsx`, `src/components/AccessBanner.tsx`, `src/components/CategoryTile.tsx`, `src/components/WhatsAppFab.tsx`, `src/routes/index.tsx`, `src/routes/catalogue.tsx`, `src/routes/category.$slug.tsx`, `src/routes/product.$slug.tsx`, `src/routes/search.tsx`.
+- `src/routes/auth.tsx`: drop Sign Up tab and `SignUpForm`. Add inactive-account handling after successful sign-in.
+- `handle_new_user` trigger: keep, but now only fires from admin-created users (still needed to seed `profiles`).
 
-## Delivery
+## Out of Scope (ask if needed)
 
-One batch. Tokens + shell first, then home, then listing/detail/search, then cleanup pass. I'll verify with a build and a Playwright screenshot of `/` and `/catalogue` before handing back.
+- SMS delivery (needs a provider like Twilio — not built into Lovable).
+- Username-based login (Supabase logs in by email; username shown for admin reference, login stays email-based). Say the word if you want true username login and I'll add an email-lookup shim.
