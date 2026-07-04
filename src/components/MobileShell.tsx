@@ -124,7 +124,7 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-[1fr_1fr_1fr_auto] items-center"
+        className="mx-auto grid max-w-2xl grid-cols-4 items-center"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
         <Link
@@ -157,7 +157,7 @@ export function BottomNav() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp"
-          className="mr-2 grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.35)]"
+          className="mx-auto grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.35)]"
         >
           <svg viewBox="0 0 32 32" className="h-11 w-11" aria-hidden="true">
             <circle cx="16" cy="16" r="16" fill="#25D366" />
