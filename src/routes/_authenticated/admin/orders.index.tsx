@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/orders")({
+export const Route = createFileRoute("/_authenticated/admin/orders/")({
   head: () => ({ meta: [{ title: "Admin — Orders" }] }),
   component: AdminOrders,
 });
