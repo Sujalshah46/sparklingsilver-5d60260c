@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
-import { Bell, Package, Sparkles, Gift, TrendingUp } from "lucide-react";
+import { Bell, Package, Sparkles, Gift } from "lucide-react";
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({ meta: [{ title: "Notifications — Sparkling Silver" }] }),
@@ -11,7 +11,6 @@ const SAMPLE = [
   { icon: Package, t: "Your order SJ241124001 is being processed", h: "Today, 10:30 AM", c: "Order Update" },
   { icon: Sparkles, t: "New Bridal Collection just dropped — explore now", h: "Yesterday", c: "New Arrivals" },
   { icon: Gift, t: "Festive offer: Up to ₹2,000 off on making charges", h: "2 days ago", c: "Offer" },
-  { icon: TrendingUp, t: "925 silver rate updated — ₹88 / gram", h: "3 days ago", c: "Silver Rate" },
 ];
 
 function NotificationsPage() {

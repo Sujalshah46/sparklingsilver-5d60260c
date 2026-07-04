@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
-import { SilverRateStrip } from "@/components/SilverRateStrip";
+
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { HeroSlider } from "@/components/HeroSlider";
 import { AccessBanner } from "@/components/AccessBanner";
@@ -129,7 +129,7 @@ function Home() {
   return (
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
-      <SilverRateStrip />
+      
       <HeroSlider slides={heroSlides} />
       <AccessBanner />
 
