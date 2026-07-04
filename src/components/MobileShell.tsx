@@ -115,9 +115,16 @@ export function TopBar() {
   );
 }
 
+const buzz = (ms = 15) => {
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+    try { navigator.vibrate(ms); } catch {}
+  }
+};
+
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const weight = useCartWeight();
+  const navigate = useNavigate();
   const isActive = (to: string, exact = false) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
@@ -129,6 +136,7 @@ export function BottomNav() {
       >
         <Link
           to="/"
+          onClick={() => buzz(12)}
           className={`flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider ${
             isActive("/", true) ? "text-[#1A1A1A]" : "text-[#777]"
           }`}
@@ -138,6 +146,7 @@ export function BottomNav() {
         </Link>
         <Link
           to="/cart"
+          onClick={() => buzz(15)}
           className={`relative flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold uppercase tracking-wider ${
             isActive("/cart") ? "text-[#1A1A1A]" : "text-[#777]"
           }`}
@@ -148,16 +157,22 @@ export function BottomNav() {
           </div>
           <span>Cart</span>
         </Link>
-        <div className="flex flex-col items-center justify-center leading-none">
+        <button
+          type="button"
+          onClick={() => { buzz(15); navigate({ to: "/cart" }); }}
+          className="flex flex-col items-center justify-center leading-none focus:outline-none"
+          aria-label="View cart total weight"
+        >
           <span className="text-[16px] font-bold tabular-nums text-[#1A1A1A]">{weight.toFixed(3)}</span>
           <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#777]">Total (g)</span>
-        </div>
+        </button>
         <a
           href={whatsappUrl()}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => buzz(20)}
           aria-label="Chat on WhatsApp"
-          className="mx-auto grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.35)]"
+          className="mx-auto grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.35)] active:scale-95 transition-transform"
         >
           <svg viewBox="0 0 32 32" className="h-11 w-11" aria-hidden="true">
             <circle cx="16" cy="16" r="16" fill="#25D366" />
