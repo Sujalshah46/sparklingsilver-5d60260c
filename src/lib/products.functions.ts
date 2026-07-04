@@ -23,7 +23,7 @@ const baseFields = {
   metal: z.enum(["gold", "silver", "platinum", "diamond"]),
   purity: z.string().trim().min(1).max(32),
   gross_weight: z.number().nonnegative(),
-  net_weight: z.number().nonnegative().optional().nullable(),
+  net_weight: z.number().nonnegative().default(0),
   stone_weight: z.number().nonnegative().optional().nullable(),
   stone_type: z.string().trim().max(120).optional().nullable(),
   price: z.number().nonnegative(),
