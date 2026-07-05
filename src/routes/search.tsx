@@ -33,10 +33,13 @@ function SearchPage() {
     queryKey: ["search", q],
     enabled: q.length > 1,
     queryFn: async () => {
+      // Escape PostgREST filter special chars to prevent filter injection via .or()
+      const safe = q.replace(/[\\%_,()*"']/g, (c) => `\\${c}`);
+      const pattern = `%${safe}%`;
       const { data } = await supabase
         .from("products")
         .select("*")
-        .or(`name.ilike.%${q}%,sku.ilike.%${q}%,description.ilike.%${q}%`);
+        .or(`name.ilike.${pattern},sku.ilike.${pattern},description.ilike.${pattern}`);
       return (data ?? []) as ProductCardData[];
     },
   });
