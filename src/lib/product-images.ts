@@ -41,7 +41,10 @@ import premChains from "@/assets/cat-premium-chains.jpg";
 import premMangalsutra from "@/assets/cat-premium-mangalsutra.jpg";
 import premAnklets from "@/assets/cat-premium-anklets.jpg";
 import premKada from "@/assets/cat-premium-kada.jpg";
-import premSets from "@/assets/cat-premium-sets.jpg";
+import premAntique from "@/assets/cat-premium-antique.jpg";
+import premCz from "@/assets/cat-premium-cz.jpg";
+import premOpenClose from "@/assets/cat-premium-openclose.jpg";
+import premVictoria from "@/assets/cat-premium-victoria.jpg";
 
 export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
   rings: premRings,
@@ -55,7 +58,12 @@ export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
   anklets: premAnklets,
   kada: premKada,
   "jewelry-sets": premSets,
+  antique: premAntique,
+  cz: premCz,
+  "open-close": premOpenClose,
+  victoria: premVictoria,
 };
+
 import pr1 from "@/assets/prod-r-1.jpg";
 import pr2 from "@/assets/prod-r-2.jpg";
 import pr3 from "@/assets/prod-r-3.jpg";
