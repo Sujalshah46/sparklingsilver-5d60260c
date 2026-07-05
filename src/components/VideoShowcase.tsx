@@ -34,7 +34,7 @@ function VideoCard({ src }: { src: string }) {
     <button
       type="button"
       onClick={toggle}
-      className="relative w-[260px] shrink-0 snap-start overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
+      className="relative w-full shrink-0 snap-start overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
       style={{ aspectRatio: "9 / 16" }}
     >
       <video
