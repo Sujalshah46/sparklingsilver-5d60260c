@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import video8 from "@/assets/sparkling-video-8.mp4.asset.json";
 
 const VIDEOS: { src: string; title?: string }[] = [
@@ -6,41 +6,73 @@ const VIDEOS: { src: string; title?: string }[] = [
 ];
 
 export function VideoShowcase() {
+  const [index, setIndex] = useState(0);
+  const [muted, setMuted] = useState(true);
+  const handleEnded = () => setIndex((i) => (i + 1) % VIDEOS.length);
+
   return (
     <section className="pt-6">
       <div className="px-3">
         <p className="section-heading">Watch Our Collections</p>
         <span className="section-underline mt-2" />
       </div>
-      <div className="mt-3 flex justify-center gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide snap-x snap-mandatory">
-        {VIDEOS.map((v, i) => (
-          <VideoCard key={i} src={v.src} />
-        ))}
+      <div className="mt-3 flex justify-center px-3 pb-2">
+        <VideoCard
+          key={index}
+          src={VIDEOS[index].src}
+          muted={muted}
+          onToggleMute={() => setMuted((m) => !m)}
+          onEnded={handleEnded}
+        />
       </div>
+      {VIDEOS.length > 1 && (
+        <div className="mt-2 flex justify-center gap-1.5">
+          {VIDEOS.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => setIndex(i)}
+              aria-label={`Play video ${i + 1}`}
+              className={`h-1.5 rounded-full transition-all ${i === index ? "w-5 bg-teal-700" : "w-1.5 bg-slate-300"}`}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }
 
-function VideoCard({ src }: { src: string }) {
+function VideoCard({
+  src,
+  muted,
+  onToggleMute,
+  onEnded,
+}: {
+  src: string;
+  muted: boolean;
+  onToggleMute: () => void;
+  onEnded: () => void;
+}) {
   const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.muted = muted;
+    el.play().catch(() => {});
+  }, [src, muted]);
+
   const togglePlay = () => {
     const el = ref.current;
     if (!el) return;
     if (el.paused) { el.play(); setPlaying(true); }
     else { el.pause(); setPlaying(false); }
   };
-  const toggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const el = ref.current;
-    if (!el) return;
-    el.muted = !el.muted;
-    setMuted(el.muted);
-  };
+
   return (
     <div
-      className="relative w-full shrink-0 snap-start overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
+      className="relative w-full shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
       style={{ aspectRatio: "9 / 16" }}
     >
       <button type="button" onClick={togglePlay} className="absolute inset-0 h-full w-full">
@@ -49,10 +81,11 @@ function VideoCard({ src }: { src: string }) {
           src={src}
           className="h-full w-full object-cover"
           playsInline
-          loop
           preload="metadata"
+          autoPlay
           onPlay={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
+          onEnded={onEnded}
         />
         {!playing && (
           <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/20">
@@ -66,7 +99,7 @@ function VideoCard({ src }: { src: string }) {
       </button>
       <button
         type="button"
-        onClick={toggleMute}
+        onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
         aria-label={muted ? "Unmute" : "Mute"}
         className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
       >
