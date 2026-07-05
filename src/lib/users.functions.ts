@@ -140,8 +140,8 @@ export const adminSendCredentials = createServerFn({ method: "POST" })
     const html = `
       <div style="font-family:system-ui,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #eee;border-radius:12px">
         <h2 style="color:#0b2a20">Your Sparkling Silver credentials</h2>
-        <p>Hi ${p.full_name ?? ""}, your account has been created.</p>
-        <p><b>Username:</b> ${p.username}<br/><b>Email:</b> ${p.email}<br/><b>Password:</b> <code>${data.password}</code></p>
+        <p>Hi ${escapeHtml(p.full_name ?? "")}, your account has been created.</p>
+        <p><b>Username:</b> ${escapeHtml(p.username ?? "")}<br/><b>Email:</b> ${escapeHtml(p.email ?? "")}<br/><b>Password:</b> <code>${escapeHtml(data.password)}</code></p>
         <p>You'll be asked to set a new password on first login.</p>
       </div>`;
     const r = await sendAdminEmail({ to: p.email, subject: "Your Sparkling Silver credentials", html });
