@@ -11,25 +11,22 @@ export function VideoShowcase() {
   const handleEnded = () => setIndex((i) => (i + 1) % VIDEOS.length);
 
   return (
-    <section className="pt-8">
+    <section className="pt-5">
       <div className="flex flex-col items-center px-6 text-center">
-        <div className="mb-5 h-10 w-px bg-gradient-to-b from-transparent via-[#2C7A76] to-[#2C7A76] opacity-60" />
-        <span className="mb-3 pl-[0.6em] text-[10px] font-semibold uppercase tracking-[0.6em] text-[#2C7A76]">
+        <div className="mb-2 h-5 w-px bg-gradient-to-b from-transparent to-[#2C7A76] opacity-60" />
+        <span className="mb-1 pl-[0.4em] text-[9px] font-semibold uppercase tracking-[0.4em] text-[#2C7A76]">
           Watch
         </span>
         <h2
-          className="text-[40px] leading-[1.1] text-slate-900"
+          className="text-[22px] leading-[1.1] text-slate-900"
           style={{ fontFamily: "'Cormorant Garamond', 'Playfair Display', ui-serif, Georgia, serif", fontStyle: "italic" }}
         >
           Our <span className="font-light">Collections</span>
         </h2>
-        <div className="mt-6 flex items-center gap-4">
-          <div className="h-px w-10 bg-slate-300" />
-          <div className="relative">
-            <div className="h-2.5 w-2.5 rotate-45 border border-[#2C7A76]" />
-            <div className="absolute inset-0 h-2.5 w-2.5 rotate-45 scale-75 border border-[#2C7A76] opacity-30" />
-          </div>
-          <div className="h-px w-10 bg-slate-300" />
+        <div className="mt-2 flex items-center gap-2.5">
+          <div className="h-px w-6 bg-slate-300" />
+          <div className="h-1.5 w-1.5 rotate-45 border border-[#2C7A76]" />
+          <div className="h-px w-6 bg-slate-300" />
         </div>
       </div>
       <div className="mt-3 flex justify-center px-3 pb-2">
