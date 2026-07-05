@@ -42,7 +42,6 @@ function VideoCard({ src }: { src: string }) {
         src={src}
         className="h-full w-full object-cover"
         playsInline
-        muted
         loop
         preload="metadata"
         onPlay={() => setPlaying(true)}
