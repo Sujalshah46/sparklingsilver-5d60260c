@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import video8 from "@/assets/sparkling-video-8.mp4.asset.json";
+import video9 from "@/assets/sparkling-video-9.mp4.asset.json";
+import video10 from "@/assets/sparkling-video-10.mp4.asset.json";
 
 const VIDEOS: { src: string; title?: string }[] = [
   { src: video8.url },
+  { src: video9.url },
+  { src: video10.url },
 ];
 
 export function VideoShowcase() {
