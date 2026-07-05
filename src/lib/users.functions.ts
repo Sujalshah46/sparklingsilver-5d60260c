@@ -2,6 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+function escapeHtml(s: string) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+}
+
 async function ensureAdmin(supabase: any, userId: string) {
   const { data } = await supabase.from("user_roles").select("user_id").eq("user_id", userId).eq("role", "admin").maybeSingle();
   if (!data) throw new Error("Forbidden");
@@ -140,8 +144,8 @@ export const adminSendCredentials = createServerFn({ method: "POST" })
     const html = `
       <div style="font-family:system-ui,sans-serif;max-width:520px;margin:auto;padding:24px;border:1px solid #eee;border-radius:12px">
         <h2 style="color:#0b2a20">Your Sparkling Silver credentials</h2>
-        <p>Hi ${p.full_name ?? ""}, your account has been created.</p>
-        <p><b>Username:</b> ${p.username}<br/><b>Email:</b> ${p.email}<br/><b>Password:</b> <code>${data.password}</code></p>
+        <p>Hi ${escapeHtml(p.full_name ?? "")}, your account has been created.</p>
+        <p><b>Username:</b> ${escapeHtml(p.username ?? "")}<br/><b>Email:</b> ${escapeHtml(p.email ?? "")}<br/><b>Password:</b> <code>${escapeHtml(data.password)}</code></p>
         <p>You'll be asked to set a new password on first login.</p>
       </div>`;
     const r = await sendAdminEmail({ to: p.email, subject: "Your Sparkling Silver credentials", html });
@@ -208,7 +212,7 @@ export const submitPasswordResetRequest = createServerFn({ method: "POST" })
       const { sendAdminEmail } = await import("./admin-email.server");
       await sendAdminEmail({
         subject: "New password reset request",
-        html: `<p>A buyer requested a password reset.</p><p><b>Email:</b> ${data.email}</p>${data.note ? `<p><b>Note:</b> ${data.note}</p>` : ""}<p>Open the admin panel → Users → Reset Requests to handle it.</p>`,
+        html: `<p>A buyer requested a password reset.</p><p><b>Email:</b> ${escapeHtml(data.email)}</p>${data.note ? `<p><b>Note:</b> ${escapeHtml(data.note)}</p>` : ""}<p>Open the admin panel → Users → Reset Requests to handle it.</p>`,
       });
     } catch {}
     return { ok: true };
