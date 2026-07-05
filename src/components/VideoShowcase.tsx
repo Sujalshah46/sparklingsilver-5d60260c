@@ -12,7 +12,7 @@ export function VideoShowcase() {
         <p className="section-heading">Watch Our Collections</p>
         <span className="section-underline mt-2" />
       </div>
-      <div className="mt-3 flex gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide snap-x snap-mandatory">
+      <div className="mt-3 flex justify-center gap-3 overflow-x-auto px-3 pb-2 scrollbar-hide snap-x snap-mandatory">
         {VIDEOS.map((v, i) => (
           <VideoCard key={i} src={v.src} />
         ))}
