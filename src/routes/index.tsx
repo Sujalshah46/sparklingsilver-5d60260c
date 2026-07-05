@@ -131,7 +131,7 @@ function Home() {
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
       
-      <HeroSlider slides={heroSlides} />
+      <VideoShowcase />
       <AccessBanner />
 
       {/* NEW ARRIVAL */}
@@ -146,7 +146,6 @@ function Home() {
         </div>
       </section>
 
-      <VideoShowcase />
 
 
 
