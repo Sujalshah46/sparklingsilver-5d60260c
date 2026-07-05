@@ -146,6 +146,9 @@ function Home() {
         </div>
       </section>
 
+      <VideoShowcase />
+
+
 
       {/* OUR COLLECTION — 3-col photo grid */}
       <section className="pt-6">
