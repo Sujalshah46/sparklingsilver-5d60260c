@@ -13,6 +13,26 @@ export function VideoShowcase() {
   const [index, setIndex] = useState(0);
   const [muted, setMuted] = useState(true);
   const handleEnded = () => setIndex((i) => (i + 1) % VIDEOS.length);
+  const next = () => setIndex((i) => (i + 1) % VIDEOS.length);
+  const prev = () => setIndex((i) => (i - 1 + VIDEOS.length) % VIDEOS.length);
+
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current;
+    if (!start) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    touchStart.current = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) next();
+      else prev();
+    }
+  };
 
   return (
     <section className="pt-5">
@@ -33,7 +53,11 @@ export function VideoShowcase() {
           <div className="h-px w-6 bg-slate-300" />
         </div>
       </div>
-      <div className="mt-3 flex justify-center px-3 pb-2">
+      <div
+        className="mt-3 flex justify-center px-3 pb-2 touch-pan-y"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+      >
         <VideoCard
           key={index}
           src={VIDEOS[index].src}
@@ -42,6 +66,7 @@ export function VideoShowcase() {
           onEnded={handleEnded}
         />
       </div>
+
       {VIDEOS.length > 1 && (
         <div className="mt-2 flex justify-center gap-1.5">
           {VIDEOS.map((_, i) => (
