@@ -41,6 +41,7 @@ import premChains from "@/assets/cat-premium-chains.jpg";
 import premMangalsutra from "@/assets/cat-premium-mangalsutra.jpg";
 import premAnklets from "@/assets/cat-premium-anklets.jpg";
 import premKada from "@/assets/cat-premium-kada.jpg";
+import premSets from "@/assets/cat-premium-sets.jpg";
 import premAntique from "@/assets/cat-premium-antique.jpg";
 import premCz from "@/assets/cat-premium-cz.jpg";
 import premOpenClose from "@/assets/cat-premium-openclose.jpg";
