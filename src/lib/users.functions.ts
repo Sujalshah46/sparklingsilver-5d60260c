@@ -212,7 +212,7 @@ export const submitPasswordResetRequest = createServerFn({ method: "POST" })
       const { sendAdminEmail } = await import("./admin-email.server");
       await sendAdminEmail({
         subject: "New password reset request",
-        html: `<p>A buyer requested a password reset.</p><p><b>Email:</b> ${data.email}</p>${data.note ? `<p><b>Note:</b> ${data.note}</p>` : ""}<p>Open the admin panel → Users → Reset Requests to handle it.</p>`,
+        html: `<p>A buyer requested a password reset.</p><p><b>Email:</b> ${escapeHtml(data.email)}</p>${data.note ? `<p><b>Note:</b> ${escapeHtml(data.note)}</p>` : ""}<p>Open the admin panel → Users → Reset Requests to handle it.</p>`,
       });
     } catch {}
     return { ok: true };
