@@ -146,7 +146,6 @@ function Home() {
         </div>
       </section>
 
-      <VideoShowcase />
 
 
 
