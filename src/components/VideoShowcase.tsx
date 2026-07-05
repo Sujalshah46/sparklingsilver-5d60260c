@@ -13,7 +13,7 @@ export function VideoShowcase() {
   return (
     <section className="pt-5">
       <div className="flex flex-col items-center px-6 text-center">
-        <div className="mb-2 h-5 w-px bg-gradient-to-b from-transparent to-[#2C7A76] opacity-60" />
+        
         <span className="mb-1 pl-[0.4em] text-[9px] font-semibold uppercase tracking-[0.4em] text-[#2C7A76]">
           Watch
         </span>
