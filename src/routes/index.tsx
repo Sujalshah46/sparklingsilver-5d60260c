@@ -8,6 +8,7 @@ import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCar
 import { HeroSlider } from "@/components/HeroSlider";
 import { AccessBanner } from "@/components/AccessBanner";
 import { CategoryTile } from "@/components/CategoryTile";
+import { VideoShowcase } from "@/components/VideoShowcase";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
 import heroBridal from "@/assets/hero-bridal.jpg";
 import heroFestive from "@/assets/hero-festive.jpg";
@@ -144,6 +145,9 @@ function Home() {
           ))}
         </div>
       </section>
+
+      <VideoShowcase />
+
 
 
       {/* OUR COLLECTION — 3-col photo grid */}
