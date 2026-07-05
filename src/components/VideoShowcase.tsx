@@ -89,8 +89,8 @@ function VideoCard({
 
   return (
     <div
-      className="relative w-full shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
-      style={{ aspectRatio: "4 / 5", maxHeight: "min(70vh, calc(100vw * 1.25))" }}
+      className="relative shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
+      style={{ aspectRatio: "4 / 5", height: "min(65vh, 125vw)", maxWidth: "100%" }}
     >
       <button type="button" onClick={togglePlay} className="absolute inset-0 h-full w-full">
         <video
