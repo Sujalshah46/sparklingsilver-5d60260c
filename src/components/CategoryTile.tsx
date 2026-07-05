@@ -32,21 +32,34 @@ export function CategoryTile({
         )}
 
         {/* Text overlay on right half — image itself provides negative space */}
-        <div className="absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-3 text-center">
+        <div className="absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-4 text-center">
           <h3
-            className="font-serif text-[18px] leading-tight text-slate-800 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]"
+            className="text-[22px] font-normal leading-[1.05] text-slate-900"
+            style={{
+              fontFamily: '"Cormorant Garamond", "Playfair Display", ui-serif, Georgia, serif',
+              letterSpacing: "0.02em",
+              textShadow: "0 1px 2px rgba(255,255,255,0.55)",
+            }}
           >
             {name}
           </h3>
+          <span
+            aria-hidden
+            className="mt-2 block h-px w-6 bg-slate-400/60"
+          />
           {typeof count === "number" && (
             <p
-              className="mt-1.5 text-[12px] text-slate-600"
-              style={{ fontFamily: "Inter, ui-sans-serif, system-ui" }}
+              className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
+              style={{
+                fontFamily: '"Inter", ui-sans-serif, system-ui',
+                letterSpacing: "0.22em",
+              }}
             >
               {count} Designs
             </p>
           )}
         </div>
+
       </div>
     </Link>
   );
