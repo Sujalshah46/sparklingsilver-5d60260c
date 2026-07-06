@@ -46,6 +46,26 @@ import premAntique from "@/assets/cat-premium-antique.jpg";
 import premCz from "@/assets/cat-premium-cz.jpg";
 import premOpenClose from "@/assets/cat-premium-openclose.jpg";
 import premVictoria from "@/assets/cat-premium-victoria.jpg";
+import subcatBaju from "@/assets/subcat-baju.jpg";
+import subcatBangle from "@/assets/subcat-bangle.jpg";
+import subcatBelt from "@/assets/subcat-belt.jpg";
+import subcatBracelet from "@/assets/subcat-bracelet.jpg";
+import subcatBridal from "@/assets/subcat-bridal.jpg";
+import subcatBrooch from "@/assets/subcat-brooch.jpg";
+import subcatChokerChik from "@/assets/subcat-choker-chik.jpg";
+import subcatChoti from "@/assets/subcat-choti.jpg";
+import subcatEarrings from "@/assets/subcat-earrings.jpg";
+import subcatFingerRing from "@/assets/subcat-finger-ring.jpg";
+import subcatJhumka from "@/assets/subcat-jhumka.jpg";
+import subcatLongSet from "@/assets/subcat-long-set.jpg";
+import subcatMangalSutra from "@/assets/subcat-mangal-sutra.jpg";
+import subcatMatil from "@/assets/subcat-matil.jpg";
+import subcatNecklace from "@/assets/subcat-necklace.jpg";
+import subcatPendantSet from "@/assets/subcat-pendant-set.jpg";
+import subcatSpn from "@/assets/subcat-spn.jpg";
+import subcatTikka from "@/assets/subcat-tikka.jpg";
+import subcatTops from "@/assets/subcat-tops.jpg";
+import subcatVenky from "@/assets/subcat-venky.jpg";
 
 export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
   rings: premRings,
@@ -63,6 +83,29 @@ export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
   cz: premCz,
   "open-close": premOpenClose,
   victoria: premVictoria,
+};
+
+export const SUBCATEGORY_IMAGES: Record<string, string> = {
+  baju: subcatBaju,
+  bangle: subcatBangle,
+  belt: subcatBelt,
+  bracelet: subcatBracelet,
+  bridal: subcatBridal,
+  brooch: subcatBrooch,
+  "choker-chik": subcatChokerChik,
+  choti: subcatChoti,
+  earrings: subcatEarrings,
+  "finger-ring": subcatFingerRing,
+  jhumka: subcatJhumka,
+  "long-set": subcatLongSet,
+  "mangal-sutra": subcatMangalSutra,
+  matil: subcatMatil,
+  necklace: subcatNecklace,
+  "pendant-set": subcatPendantSet,
+  spn: subcatSpn,
+  tikka: subcatTikka,
+  tops: subcatTops,
+  venky: subcatVenky,
 };
 
 import pr1 from "@/assets/prod-r-1.jpg";
@@ -376,6 +419,26 @@ const map: Record<string, string> = {
   "prod-own-victoria-ch-100.jpg": pOwnVictoriaCh100,
   "prod-own-victoria-nk-716.jpg": pOwnVictoriaNk716,
   "prod-own-victoria-ps-370.jpg": pOwnVictoriaPs370,
+  "subcat-baju.jpg": subcatBaju,
+  "subcat-bangle.jpg": subcatBangle,
+  "subcat-belt.jpg": subcatBelt,
+  "subcat-bracelet.jpg": subcatBracelet,
+  "subcat-bridal.jpg": subcatBridal,
+  "subcat-brooch.jpg": subcatBrooch,
+  "subcat-choker-chik.jpg": subcatChokerChik,
+  "subcat-choti.jpg": subcatChoti,
+  "subcat-earrings.jpg": subcatEarrings,
+  "subcat-finger-ring.jpg": subcatFingerRing,
+  "subcat-jhumka.jpg": subcatJhumka,
+  "subcat-long-set.jpg": subcatLongSet,
+  "subcat-mangal-sutra.jpg": subcatMangalSutra,
+  "subcat-matil.jpg": subcatMatil,
+  "subcat-necklace.jpg": subcatNecklace,
+  "subcat-pendant-set.jpg": subcatPendantSet,
+  "subcat-spn.jpg": subcatSpn,
+  "subcat-tikka.jpg": subcatTikka,
+  "subcat-tops.jpg": subcatTops,
+  "subcat-venky.jpg": subcatVenky,
 };
 
 export function resolveProductImage(
