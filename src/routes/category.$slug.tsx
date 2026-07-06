@@ -6,6 +6,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
 import { whatsappUrl } from "@/lib/site";
+import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import {
   Sheet,
   SheetContent,
@@ -16,6 +17,13 @@ import {
 
 type SortKey = "featured" | "new" | "weight_asc" | "weight_desc" | "sku_asc";
 type ViewStyle = "grid2" | "grid1" | "compact";
+type Subcategory = {
+  id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  sort_order: number;
+};
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "featured", label: "Featured" },
@@ -38,7 +46,19 @@ const categoryQuery = (slug: string) =>
         .select("*")
         .eq("category_id", cat.id as string)
         .limit(96);
-      return { category: cat, products: (products ?? []) as CatalogueCardData[] };
+      const { data: links } = await supabase
+        .from("category_subcategories")
+        .select("subcategory_id")
+        .eq("category_id", cat.id as string);
+      const ids = (links ?? []).map((link) => link.subcategory_id);
+      const { data: subcategories } = ids.length
+        ? await supabase.from("subcategories").select("*").in("id", ids).order("sort_order")
+        : { data: [] as Subcategory[] };
+      return {
+        category: cat,
+        products: (products ?? []) as CatalogueCardData[],
+        subcategories: (subcategories ?? []) as Subcategory[],
+      };
     },
   });
 
@@ -84,6 +104,7 @@ function CategoryPage() {
   const [filters, setFilters] = useState<Filters>({ onlyNew: false, onlyBestseller: false });
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -105,7 +126,8 @@ function CategoryPage() {
 
   const items = useMemo(() => {
     if (!data) return [] as CatalogueCardData[];
-    let arr = [...data.products] as (CatalogueCardData & { is_new?: boolean; is_bestseller?: boolean; created_at?: string })[];
+    let arr = [...data.products] as (CatalogueCardData & { subcategory_id?: string | null; is_new?: boolean; is_bestseller?: boolean; created_at?: string })[];
+    if (selectedSubcategoryId) arr = arr.filter((p) => p.subcategory_id === selectedSubcategoryId);
     if (filters.onlyNew) arr = arr.filter((p) => p.is_new);
     if (filters.onlyBestseller) arr = arr.filter((p) => p.is_bestseller);
     switch (sort) {
@@ -116,7 +138,7 @@ function CategoryPage() {
       default: break;
     }
     return arr;
-  }, [data, sort, filters]);
+  }, [data, selectedSubcategoryId, sort, filters]);
 
   // scroll spy: track how many cards have entered the viewport
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -209,6 +231,37 @@ function CategoryPage() {
           </div>
         </div>
       </div>
+
+      {/* Subcategories */}
+      {data.subcategories.length > 0 && (
+        <section className="px-3 py-4">
+          <div className="mb-3 flex items-center justify-between gap-2">
+            <div>
+              <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
+              <span className="mt-1 block h-px w-8 bg-teal" />
+            </div>
+            {selectedSubcategoryId && (
+              <button
+                type="button"
+                onClick={() => setSelectedSubcategoryId(null)}
+                className="rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
+              >
+                All
+              </button>
+            )}
+          </div>
+          <div className="flex flex-col gap-3">
+            {data.subcategories.map((subcat) => (
+              <SubcategoryTile
+                key={subcat.id}
+                subcategory={subcat}
+                active={selectedSubcategoryId === subcat.id}
+                onSelect={() => setSelectedSubcategoryId((current) => current === subcat.id ? null : subcat.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Grid */}
       <div className="px-2 py-3">
@@ -327,5 +380,59 @@ function CategoryPage() {
         </SheetContent>
       </Sheet>
     </MobileShell>
+  );
+}
+
+function SubcategoryTile({
+  subcategory,
+  active,
+  onSelect,
+}: {
+  subcategory: Subcategory;
+  active: boolean;
+  onSelect: () => void;
+}) {
+  const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
+  const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-pressed={active}
+      className={`group relative block w-full overflow-hidden rounded-sm border bg-[#F8F7F2] text-left shadow-sm transition-shadow hover:shadow-md ${active ? "border-teal ring-1 ring-teal" : "border-slate-100/70"}`}
+    >
+      <div className="relative aspect-[2/1] w-full overflow-hidden bg-[#EAE9E4]">
+        <img
+          src={src}
+          alt={`${subcategory.name} silver jewellery`}
+          loading="lazy"
+          onError={() => setSrc(categoryPlaceholder)}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-4 text-center">
+          <h2
+            className="text-[22px] font-normal leading-[1.05] text-slate-900"
+            style={{
+              fontFamily: '"Cormorant Garamond", "Playfair Display", ui-serif, Georgia, serif',
+              letterSpacing: "0.02em",
+              textShadow: "0 1px 2px rgba(255,255,255,0.55)",
+            }}
+          >
+            {subcategory.name}
+          </h2>
+          <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
+          <p
+            className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
+            style={{
+              fontFamily: '"Inter", ui-sans-serif, system-ui',
+              letterSpacing: "0.22em",
+            }}
+          >
+            View Designs
+          </p>
+        </div>
+      </div>
+    </button>
   );
 }
