@@ -1,70 +1,75 @@
-# Admin-Controlled User Creation
+## Confirmation of what's in the zip
 
-Move from open signup to an admin-only user creation model matching your flowchart.
+- Top-level folder: `ANTIQUE/` → this is the **collection/category** name
+- **15 category folders** (matches your spec): BAJU, BANGLE, BELT, BRACELET, BRIDAL, CHOKER, EARRINGS, FINGER RING, JHUMKA, LONG SET, MATIL, NECKLACE, PENDANT SET, TIKKA, TOPS
+- One `.xlsx` per folder, ~845 image files, ~200MB total
+- SKU column joins to `{SKU}.jpg` filenames exactly
 
-## Auth Changes
+## Reuse existing schema, don't build a parallel one
 
-- **Disable self-registration**: Remove the "Create Account" tab on `/auth`. Login screen shows only Email + Password + Forgot Password.
-- **Disable signups in Cloud auth settings** so the public API also rejects sign-ups.
-- **Blocked user check on login**: If `profiles.status = 'inactive'`, sign the user out immediately and show "Login blocked — Contact Admin."
-- **Force password change on first login**: If `profiles.must_change_password = true`, redirect to `/change-password` after login; block all other routes until it's set.
+Your app already has the right tables. I'll map onto them instead of creating new `collections`/`categories`/`products` tables that duplicate what's there:
 
-## Forgot Password Flow (Buyer)
+| Your spec           | Existing table                          | Notes                                        |
+|---------------------|-----------------------------------------|----------------------------------------------|
+| Collection "ANTIQUE"| `categories` row **"Antique"**          | Already exists                               |
+| Category folder     | `subcategories` row (BANGLE, NECKLACE…) | All 15 already seeded from earlier turns     |
+| SKU row             | `products` row                          | `products.sku` unique, matches your key rule |
 
-- Buyer taps "Forgot Password?" → enters email/username → a row is inserted into `password_reset_requests` (status `pending`) and admin gets an email + in-app notification.
-- No auto-reset email is sent to the buyer. Admin performs the reset from the admin panel; buyer receives the new password via email/SMS from admin.
+The existing `products` table already has `sku`, `metal`, `purity`, `gross_weight`, `net_weight`, `image_url`, `category_id`, `subcategory_id`, `stock_quantity`, etc. I only need to add a few audit/status columns.
 
-## Admin Panel: Create & Manage Users
+Note: your app's `collections` table is a separate concept (Bridal / Daily Wear / Festival / Office Wear — style groupings), so I'll **leave it alone**. When you later add e.g. a "TEMPLE" zip, it becomes another **category** ("Temple"), not a collections row.
 
-New pages under `/admin/users`:
+## Migration (single migration, reviewed before running)
 
-1. **Create User** (`/admin/users/new`)
-   - Fields: Business Name, Contact Person, Email, Phone, Business Type/Category, Notes.
-   - System auto-generates: unique username (e.g. `sparkle_jewels01`) + strong random password.
-   - Creates the auth user via Admin API (email pre-confirmed), inserts `profiles` row with `status='active'`, `must_change_password=true`.
-   - Shows credentials once with Copy Username / Copy Password / Send Credentials (Email) buttons.
+Add to `products`:
+- `design_no text`
+- `item text`, `family text` (raw audit fields from the sheet)
+- `image_path text` (storage object path, nullable)
+- `has_image boolean not null default false`
+- `import_status text not null default 'active'` — `active` | `missing_image` | `archived`
+- Make `image_url` **nullable** (currently NOT NULL) so rows can exist without a photo
+- Make `price` default `0` and `name` default to SKU when unspecified (B2B; price is computed from weight × silver rate elsewhere)
+- Index on `import_status`
 
-2. **Manage Users** (`/admin/users`)
-   - Table: Username, Business Name, Email, Status badge (Active/Inactive), Date Created, Actions.
-   - Actions per row: **Edit** details, **Deactivate/Reactivate** toggle, **Reset Password** (generates new strong password, shows + copy + email), **Send Credentials** (re-email current username + freshly reset password).
+New storage bucket: **`product-images`** (private; served via signed URLs like `category-images` already is). Path convention `antique/bangle/AR(BNG)-100.jpg`. Overwriting a path bumps `updated_at` so URLs can be cache-busted with `?v=updated_at`.
 
-3. **Reset Password Flow (Admin)**
-   - Select user → click Reset → system generates new password → displayed with copy → "Send to User" emails it. Sets `must_change_password=true`.
+## One-time backfill (run from the sandbox, not the browser)
 
-4. **Password Reset Requests inbox** (`/admin/users/requests`)
-   - Lists pending buyer forgot-password requests with a one-click "Reset & Send" action.
+I already have `SUPABASE_SERVICE_ROLE_KEY` in the sandbox, so I'll run a Python script that:
 
-## Database (migration)
+1. Extracts `ANTIQUE.zip` to `/tmp`
+2. For each of the 15 folders:
+   - Finds the single `.xlsx`, scans column A until it hits the literal header `SKU`, then reads rows until the first blank
+   - For each row: reads `SKU / Item / Family / METAL / DESIGN NO / G-WT / N-WT`
+   - Looks for `{SKU}.jpg|jpeg|png|webp` (case-insensitive, exact SKU match, no fuzzy)
+   - Uploads found images to `product-images/antique/{subcategory-slug}/{SKU}.{ext}` via service role
+   - Upserts the `products` row on `sku` conflict (safe to re-run)
+3. Prints a summary: created / updated / missing-image SKUs / parse failures with raw row data
 
-- `profiles`: add `username text unique`, `status text default 'active' check in ('active','inactive')`, `must_change_password bool default false`, `business_name`, `contact_person`, `business_type`.
-- `password_reset_requests` table: `id, user_id, email, status ('pending'|'resolved'), created_at, resolved_at, resolved_by`. RLS: user can insert own; admin can select/update all.
-- `user_activity_log` table: `id, user_id, action, meta jsonb, created_at`. Logs login, password change, admin resets, status toggles. Admin-read only.
-- Add GRANTs + RLS policies per Lovable rules.
+Expected numbers per your prompt: ~919 rows, ~105 missing images (NECKLACE 71, LONG SET 13, PENDANT SET 7, others near zero).
 
-## Server Functions (admin-only, `requireSupabaseAuth` + `has_role('admin')` check)
+## In-app admin surfaces (built after the backfill)
 
-- `adminCreateUser({ businessName, contactPerson, email, phone, businessType })` → returns `{ username, password }`.
-- `adminResetPassword({ userId })` → returns `{ password }`, sets `must_change_password=true`.
-- `adminSetUserStatus({ userId, status })`.
-- `adminSendCredentials({ userId, password })` → emails via Lovable email infra.
-- `adminListUsers()`, `adminListResetRequests()`, `adminResolveResetRequest({ requestId })`.
-- `submitPasswordResetRequest({ emailOrUsername })` (public) → inserts request + notifies admin.
-- `changeOwnPassword({ newPassword })` → updates password, clears `must_change_password`, logs activity.
+- **Products admin** already exists (`/admin/products`) — extend the filter panel with a "Missing images" toggle (`import_status = 'missing_image'`) and show a replace-image button on the row detail page.
+- **New import screen** at `/admin/products/import` — accepts a small per-category zip (spreadsheet + folder of images) and reuses the exact same parse/match/upsert logic from the backfill script, exposed as a `createServerFn` that streams the summary back. This is the right shape for ongoing updates — a 200 MB zip is a one-time backfill, not the everyday flow.
 
-## Buyer-side New Route
+## Rules for future edit requests (as you spelled out)
 
-- `/change-password` (authenticated, ungated by must-change flag) — form to set new password, then redirects home.
+Every edit is resolved by exact SKU:
+- "Set gross weight for `AR(BNG)-100` to 55" → `UPDATE products SET gross_weight=55 WHERE sku='AR(BNG)-100'`
+- "Replace image for `AR(BT)-108`" → re-upload same storage path, bump `updated_at`
+- "Archive `AR(NK)-336`" → `import_status='archived'`
+- "Add new SKU to BANGLE" → same upsert path
+- Bulk category re-import → re-run the category step of the importer
 
-## Emails
+## Order of execution (once you approve)
 
-- Auth email infra scaffold (if not already set) for: "Your Sparkling Silver credentials", "Your password has been reset", plus admin notification "New password reset request".
+1. Migration: add columns + `product-images` bucket + policies (I'll show you the SQL for approval)
+2. Run backfill script from sandbox, print summary
+3. Wire the "Missing images" filter and per-row image replace into the existing admin
+4. Add the `/admin/products/import` screen for future collections
 
-## Removals / Edits
-
-- `src/routes/auth.tsx`: drop Sign Up tab and `SignUpForm`. Add inactive-account handling after successful sign-in.
-- `handle_new_user` trigger: keep, but now only fires from admin-created users (still needed to seed `profiles`).
-
-## Out of Scope (ask if needed)
-
-- SMS delivery (needs a provider like Twilio — not built into Lovable).
-- Username-based login (Supabase logs in by email; username shown for admin reference, login stays email-based). Say the word if you want true username login and I'll add an email-lookup shim.
+**Anything to change before I start?** In particular:
+- OK with mapping "ANTIQUE" → your existing **Antique** category (rather than a brand-new `collections` table)?
+- OK to make `image_url` nullable and default `price` to 0 so imported rows are valid?
+- OK to leave your existing `collections` table (Bridal/Daily Wear/…) untouched — it's a different concept from your zip-level "collection"?

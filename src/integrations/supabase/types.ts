@@ -427,14 +427,20 @@ export type Database = {
           collection_id: string | null
           created_at: string
           description: string | null
+          design_no: string | null
+          family: string | null
           gross_weight: number
+          has_image: boolean
           id: string
-          image_url: string
+          image_path: string | null
+          image_url: string | null
           images: string[] | null
+          import_status: string
           in_stock: boolean | null
           is_bestseller: boolean | null
           is_new: boolean | null
           is_trending: boolean | null
+          item: string | null
           label_code: string | null
           low_stock_threshold: number
           making_charge_pct: number | null
@@ -460,14 +466,20 @@ export type Database = {
           collection_id?: string | null
           created_at?: string
           description?: string | null
+          design_no?: string | null
+          family?: string | null
           gross_weight: number
+          has_image?: boolean
           id?: string
-          image_url: string
+          image_path?: string | null
+          image_url?: string | null
           images?: string[] | null
+          import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          item?: string | null
           label_code?: string | null
           low_stock_threshold?: number
           making_charge_pct?: number | null
@@ -476,7 +488,7 @@ export type Database = {
           name: string
           net_weight: number
           occasion?: string | null
-          price: number
+          price?: number
           purity?: string
           sizes?: string[] | null
           sku: string
@@ -493,14 +505,20 @@ export type Database = {
           collection_id?: string | null
           created_at?: string
           description?: string | null
+          design_no?: string | null
+          family?: string | null
           gross_weight?: number
+          has_image?: boolean
           id?: string
-          image_url?: string
+          image_path?: string | null
+          image_url?: string | null
           images?: string[] | null
+          import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
           is_new?: boolean | null
           is_trending?: boolean | null
+          item?: string | null
           label_code?: string | null
           low_stock_threshold?: number
           making_charge_pct?: number | null
