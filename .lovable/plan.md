@@ -1,42 +1,52 @@
-## No re-upload needed
+## Goal
 
-`ANTIQUE.zip` is still in the sandbox at `/tmp/ANTIQUE.zip` (your original ~200 MB upload, 15 category folders, ~845 raw photos). I'll work off those untouched originals.
+Recreate the exact look of your 4 reference screenshots for 10 antique previews (then the full batch after you approve):
 
-## Quality target
+- Jewellery in tack-sharp focus, rich metal + gemstone detail.
+- Sitting on the original **black velvet bust / stand** from the source photo.
+- **Dark green velvet backdrop** (~`#0E3A2E`, matches references).
+- **SPARKLING SILVER logo** in the **top-right corner**, small and white, matching the reference lockup.
 
-Same recipe that produced the 19 `v6_*` previews you approved (from `/tmp/fast_preview.py`):
+No transparent PNG. No LANCZOS. No v6 recipe.
 
-1. `rembg` `isnet-general-use` → pixel-accurate alpha matte on the raw original
-2. LANCZOS upscale to 3000 px on the long edge
-3. Masked `UnsharpMask` (radius 1.6, amount 140%) applied **only inside the jewellery matte** — background stays clean
-4. Mild contrast lift on the jewellery only
-5. Composite over the soft ivory studio background `(245, 241, 234)` using a Gaussian-blurred alpha for clean edges
-6. JPEG q95, 4:4:4 chroma
+## Source
 
-Nothing about that pipeline changes.
+`ANTIQUE-2.zip` (just re-uploaded, `user-uploads://ANTIQUE-2.zip`) — extract to `/tmp/antique-src/` and work off the raw originals only.
 
-## Plan
+## Pipeline (Real-ESRGAN based)
 
-**Phase 1 — 10-image preview (this step)**
+For each raw JPEG:
 
-1. Extract `/tmp/ANTIQUE.zip` → `/tmp/antique-src/`.
-2. Pick **10 sample SKUs spread across categories** (so you see necklace, bangle, earrings, tikka, choker, etc. — not 10 from one folder).
-3. Run the approved pipeline on those 10.
-4. Export the enhanced 10 + their raw originals side-by-side to `/mnt/documents/antique-preview-10/` so you can compare.
-5. Stop and wait for your **"yes, continue"** or feedback.
+1. Open raw file from the zip. Never touch already-enhanced copies.
+2. **Real-ESRGAN 4× SR** with `RealESRGAN_x4plus` (general photo model — best for metal + gemstone; not the anime variant).
+3. If long edge > 4000 px after 4×, downscale to 4000 px with area resample (not LANCZOS) so we keep the SR gain.
+4. `rembg` `isnet-general-use` on the SR image → alpha matte around the jewellery **and the black velvet bust together** (mask keeps the stand so the piece still sits on its original support).
+5. Soften matte edge with Gaussian σ ≈ 0.8.
+6. **Composite over the studio background**:
+   - Base: dark green velvet backdrop `#0E3A2E`, rendered once to `/tmp/velvet-bg.jpg` (tileable velvet + subtle grain + soft vignette) and reused for every image so all 845 share the exact same backdrop.
+   - The bust + jewellery cutout is centred over the backdrop, preserving the original scale.
+7. **Overlay the Sparkling Silver logo** in the top-right:
+   - Use the white lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` (I'll pick the cleanest white-on-transparent version).
+   - Width ≈ 12% of image width, ~40 px inset from top and right, 90% opacity.
+8. Save JPEG q95, 4:4:4 chroma.
 
-**Phase 2 — full batch (only after you approve)**
+Nothing from the old v6 recipe (LANCZOS, UnsharpMask, ivory background) is used.
 
-6. Run the same pipeline on all remaining ~835 images, resume-safe (skips anything already done).
-7. Preserve folder + filename → `/tmp/antique-enhanced/<CATEGORY>/<SKU>.jpeg` so the SKU→file mapping stays intact for the later product import.
-8. Summary log: total / done / failures.
-9. Zip everything to `/mnt/documents/antique-enhanced.zip` for download / re-import.
+## Steps
+
+1. Extract `ANTIQUE-2.zip` → `/tmp/antique-src/`.
+2. Install `realesrgan` + weights (`RealESRGAN_x4plus.pth`).
+3. Render `/tmp/velvet-bg.jpg` once.
+4. Pick the white Sparkling Silver logo file from uploads.
+5. Run the pipeline on the same 10 SKUs already in preview (BJ-03, BNG-118, BT-99, BRC-21, BR-03, CH-108, ER-100, RG-01, JH-257, LS-608) — like-for-like comparison.
+6. Write to `/mnt/documents/antique-preview-10-esrgan/` as JPEGs.
+7. Stop and wait for your sign-off before running the remaining ~835.
 
 ## Runtime
 
-- Phase 1 (10 images): ~1–2 minutes.
-- Phase 2 (~835 images): ~1.5–2 hours on CPU. I can parallelise CPU workers (~3–4× faster) if you want — tell me and I'll enable it in phase 2.
+- 10 previews: ~5–10 min on CPU.
+- Full 845 (Phase 2 only after approval): ~2–4 h with 4 parallel workers, resume-safe.
 
-## Not touched in this plan
+## Not in scope
 
-- No DB / `products` table / `product-images` bucket / admin UI changes. This is image enhancement only. Re-importing the enhanced set into Lovable Cloud is a separate step after you sign off on quality.
+No database, admin panel, or app UI changes. Image production only — re-importing the enhanced set into the app is a separate step after you sign off on quality.
