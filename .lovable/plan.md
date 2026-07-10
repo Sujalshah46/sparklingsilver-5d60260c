@@ -1,75 +1,63 @@
-## Confirmation of what's in the zip
+## Goal
+Get the jewelry in each output image as sharp as (or sharper than) the original zip source — no blur, crisp facets/stones/engraving — while keeping the clean studio background.
 
-- Top-level folder: `ANTIQUE/` → this is the **collection/category** name
-- **15 category folders** (matches your spec): BAJU, BANGLE, BELT, BRACELET, BRIDAL, CHOKER, EARRINGS, FINGER RING, JHUMKA, LONG SET, MATIL, NECKLACE, PENDANT SET, TIKKA, TOPS
-- One `.xlsx` per folder, ~845 image files, ~200MB total
-- SKU column joins to `{SKU}.jpg` filenames exactly
+## Why v5 looked blurry
+- v5 ran 2 sequential 4× super-resolution passes on a luminance-cropped jewelry region. Cascading SR on an already-upscaled image hallucinates soft texture instead of recovering detail, and the luminance bbox often clipped edges, so the SR model saw a partial subject and smoothed it.
+- We also never compared against the raw source at 100% — the "upscale" was fighting an input that was already high-res, so the model had nothing new to add and just softened edges.
+- Final unsharp mask was applied globally after SR, which amplified SR's smooth artifacts instead of the real edges.
 
-## Reuse existing schema, don't build a parallel one
+## New pipeline (v6) — quality-first, single pass
 
-Your app already has the right tables. I'll map onto them instead of creating new `collections`/`categories`/`products` tables that duplicate what's there:
+```text
+original.jpg (from zip, untouched)
+   │
+   ├─► 1. Load at full native resolution. No pre-resize, no pre-crop.
+   │
+   ├─► 2. Detect jewelry mask (not bbox):
+   │       rembg (u2net / isnet-general-use) → alpha matte
+   │       → gives pixel-accurate subject vs background
+   │
+   ├─► 3. Background: replace with clean neutral (match existing look)
+   │       using the matte, feather 2px.
+   │
+   ├─► 4. Jewelry region only:
+   │       a. Real-ESRGAN x4plus (or x2plus if source ≥ 2000px)
+   │          - single pass, tile=512, fp32
+   │       b. GFPGAN is skipped (faces only, would distort metal)
+   │       c. Light detail boost: PIL UnsharpMask(radius=1.2, percent=110, threshold=3)
+   │          applied ONLY inside the matte, not globally
+   │
+   ├─► 5. Recomposite jewelry over clean background at full res.
+   │
+   └─► 6. Export JPEG quality=95, 4:4:4 chroma, no downscale.
+           Target long edge ≥ max(3000 px, 1.5× source long edge).
+```
 
-| Your spec           | Existing table                          | Notes                                        |
-|---------------------|-----------------------------------------|----------------------------------------------|
-| Collection "ANTIQUE"| `categories` row **"Antique"**          | Already exists                               |
-| Category folder     | `subcategories` row (BANGLE, NECKLACE…) | All 15 already seeded from earlier turns     |
-| SKU row             | `products` row                          | `products.sku` unique, matches your key rule |
+## Key differences vs v5
+| Aspect | v5 (blurry) | v6 (this plan) |
+|---|---|---|
+| SR passes | 2 cascaded 4× | 1 pass, Real-ESRGAN |
+| SR model | super-image EDSR-ish | Real-ESRGAN x4plus (state-of-art for photos) |
+| Region | luminance bbox (clips) | rembg alpha matte (pixel-accurate) |
+| Sharpening | global, post-SR | masked, subtle, edge-aware |
+| Background | kept from crop | cleanly replaced via matte |
+| Compare loop | none | side-by-side vs source before accepting |
 
-The existing `products` table already has `sku`, `metal`, `purity`, `gross_weight`, `net_weight`, `image_url`, `category_id`, `subcategory_id`, `stock_quantity`, etc. I only need to add a few audit/status columns.
+## Deliverables
+- `run_v6.py` written to sandbox with the pipeline above, resume-safe (`if out exists: skip`).
+- Runs on all 20 source images from the original zip (not on v5 outputs — v5 is discarded as an input).
+- Outputs in `/mnt/documents/pilot-v6/v6_1.jpg … v6_20.jpg`.
+- After the first 2 images finish, I pause and show you `v6_1.jpg` and `v6_2.jpg` next to the originals so you confirm sharpness is right before spending compute on the remaining 18.
 
-Note: your app's `collections` table is a separate concept (Bridal / Daily Wear / Festival / Office Wear — style groupings), so I'll **leave it alone**. When you later add e.g. a "TEMPLE" zip, it becomes another **category** ("Temple"), not a collections row.
+## Dependencies to install
+- `realesrgan` + `basicsr` + `torch` (CPU build; ~5 min install)
+- `rembg[cpu]` with `u2net` model (first run downloads ~170 MB)
+- `Pillow`, `numpy` (already present)
 
-## Migration (single migration, reviewed before running)
+## Runtime estimate
+~90–150 s per image on CPU for Real-ESRGAN x4 at tile=512 + rembg. 20 images ≈ 30–50 min total. I'll poll every 2 min and report progress, same cadence as before.
 
-Add to `products`:
-- `design_no text`
-- `item text`, `family text` (raw audit fields from the sheet)
-- `image_path text` (storage object path, nullable)
-- `has_image boolean not null default false`
-- `import_status text not null default 'active'` — `active` | `missing_image` | `archived`
-- Make `image_url` **nullable** (currently NOT NULL) so rows can exist without a photo
-- Make `price` default `0` and `name` default to SKU when unspecified (B2B; price is computed from weight × silver rate elsewhere)
-- Index on `import_status`
-
-New storage bucket: **`product-images`** (private; served via signed URLs like `category-images` already is). Path convention `antique/bangle/AR(BNG)-100.jpg`. Overwriting a path bumps `updated_at` so URLs can be cache-busted with `?v=updated_at`.
-
-## One-time backfill (run from the sandbox, not the browser)
-
-I already have `SUPABASE_SERVICE_ROLE_KEY` in the sandbox, so I'll run a Python script that:
-
-1. Extracts `ANTIQUE.zip` to `/tmp`
-2. For each of the 15 folders:
-   - Finds the single `.xlsx`, scans column A until it hits the literal header `SKU`, then reads rows until the first blank
-   - For each row: reads `SKU / Item / Family / METAL / DESIGN NO / G-WT / N-WT`
-   - Looks for `{SKU}.jpg|jpeg|png|webp` (case-insensitive, exact SKU match, no fuzzy)
-   - Uploads found images to `product-images/antique/{subcategory-slug}/{SKU}.{ext}` via service role
-   - Upserts the `products` row on `sku` conflict (safe to re-run)
-3. Prints a summary: created / updated / missing-image SKUs / parse failures with raw row data
-
-Expected numbers per your prompt: ~919 rows, ~105 missing images (NECKLACE 71, LONG SET 13, PENDANT SET 7, others near zero).
-
-## In-app admin surfaces (built after the backfill)
-
-- **Products admin** already exists (`/admin/products`) — extend the filter panel with a "Missing images" toggle (`import_status = 'missing_image'`) and show a replace-image button on the row detail page.
-- **New import screen** at `/admin/products/import` — accepts a small per-category zip (spreadsheet + folder of images) and reuses the exact same parse/match/upsert logic from the backfill script, exposed as a `createServerFn` that streams the summary back. This is the right shape for ongoing updates — a 200 MB zip is a one-time backfill, not the everyday flow.
-
-## Rules for future edit requests (as you spelled out)
-
-Every edit is resolved by exact SKU:
-- "Set gross weight for `AR(BNG)-100` to 55" → `UPDATE products SET gross_weight=55 WHERE sku='AR(BNG)-100'`
-- "Replace image for `AR(BT)-108`" → re-upload same storage path, bump `updated_at`
-- "Archive `AR(NK)-336`" → `import_status='archived'`
-- "Add new SKU to BANGLE" → same upsert path
-- Bulk category re-import → re-run the category step of the importer
-
-## Order of execution (once you approve)
-
-1. Migration: add columns + `product-images` bucket + policies (I'll show you the SQL for approval)
-2. Run backfill script from sandbox, print summary
-3. Wire the "Missing images" filter and per-row image replace into the existing admin
-4. Add the `/admin/products/import` screen for future collections
-
-**Anything to change before I start?** In particular:
-- OK with mapping "ANTIQUE" → your existing **Antique** category (rather than a brand-new `collections` table)?
-- OK to make `image_url` nullable and default `price` to 0 so imported rows are valid?
-- OK to leave your existing `collections` table (Bridal/Daily Wear/…) untouched — it's a different concept from your zip-level "collection"?
+## Open questions before I build
+1. Do you still have the **original zip** available in the sandbox, or should I ask you to re-upload it? v6 must run on the untouched originals, not on v4/v5 outputs.
+2. Background: keep the exact off-white studio look the current images have, or switch to pure white / transparent PNG?
+3. OK to spend ~30–50 min compute on all 20, or do you want me to stop after the 2-image checkpoint and wait for your approval before continuing?
