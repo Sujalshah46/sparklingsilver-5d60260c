@@ -1,63 +1,42 @@
-## Goal
-Get the jewelry in each output image as sharp as (or sharper than) the original zip source — no blur, crisp facets/stones/engraving — while keeping the clean studio background.
+## No re-upload needed
 
-## Why v5 looked blurry
-- v5 ran 2 sequential 4× super-resolution passes on a luminance-cropped jewelry region. Cascading SR on an already-upscaled image hallucinates soft texture instead of recovering detail, and the luminance bbox often clipped edges, so the SR model saw a partial subject and smoothed it.
-- We also never compared against the raw source at 100% — the "upscale" was fighting an input that was already high-res, so the model had nothing new to add and just softened edges.
-- Final unsharp mask was applied globally after SR, which amplified SR's smooth artifacts instead of the real edges.
+`ANTIQUE.zip` is still in the sandbox at `/tmp/ANTIQUE.zip` (your original ~200 MB upload, 15 category folders, ~845 raw photos). I'll work off those untouched originals.
 
-## New pipeline (v6) — quality-first, single pass
+## Quality target
 
-```text
-original.jpg (from zip, untouched)
-   │
-   ├─► 1. Load at full native resolution. No pre-resize, no pre-crop.
-   │
-   ├─► 2. Detect jewelry mask (not bbox):
-   │       rembg (u2net / isnet-general-use) → alpha matte
-   │       → gives pixel-accurate subject vs background
-   │
-   ├─► 3. Background: replace with clean neutral (match existing look)
-   │       using the matte, feather 2px.
-   │
-   ├─► 4. Jewelry region only:
-   │       a. Real-ESRGAN x4plus (or x2plus if source ≥ 2000px)
-   │          - single pass, tile=512, fp32
-   │       b. GFPGAN is skipped (faces only, would distort metal)
-   │       c. Light detail boost: PIL UnsharpMask(radius=1.2, percent=110, threshold=3)
-   │          applied ONLY inside the matte, not globally
-   │
-   ├─► 5. Recomposite jewelry over clean background at full res.
-   │
-   └─► 6. Export JPEG quality=95, 4:4:4 chroma, no downscale.
-           Target long edge ≥ max(3000 px, 1.5× source long edge).
-```
+Same recipe that produced the 19 `v6_*` previews you approved (from `/tmp/fast_preview.py`):
 
-## Key differences vs v5
-| Aspect | v5 (blurry) | v6 (this plan) |
-|---|---|---|
-| SR passes | 2 cascaded 4× | 1 pass, Real-ESRGAN |
-| SR model | super-image EDSR-ish | Real-ESRGAN x4plus (state-of-art for photos) |
-| Region | luminance bbox (clips) | rembg alpha matte (pixel-accurate) |
-| Sharpening | global, post-SR | masked, subtle, edge-aware |
-| Background | kept from crop | cleanly replaced via matte |
-| Compare loop | none | side-by-side vs source before accepting |
+1. `rembg` `isnet-general-use` → pixel-accurate alpha matte on the raw original
+2. LANCZOS upscale to 3000 px on the long edge
+3. Masked `UnsharpMask` (radius 1.6, amount 140%) applied **only inside the jewellery matte** — background stays clean
+4. Mild contrast lift on the jewellery only
+5. Composite over the soft ivory studio background `(245, 241, 234)` using a Gaussian-blurred alpha for clean edges
+6. JPEG q95, 4:4:4 chroma
 
-## Deliverables
-- `run_v6.py` written to sandbox with the pipeline above, resume-safe (`if out exists: skip`).
-- Runs on all 20 source images from the original zip (not on v5 outputs — v5 is discarded as an input).
-- Outputs in `/mnt/documents/pilot-v6/v6_1.jpg … v6_20.jpg`.
-- After the first 2 images finish, I pause and show you `v6_1.jpg` and `v6_2.jpg` next to the originals so you confirm sharpness is right before spending compute on the remaining 18.
+Nothing about that pipeline changes.
 
-## Dependencies to install
-- `realesrgan` + `basicsr` + `torch` (CPU build; ~5 min install)
-- `rembg[cpu]` with `u2net` model (first run downloads ~170 MB)
-- `Pillow`, `numpy` (already present)
+## Plan
 
-## Runtime estimate
-~90–150 s per image on CPU for Real-ESRGAN x4 at tile=512 + rembg. 20 images ≈ 30–50 min total. I'll poll every 2 min and report progress, same cadence as before.
+**Phase 1 — 10-image preview (this step)**
 
-## Open questions before I build
-1. Do you still have the **original zip** available in the sandbox, or should I ask you to re-upload it? v6 must run on the untouched originals, not on v4/v5 outputs.
-2. Background: keep the exact off-white studio look the current images have, or switch to pure white / transparent PNG?
-3. OK to spend ~30–50 min compute on all 20, or do you want me to stop after the 2-image checkpoint and wait for your approval before continuing?
+1. Extract `/tmp/ANTIQUE.zip` → `/tmp/antique-src/`.
+2. Pick **10 sample SKUs spread across categories** (so you see necklace, bangle, earrings, tikka, choker, etc. — not 10 from one folder).
+3. Run the approved pipeline on those 10.
+4. Export the enhanced 10 + their raw originals side-by-side to `/mnt/documents/antique-preview-10/` so you can compare.
+5. Stop and wait for your **"yes, continue"** or feedback.
+
+**Phase 2 — full batch (only after you approve)**
+
+6. Run the same pipeline on all remaining ~835 images, resume-safe (skips anything already done).
+7. Preserve folder + filename → `/tmp/antique-enhanced/<CATEGORY>/<SKU>.jpeg` so the SKU→file mapping stays intact for the later product import.
+8. Summary log: total / done / failures.
+9. Zip everything to `/mnt/documents/antique-enhanced.zip` for download / re-import.
+
+## Runtime
+
+- Phase 1 (10 images): ~1–2 minutes.
+- Phase 2 (~835 images): ~1.5–2 hours on CPU. I can parallelise CPU workers (~3–4× faster) if you want — tell me and I'll enable it in phase 2.
+
+## Not touched in this plan
+
+- No DB / `products` table / `product-images` bucket / admin UI changes. This is image enhancement only. Re-importing the enhanced set into Lovable Cloud is a separate step after you sign off on quality.
