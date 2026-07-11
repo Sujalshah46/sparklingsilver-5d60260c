@@ -391,9 +391,11 @@ function CategoryPage() {
 function SubcategoryTile({
   categorySlug,
   subcategory,
+  count,
 }: {
   categorySlug: string;
   subcategory: Subcategory;
+  count: number;
 }) {
   const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
@@ -424,6 +426,12 @@ function SubcategoryTile({
             {subcategory.name}
           </h2>
           <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
+          <p
+            className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
+            style={{ fontFamily: '"Inter", ui-sans-serif, system-ui', letterSpacing: "0.22em" }}
+          >
+            {count} Designs
+          </p>
         </div>
       </div>
     </Link>
