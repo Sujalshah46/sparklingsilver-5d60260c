@@ -32,6 +32,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as CategorySlugIndexRouteImport } from './routes/category.$slug.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as CategorySlugSubRouteImport } from './routes/category.$slug.$sub'
+import { Route as ApiPublicAdminBulkLinkImagesRouteImport } from './routes/api/public/admin-bulk-link-images'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
@@ -163,6 +164,12 @@ const CategorySlugSubRoute = CategorySlugSubRouteImport.update({
   path: '/category/$slug/$sub',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAdminBulkLinkImagesRoute =
+  ApiPublicAdminBulkLinkImagesRouteImport.update({
+    id: '/api/public/admin-bulk-link-images',
+    path: '/api/public/admin-bulk-link-images',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -271,6 +278,7 @@ export interface FileRoutesByFullPath {
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
@@ -307,6 +315,7 @@ export interface FileRoutesByTo {
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/category/$slug': typeof CategorySlugIndexRoute
@@ -347,6 +356,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
@@ -387,6 +397,7 @@ export interface FileRouteTypes {
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
+    | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/admin/'
     | '/category/$slug/'
@@ -423,6 +434,7 @@ export interface FileRouteTypes {
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
+    | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/admin'
     | '/category/$slug'
@@ -462,6 +474,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/scan'
     | '/_authenticated/admin/users'
     | '/_authenticated/orders/$id'
+    | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/_authenticated/admin/'
     | '/category/$slug/'
@@ -487,6 +500,7 @@ export interface RootRouteChildren {
   BlogSlugRoute: typeof BlogSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicAdminBulkLinkImagesRoute: typeof ApiPublicAdminBulkLinkImagesRoute
   CategorySlugSubRoute: typeof CategorySlugSubRoute
   CategorySlugIndexRoute: typeof CategorySlugIndexRoute
   ApiPublicHooksLowStockDigestRoute: typeof ApiPublicHooksLowStockDigestRoute
@@ -653,6 +667,13 @@ declare module '@tanstack/react-router' {
       path: '/category/$slug/$sub'
       fullPath: '/category/$slug/$sub'
       preLoaderRoute: typeof CategorySlugSubRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/admin-bulk-link-images': {
+      id: '/api/public/admin-bulk-link-images'
+      path: '/api/public/admin-bulk-link-images'
+      fullPath: '/api/public/admin-bulk-link-images'
+      preLoaderRoute: typeof ApiPublicAdminBulkLinkImagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/orders/$id': {
@@ -872,6 +893,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogSlugRoute: BlogSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicAdminBulkLinkImagesRoute: ApiPublicAdminBulkLinkImagesRoute,
   CategorySlugSubRoute: CategorySlugSubRoute,
   CategorySlugIndexRoute: CategorySlugIndexRoute,
   ApiPublicHooksLowStockDigestRoute: ApiPublicHooksLowStockDigestRoute,
