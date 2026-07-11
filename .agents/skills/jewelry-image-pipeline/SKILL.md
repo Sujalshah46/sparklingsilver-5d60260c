@@ -9,7 +9,7 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 ## Rules (non-negotiable)
 
-1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **2048x2048** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on an **opaque dark green velvet** backdrop (`#0E3A2E`), subject centered, with headroom in the top-right corner reserved for the logo so the logo never overlaps the jewellery.
+1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **1920x1920** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on an **opaque dark green velvet** backdrop (`#0E3A2E`), subject centered, with headroom in the top-right corner reserved for the logo so the logo never overlaps the jewellery.
 2. **Logo overlay** (PIL, after upscale): white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png`, **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. Must NOT overlap the subject — if it does, re-run the edit prompt with more top-right negative space; do not shrink or move the logo.
 3. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
 4. **Save**: JPEG quality 95, 4:4:4 chroma subsampling.
@@ -20,7 +20,7 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 1. Extract source zip to `/tmp/<batch>-src/`. Only touch raw originals.
 2. For each raw image, call `imagegen--edit_image` with:
-   - `model: "premium"`, `width: 2048`, `height: 2048`
+   - `model: "premium"`, `width: 1920`, `height: 1920`
    - prompt: `"Studio product photo of this exact jewellery piece on an opaque dark green velvet backdrop (#0E3A2E). Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece with generous empty space in the TOP-RIGHT corner reserved for a logo (do not place any part of the jewellery in the top-right ~18% of the frame). Soft studio lighting, sharp focus, subtle vignette, no text, no watermark, no props."`
 3. Overlay logo with PIL (see `scripts/overlay_logo.py`).
 4. Save JPEG q95 subsampling=0.
