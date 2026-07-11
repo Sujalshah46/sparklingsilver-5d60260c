@@ -463,3 +463,36 @@ export function resolveProductImage(
   return map[value] ?? fallback;
 }
 
+/**
+ * Rewrite Supabase Storage signed URLs to use on-the-fly image transformation
+ * (resized + re-encoded thumbnails). Non-Supabase URLs are returned unchanged.
+ *
+ * See https://supabase.com/docs/guides/storage/serving/image-transformations
+ */
+export function productThumbUrl(
+  url: string,
+  opts: { width?: number; height?: number; quality?: number } = {},
+): string {
+  if (!url) return url;
+  const width = opts.width ?? 600;
+  const quality = opts.quality ?? 70;
+
+  // Only rewrite Supabase Storage URLs.
+  if (!url.includes("/storage/v1/")) return url;
+
+  let out = url;
+  // signed URL: object/sign -> render/image/sign
+  out = out.replace("/storage/v1/object/sign/", "/storage/v1/render/image/sign/");
+  // public URL: object/public -> render/image/public
+  out = out.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
+
+  const sep = out.includes("?") ? "&" : "?";
+  const params = new URLSearchParams();
+  params.set("width", String(width));
+  if (opts.height) params.set("height", String(opts.height));
+  params.set("quality", String(quality));
+  params.set("resize", "contain");
+  return `${out}${sep}${params.toString()}`;
+}
+
+
