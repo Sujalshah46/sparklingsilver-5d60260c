@@ -97,8 +97,8 @@ function Catalogue() {
           </div>
         ) : (
           <div className={view === "grid2" ? "grid grid-cols-2 gap-[2px]" : "grid grid-cols-1 gap-2"}>
-            {products.map((p) => (
-              <CatalogueCard key={p.id} p={p as unknown as CatalogueCardData} />
+            {products.map((p, i) => (
+              <CatalogueCard key={p.id} p={p as unknown as CatalogueCardData} priority={i < 4} />
             ))}
           </div>
         )}
