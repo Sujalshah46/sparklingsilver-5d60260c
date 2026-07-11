@@ -86,7 +86,7 @@ export function CatalogueCard({
             alt={p.name}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
-            {...(priority ? { fetchpriority: "high" as const } : { fetchpriority: "low" as const })}
+            {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(true)}
             className={`absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
