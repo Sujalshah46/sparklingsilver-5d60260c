@@ -104,7 +104,7 @@ function CategoryPage() {
   const [filters, setFilters] = useState<Filters>({ onlyNew: false, onlyBestseller: false });
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  const [selectedSubcategoryId, setSelectedSubcategoryId] = useState<string | null>(null);
+  
 
   useEffect(() => {
     try {
