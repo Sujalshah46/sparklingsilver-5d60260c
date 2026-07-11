@@ -31,6 +31,7 @@ import { Route as AuthenticatedAccountEditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as CategorySlugSubRouteImport } from './routes/category.$slug.$sub'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
@@ -157,6 +158,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const CategorySlugSubRoute = CategorySlugSubRouteImport.update({
+  id: '/$sub',
+  path: '/$sub',
+  getParentRoute: () => CategorySlugRoute,
+} as any)
 const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -257,7 +263,7 @@ export interface FileRoutesByFullPath {
   '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
-  '/category/$slug': typeof CategorySlugRoute
+  '/category/$slug': typeof CategorySlugRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -266,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -293,7 +300,7 @@ export interface FileRoutesByTo {
   '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
-  '/category/$slug': typeof CategorySlugRoute
+  '/category/$slug': typeof CategorySlugRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/blog': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -331,7 +339,7 @@ export interface FileRoutesById {
   '/_authenticated/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
-  '/category/$slug': typeof CategorySlugRoute
+  '/category/$slug': typeof CategorySlugRouteWithChildren
   '/product/$slug': typeof ProductSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
+  '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/_authenticated/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -379,6 +388,7 @@ export interface FileRouteTypes {
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
+    | '/category/$slug/$sub'
     | '/admin/'
     | '/admin/inventory/$id'
     | '/admin/inventory/audit'
@@ -414,6 +424,7 @@ export interface FileRouteTypes {
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
+    | '/category/$slug/$sub'
     | '/admin'
     | '/admin/inventory/$id'
     | '/admin/inventory/audit'
@@ -452,6 +463,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/scan'
     | '/_authenticated/admin/users'
     | '/_authenticated/orders/$id'
+    | '/category/$slug/$sub'
     | '/_authenticated/admin/'
     | '/_authenticated/admin/inventory/$id'
     | '/_authenticated/admin/inventory/audit'
@@ -473,7 +485,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   BlogSlugRoute: typeof BlogSlugRoute
-  CategorySlugRoute: typeof CategorySlugRoute
+  CategorySlugRoute: typeof CategorySlugRouteWithChildren
   ProductSlugRoute: typeof ProductSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicHooksLowStockDigestRoute: typeof ApiPublicHooksLowStockDigestRoute
@@ -634,6 +646,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/category/$slug/$sub': {
+      id: '/category/$slug/$sub'
+      path: '/$sub'
+      fullPath: '/category/$slug/$sub'
+      preLoaderRoute: typeof CategorySlugSubRouteImport
+      parentRoute: typeof CategorySlugRoute
     }
     '/_authenticated/orders/$id': {
       id: '/_authenticated/orders/$id'
@@ -840,6 +859,18 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CategorySlugRouteChildren {
+  CategorySlugSubRoute: typeof CategorySlugSubRoute
+}
+
+const CategorySlugRouteChildren: CategorySlugRouteChildren = {
+  CategorySlugSubRoute: CategorySlugSubRoute,
+}
+
+const CategorySlugRouteWithChildren = CategorySlugRoute._addFileChildren(
+  CategorySlugRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -850,7 +881,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   BlogSlugRoute: BlogSlugRoute,
-  CategorySlugRoute: CategorySlugRoute,
+  CategorySlugRoute: CategorySlugRouteWithChildren,
   ProductSlugRoute: ProductSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicHooksLowStockDigestRoute: ApiPublicHooksLowStockDigestRoute,
@@ -858,13 +889,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -384,23 +384,20 @@ function CategoryPage() {
 }
 
 function SubcategoryTile({
+  categorySlug,
   subcategory,
-  active,
-  onSelect,
 }: {
+  categorySlug: string;
   subcategory: Subcategory;
-  active: boolean;
-  onSelect: () => void;
 }) {
   const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
 
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      aria-pressed={active}
-      className={`group relative block w-full overflow-hidden rounded-sm border bg-[#F8F7F2] text-left shadow-sm transition-shadow hover:shadow-md ${active ? "border-teal ring-1 ring-teal" : "border-slate-100/70"}`}
+    <Link
+      to="/category/$slug/$sub"
+      params={{ slug: categorySlug, sub: subcategory.slug }}
+      className="group relative block w-full overflow-hidden rounded-sm border border-slate-100/70 bg-[#F8F7F2] text-left shadow-sm transition-shadow hover:shadow-md"
     >
       <div className="relative aspect-[2/1] w-full overflow-hidden bg-[#EAE9E4]">
         <img
@@ -422,17 +419,8 @@ function SubcategoryTile({
             {subcategory.name}
           </h2>
           <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
-          <p
-            className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
-            style={{
-              fontFamily: '"Inter", ui-sans-serif, system-ui',
-              letterSpacing: "0.22em",
-            }}
-          >
-            View Designs
-          </p>
         </div>
       </div>
-    </button>
+    </Link>
   );
 }
