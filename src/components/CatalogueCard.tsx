@@ -4,7 +4,7 @@ import { Heart, Minus, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { resolveProductImage } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export type CatalogueCardData = {
