@@ -1,5 +1,5 @@
 // Maps DB image_url (filename) to bundled Vite asset URL
-import catPlaceholder from "@/assets/category-placeholder.jpg";
+import catPlaceholder from "@/assets/opt-category-placeholder.webp";
 export { catPlaceholder as categoryPlaceholder };
 import ring from "@/assets/product-1-ring.jpg";
 import necklace from "@/assets/product-2-necklace.jpg";
@@ -31,41 +31,41 @@ import catAnkletsA from "@/assets/cat-anklets-a.jpg";
 import catAnkletsB from "@/assets/cat-anklets-b.jpg";
 import catKadaA from "@/assets/cat-kada-a.jpg";
 import catKadaB from "@/assets/cat-kada-b.jpg";
-import premRings from "@/assets/cat-premium-rings.jpg";
-import premNecklaces from "@/assets/cat-premium-necklaces.jpg";
-import premEarrings from "@/assets/cat-premium-earrings.jpg";
-import premBangles from "@/assets/cat-premium-bangles.jpg";
-import premBracelets from "@/assets/cat-premium-bracelets.jpg";
-import premPendants from "@/assets/cat-premium-pendants.jpg";
-import premChains from "@/assets/cat-premium-chains.jpg";
-import premMangalsutra from "@/assets/cat-premium-mangalsutra.jpg";
-import premAnklets from "@/assets/cat-premium-anklets.jpg";
-import premKada from "@/assets/cat-premium-kada.jpg";
-import premSets from "@/assets/cat-premium-sets.jpg";
-import premAntique from "@/assets/cat-premium-antique.jpg";
-import premCz from "@/assets/cat-premium-cz.jpg";
-import premOpenClose from "@/assets/cat-premium-openclose.jpg";
-import premVictoria from "@/assets/cat-premium-victoria.jpg";
-import subcatBaju from "@/assets/subcat-baju.jpg";
-import subcatBangle from "@/assets/subcat-bangle.jpg";
-import subcatBelt from "@/assets/subcat-belt.jpg";
-import subcatBracelet from "@/assets/subcat-bracelet.jpg";
-import subcatBridal from "@/assets/subcat-bridal.jpg";
-import subcatBrooch from "@/assets/subcat-brooch.jpg";
-import subcatChokerChik from "@/assets/subcat-choker-chik.jpg";
-import subcatChoti from "@/assets/subcat-choti.jpg";
-import subcatEarrings from "@/assets/subcat-earrings.jpg";
-import subcatFingerRing from "@/assets/subcat-finger-ring.jpg";
-import subcatJhumka from "@/assets/subcat-jhumka.jpg";
-import subcatLongSet from "@/assets/subcat-long-set.jpg";
-import subcatMangalSutra from "@/assets/subcat-mangal-sutra.jpg";
-import subcatMatil from "@/assets/subcat-matil.jpg";
-import subcatNecklace from "@/assets/subcat-necklace.jpg";
-import subcatPendantSet from "@/assets/subcat-pendant-set.jpg";
-import subcatSpn from "@/assets/subcat-spn.jpg";
-import subcatTikka from "@/assets/subcat-tikka.jpg";
-import subcatTops from "@/assets/subcat-tops.jpg";
-import subcatVenky from "@/assets/subcat-venky.jpg";
+import premRings from "@/assets/opt-cat-premium-rings.webp";
+import premNecklaces from "@/assets/opt-cat-premium-necklaces.webp";
+import premEarrings from "@/assets/opt-cat-premium-earrings.webp";
+import premBangles from "@/assets/opt-cat-premium-bangles.webp";
+import premBracelets from "@/assets/opt-cat-premium-bracelets.webp";
+import premPendants from "@/assets/opt-cat-premium-pendants.webp";
+import premChains from "@/assets/opt-cat-premium-chains.webp";
+import premMangalsutra from "@/assets/opt-cat-premium-mangalsutra.webp";
+import premAnklets from "@/assets/opt-cat-premium-anklets.webp";
+import premKada from "@/assets/opt-cat-premium-kada.webp";
+import premSets from "@/assets/opt-cat-premium-sets.webp";
+import premAntique from "@/assets/opt-cat-premium-antique.webp";
+import premCz from "@/assets/opt-cat-premium-cz.webp";
+import premOpenClose from "@/assets/opt-cat-premium-openclose.webp";
+import premVictoria from "@/assets/opt-cat-premium-victoria.webp";
+import subcatBaju from "@/assets/opt-subcat-baju.webp";
+import subcatBangle from "@/assets/opt-subcat-bangle.webp";
+import subcatBelt from "@/assets/opt-subcat-belt.webp";
+import subcatBracelet from "@/assets/opt-subcat-bracelet.webp";
+import subcatBridal from "@/assets/opt-subcat-bridal.webp";
+import subcatBrooch from "@/assets/opt-subcat-brooch.webp";
+import subcatChokerChik from "@/assets/opt-subcat-choker-chik.webp";
+import subcatChoti from "@/assets/opt-subcat-choti.webp";
+import subcatEarrings from "@/assets/opt-subcat-earrings.webp";
+import subcatFingerRing from "@/assets/opt-subcat-finger-ring.webp";
+import subcatJhumka from "@/assets/opt-subcat-jhumka.webp";
+import subcatLongSet from "@/assets/opt-subcat-long-set.webp";
+import subcatMangalSutra from "@/assets/opt-subcat-mangal-sutra.webp";
+import subcatMatil from "@/assets/opt-subcat-matil.webp";
+import subcatNecklace from "@/assets/opt-subcat-necklace.webp";
+import subcatPendantSet from "@/assets/opt-subcat-pendant-set.webp";
+import subcatSpn from "@/assets/opt-subcat-spn.webp";
+import subcatTikka from "@/assets/opt-subcat-tikka.webp";
+import subcatTops from "@/assets/opt-subcat-tops.webp";
+import subcatVenky from "@/assets/opt-subcat-venky.webp";
 
 export const PREMIUM_CATEGORY_IMAGES: Record<string, string> = {
   rings: premRings,
@@ -474,8 +474,8 @@ export function productThumbUrl(
   opts: { width?: number; height?: number; quality?: number } = {},
 ): string {
   if (!url) return url;
-  const width = opts.width ?? 600;
-  const quality = opts.quality ?? 70;
+  const width = opts.width ?? 420;
+  const quality = opts.quality ?? 58;
 
   // Only rewrite Supabase Storage URLs.
   if (!url.includes("/storage/v1/")) return url;

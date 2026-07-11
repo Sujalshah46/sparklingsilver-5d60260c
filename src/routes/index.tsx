@@ -58,7 +58,7 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/" },
-      { rel: "preload", as: "image", href: heroBridal, fetchpriority: "high" } as unknown as { rel: string; href: string },
+      { rel: "preload", as: "image", href: heroBridal, fetchPriority: "high" } as unknown as { rel: string; href: string },
     ],
     scripts: [
       {
@@ -177,7 +177,7 @@ function Home() {
           </div>
         </div>
         <div className="mt-3 flex flex-col gap-3 px-3">
-          {data.categories.map((c) => {
+          {data.categories.map((c, i) => {
             const count = data.counts.get(c.id) ?? 0;
             const dbImage = (c as unknown as { image_url?: string | null }).image_url;
             const premium = PREMIUM_CATEGORY_IMAGES[c.slug];
@@ -191,6 +191,7 @@ function Home() {
                 image={image}
                 count={count}
                 newCount={Math.max(0, Math.min(count, 24))}
+                priority={i < 3}
               />
             );
           })}

@@ -255,12 +255,13 @@ function CategoryPage() {
             <span className="mt-1 block h-px w-8 bg-teal" />
           </div>
           <div className="flex flex-col gap-3">
-            {data.subcategories.map((subcat) => (
+            {data.subcategories.map((subcat, i) => (
               <SubcategoryTile
                 key={subcat.id}
                 categorySlug={slug}
                 subcategory={subcat}
                 count={data.subcategoryCounts?.[subcat.id] ?? 0}
+                priority={i < 3}
               />
             ))}
           </div>
@@ -392,10 +393,12 @@ function SubcategoryTile({
   categorySlug,
   subcategory,
   count,
+  priority = false,
 }: {
   categorySlug: string;
   subcategory: Subcategory;
   count: number;
+  priority?: boolean;
 }) {
   const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
@@ -410,7 +413,9 @@ function SubcategoryTile({
         <img
           src={src}
           alt={`${subcategory.name} silver jewellery`}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
           onError={() => setSrc(categoryPlaceholder)}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
