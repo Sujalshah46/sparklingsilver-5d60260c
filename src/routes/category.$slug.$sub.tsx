@@ -6,7 +6,6 @@ import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
 import { whatsappUrl } from "@/lib/site";
-import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import {
   Sheet,
   SheetContent,
@@ -17,13 +16,6 @@ import {
 
 type SortKey = "featured" | "new" | "weight_asc" | "weight_desc" | "sku_asc";
 type ViewStyle = "grid2" | "grid1" | "compact";
-type Subcategory = {
-  id: string;
-  name: string;
-  slug: string;
-  image_url: string | null;
-  sort_order: number;
-};
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "featured", label: "Featured" },
@@ -33,42 +25,38 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "sku_asc", label: "SKU (A → Z)" },
 ];
 
-const categoryQuery = (slug: string) =>
+const subcatQuery = (catSlug: string, subSlug: string) =>
   queryOptions({
-    queryKey: ["category", slug],
+    queryKey: ["category", catSlug, "sub", subSlug],
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
+      const { data: cat } = await supabase.from("categories").select("*").eq("slug", catSlug).maybeSingle();
       if (!cat) return null;
+      const { data: sub } = await supabase.from("subcategories").select("*").eq("slug", subSlug).maybeSingle();
+      if (!sub) return null;
       const { data: products } = await supabase
         .from("products")
         .select("*")
         .eq("category_id", cat.id as string)
-        .limit(96);
-      const { data: links } = await supabase
-        .from("category_subcategories")
-        .select("subcategory_id")
-        .eq("category_id", cat.id as string);
-      const ids = (links ?? []).map((link) => link.subcategory_id);
-      const { data: subcategories } = ids.length
-        ? await supabase.from("subcategories").select("*").in("id", ids).order("sort_order")
-        : { data: [] as Subcategory[] };
+        .eq("subcategory_id", sub.id as string)
+        .limit(500);
       return {
         category: cat,
+        subcategory: sub,
         products: (products ?? []) as CatalogueCardData[],
-        subcategories: (subcategories ?? []) as Subcategory[],
       };
     },
   });
 
-export const Route = createFileRoute("/category/$slug")({
+export const Route = createFileRoute("/category/$slug/$sub")({
   head: ({ params, loaderData }) => {
-    const ld = loaderData as { category?: { name: string } } | undefined;
-    const name = ld?.category?.name ?? params.slug;
-    const title = `${name} — Sparkling Silver`;
-    const desc = `Browse our ${name.toLowerCase()} collection — premium 925 sterling silver designs with BIS hallmark.`;
-    const url = `https://sparkling-jewellers-llp.lovable.app/category/${params.slug}`;
+    const ld = loaderData as { category?: { name: string }; subcategory?: { name: string } } | undefined;
+    const catName = ld?.category?.name ?? params.slug;
+    const subName = ld?.subcategory?.name ?? params.sub;
+    const title = `${subName} — ${catName} — Sparkling Silver`;
+    const desc = `Browse ${subName.toLowerCase()} designs in our ${catName.toLowerCase()} collection — premium 925 sterling silver with BIS hallmark.`;
+    const url = `https://sparkling-jewellers-llp.lovable.app/category/${params.slug}/${params.sub}`;
     return {
       meta: [
         { title },
@@ -81,30 +69,34 @@ export const Route = createFileRoute("/category/$slug")({
     };
   },
   loader: async ({ context, params }) => {
-    const data = await context.queryClient.ensureQueryData(categoryQuery(params.slug));
+    const data = await context.queryClient.ensureQueryData(subcatQuery(params.slug, params.sub));
     if (!data) throw notFound();
     return data;
   },
-  component: CategoryPage,
+  component: SubcategoryPage,
   notFoundComponent: () => (
     <MobileShell title="Not found">
-      <div className="py-20 text-center text-muted-foreground">Category not found.</div>
+      <div className="py-20 text-center text-muted-foreground">Subcategory not found.</div>
+    </MobileShell>
+  ),
+  errorComponent: () => (
+    <MobileShell title="Error">
+      <div className="py-20 text-center text-muted-foreground">Unable to load this subcategory.</div>
     </MobileShell>
   ),
 });
 
 type Filters = { onlyNew: boolean; onlyBestseller: boolean };
 
-function CategoryPage() {
-  const { slug } = Route.useParams();
-  const { data } = useSuspenseQuery(categoryQuery(slug));
+function SubcategoryPage() {
+  const { slug, sub } = Route.useParams();
+  const { data } = useSuspenseQuery(subcatQuery(slug, sub));
 
   const [sort, setSort] = useState<SortKey>("featured");
   const [view, setView] = useState<ViewStyle>("grid2");
   const [filters, setFilters] = useState<Filters>({ onlyNew: false, onlyBestseller: false });
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
-  
 
   useEffect(() => {
     try {
@@ -126,7 +118,7 @@ function CategoryPage() {
 
   const items = useMemo(() => {
     if (!data) return [] as CatalogueCardData[];
-    let arr = [...data.products] as (CatalogueCardData & { subcategory_id?: string | null; is_new?: boolean; is_bestseller?: boolean; created_at?: string })[];
+    let arr = [...data.products] as (CatalogueCardData & { is_new?: boolean; is_bestseller?: boolean; created_at?: string })[];
     if (filters.onlyNew) arr = arr.filter((p) => p.is_new);
     if (filters.onlyBestseller) arr = arr.filter((p) => p.is_bestseller);
     switch (sort) {
@@ -139,7 +131,6 @@ function CategoryPage() {
     return arr;
   }, [data, sort, filters]);
 
-  // scroll spy: track how many cards have entered the viewport
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   useEffect(() => {
@@ -169,31 +160,32 @@ function CategoryPage() {
   const activeFilterCount = (filters.onlyNew ? 1 : 0) + (filters.onlyBestseller ? 1 : 0);
 
   return (
-    <MobileShell title={data.category.name}>
-      {/* Header */}
+    <MobileShell title={`${data.category.name} — ${data.subcategory.name}`}>
       <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-2 py-2">
-        <Link to="/catalogue" aria-label="Back" className="grid h-9 w-9 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+        <Link
+          to="/category/$slug"
+          params={{ slug }}
+          aria-label="Back"
+          className="grid h-9 w-9 place-items-center text-[#333] hover:bg-[#F4F4F4]"
+        >
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-[16px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
-          {data.category.name} <span className="font-normal text-[#777]">({data.products.length})</span>
+          {data.subcategory.name} <span className="font-normal text-[#777]">({data.products.length})</span>
         </h1>
       </div>
 
-      {/* Sort / Filter / View toolbar */}
+      <p className="px-3 pt-2 text-[11px] uppercase tracking-wider text-[#777]">
+        {data.category.name} / {data.subcategory.name}
+      </p>
+
       <div className="sticky top-[52px] z-20 flex items-stretch justify-between border-b border-[#E5E5E5] bg-white text-[12px] font-semibold text-[#1A1A1A]">
-        <button
-          onClick={() => setSortOpen(true)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]"
-        >
+        <button onClick={() => setSortOpen(true)} className="flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]">
           <ArrowUpDown className="h-3.5 w-3.5 text-teal" />
           <span className="uppercase tracking-wider">Sort</span>
         </button>
         <div className="w-px bg-[#E5E5E5]" />
-        <button
-          onClick={() => setFilterOpen(true)}
-          className="relative flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]"
-        >
+        <button onClick={() => setFilterOpen(true)} className="relative flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]">
           <ListFilter className="h-3.5 w-3.5 text-teal" />
           <span className="uppercase tracking-wider">Filter</span>
           {activeFilterCount > 0 && (
@@ -206,55 +198,22 @@ function CategoryPage() {
         <div className="flex flex-1 items-center justify-center gap-2 py-2">
           <span className="text-[11px] uppercase tracking-wider text-[#777]">View</span>
           <div className="inline-flex overflow-hidden rounded-[2px] border border-[#DDD]">
-            <button
-              aria-label="Two column"
-              onClick={() => updateView("grid2")}
-              className={`grid h-7 w-8 place-items-center ${view === "grid2" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
+            <button aria-label="Two column" onClick={() => updateView("grid2")} className={`grid h-7 w-8 place-items-center ${view === "grid2" ? "bg-teal text-white" : "text-[#555]"}`}>
               <LayoutGrid className="h-3.5 w-3.5" />
             </button>
-            <button
-              aria-label="One column"
-              onClick={() => updateView("grid1")}
-              className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "grid1" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
+            <button aria-label="One column" onClick={() => updateView("grid1")} className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "grid1" ? "bg-teal text-white" : "text-[#555]"}`}>
               <Rows2 className="h-3.5 w-3.5" />
             </button>
-            <button
-              aria-label="Compact grid"
-              onClick={() => updateView("compact")}
-              className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "compact" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
+            <button aria-label="Compact grid" onClick={() => updateView("compact")} className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "compact" ? "bg-teal text-white" : "text-[#555]"}`}>
               <Rows3 className="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
       </div>
 
-      {/* Subcategories */}
-      {data.subcategories.length > 0 && (
-        <section className="px-3 py-4">
-          <div className="mb-3">
-            <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
-            <span className="mt-1 block h-px w-8 bg-teal" />
-          </div>
-          <div className="flex flex-col gap-3">
-            {data.subcategories.map((subcat) => (
-              <SubcategoryTile
-                key={subcat.id}
-                categorySlug={slug}
-                subcategory={subcat}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-
-      {/* Grid */}
       <div className="px-2 py-3">
         {items.length === 0 ? (
-          <p className="py-20 text-center text-[#888]">No products match your filters.</p>
+          <p className="py-20 text-center text-[#888]">No products in this subcategory yet.</p>
         ) : (
           <div ref={gridRef} className={gridClass}>
             {items.map((p, i) => (
@@ -266,7 +225,6 @@ function CategoryPage() {
         )}
       </div>
 
-      {/* Floating product-count pill */}
       {total > 0 && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[112px] z-20 flex justify-center">
           <div className="pointer-events-auto rounded-full bg-[#1A1A1A]/85 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white shadow-lg backdrop-blur">
@@ -275,7 +233,6 @@ function CategoryPage() {
         </div>
       )}
 
-      {/* Bottom access banner */}
       <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
           <div className="min-w-0">
@@ -283,7 +240,7 @@ function CategoryPage() {
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
           </div>
           <a
-            href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name}.`)}
+            href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name} / ${data.subcategory.name}.`)}
             target="_blank"
             rel="noopener noreferrer"
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
@@ -295,7 +252,6 @@ function CategoryPage() {
 
       <div className="h-28" />
 
-      {/* Sort sheet */}
       <Sheet open={sortOpen} onOpenChange={setSortOpen}>
         <SheetTrigger asChild><span className="hidden" /></SheetTrigger>
         <SheetContent side="bottom" className="rounded-t-2xl p-0">
@@ -318,7 +274,6 @@ function CategoryPage() {
         </SheetContent>
       </Sheet>
 
-      {/* Filter sheet */}
       <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
         <SheetTrigger asChild><span className="hidden" /></SheetTrigger>
         <SheetContent side="bottom" className="rounded-t-2xl p-0">
@@ -368,47 +323,5 @@ function CategoryPage() {
         </SheetContent>
       </Sheet>
     </MobileShell>
-  );
-}
-
-function SubcategoryTile({
-  categorySlug,
-  subcategory,
-}: {
-  categorySlug: string;
-  subcategory: Subcategory;
-}) {
-  const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
-  const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
-
-  return (
-    <Link
-      to="/category/$slug/$sub"
-      params={{ slug: categorySlug, sub: subcategory.slug }}
-      className="group relative block w-full overflow-hidden rounded-sm border border-slate-100/70 bg-[#F8F7F2] text-left shadow-sm transition-shadow hover:shadow-md"
-    >
-      <div className="relative aspect-[2/1] w-full overflow-hidden bg-[#EAE9E4]">
-        <img
-          src={src}
-          alt={`${subcategory.name} silver jewellery`}
-          loading="lazy"
-          onError={() => setSrc(categoryPlaceholder)}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-4 text-center">
-          <h2
-            className="text-[22px] font-normal leading-[1.05] text-slate-900"
-            style={{
-              fontFamily: '"Cormorant Garamond", "Playfair Display", ui-serif, Georgia, serif',
-              letterSpacing: "0.02em",
-              textShadow: "0 1px 2px rgba(255,255,255,0.55)",
-            }}
-          >
-            {subcategory.name}
-          </h2>
-          <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
-        </div>
-      </div>
-    </Link>
   );
 }
