@@ -20,12 +20,13 @@ export type CatalogueCardData = {
 };
 
 export function CatalogueCard({
-  p, compact = false, showCart = true,
-}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean }) {
+  p, compact = false, showCart = true, priority = false,
+}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean; priority?: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [qty, setQty] = useState(1);
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const wish = useMutation({
     mutationFn: async () => {
@@ -59,6 +60,10 @@ export function CatalogueCard({
     },
   });
 
+  const rawSrc = resolveProductImage(p.image_url);
+  const thumbW = compact ? 320 : 600;
+  const src = productThumbUrl(rawSrc, { width: thumbW, quality: 72 });
+
   return (
     <div className="flex flex-col overflow-hidden border border-[#EEE] bg-white">
       <Link to="/product/$slug" params={{ slug: p.slug }} className="relative block">
@@ -69,12 +74,22 @@ export function CatalogueCard({
         >
           <Heart className="h-3.5 w-3.5" />
         </button>
-        <div className="ruler-frame aspect-square w-full">
+        <div className="ruler-frame aspect-square w-full bg-[#F5F5F3]">
+          {!imgLoaded && (
+            <div
+              aria-hidden
+              className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#F0EFEA] via-[#F6F5F1] to-[#EAE9E3]"
+            />
+          )}
           <img
-            src={resolveProductImage(p.image_url)}
+            src={src}
             alt={p.name}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-contain p-3"
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            {...(priority ? { fetchpriority: "high" as const } : { fetchpriority: "low" as const })}
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
+            className={`absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
         </div>
