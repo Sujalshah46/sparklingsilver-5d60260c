@@ -54,11 +54,27 @@ const categoryQuery = (slug: string) =>
       const { data: subcategories } = ids.length
         ? await supabase.from("subcategories").select("*").in("id", ids).order("sort_order")
         : { data: [] as Subcategory[] };
+
+      // Per-subcategory product counts (scoped to this category)
+      const counts: Record<string, number> = {};
+      await Promise.all(
+        (subcategories ?? []).map(async (s) => {
+          const { count } = await supabase
+            .from("products")
+            .select("id", { count: "exact", head: true })
+            .eq("category_id", cat.id as string)
+            .eq("subcategory_id", s.id);
+          counts[s.id] = count ?? 0;
+        }),
+      );
+
       return {
         category: cat,
         products: (products ?? []) as CatalogueCardData[],
         subcategories: (subcategories ?? []) as Subcategory[],
+        subcategoryCounts: counts,
       };
+
     },
   });
 
@@ -244,6 +260,7 @@ function CategoryPage() {
                 key={subcat.id}
                 categorySlug={slug}
                 subcategory={subcat}
+                count={data.subcategoryCounts?.[subcat.id] ?? 0}
               />
             ))}
           </div>
@@ -374,9 +391,11 @@ function CategoryPage() {
 function SubcategoryTile({
   categorySlug,
   subcategory,
+  count,
 }: {
   categorySlug: string;
   subcategory: Subcategory;
+  count: number;
 }) {
   const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
@@ -407,6 +426,12 @@ function SubcategoryTile({
             {subcategory.name}
           </h2>
           <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
+          <p
+            className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
+            style={{ fontFamily: '"Inter", ui-sans-serif, system-ui', letterSpacing: "0.22em" }}
+          >
+            {count} Designs
+          </p>
         </div>
       </div>
     </Link>
