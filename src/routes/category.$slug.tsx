@@ -235,33 +235,22 @@ function CategoryPage() {
       {/* Subcategories */}
       {data.subcategories.length > 0 && (
         <section className="px-3 py-4">
-          <div className="mb-3 flex items-center justify-between gap-2">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
-              <span className="mt-1 block h-px w-8 bg-teal" />
-            </div>
-            {selectedSubcategoryId && (
-              <button
-                type="button"
-                onClick={() => setSelectedSubcategoryId(null)}
-                className="rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
-              >
-                All
-              </button>
-            )}
+          <div className="mb-3">
+            <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
+            <span className="mt-1 block h-px w-8 bg-teal" />
           </div>
           <div className="flex flex-col gap-3">
             {data.subcategories.map((subcat) => (
               <SubcategoryTile
                 key={subcat.id}
+                categorySlug={slug}
                 subcategory={subcat}
-                active={selectedSubcategoryId === subcat.id}
-                onSelect={() => setSelectedSubcategoryId((current) => current === subcat.id ? null : subcat.id)}
               />
             ))}
           </div>
         </section>
       )}
+
 
       {/* Grid */}
       <div className="px-2 py-3">
