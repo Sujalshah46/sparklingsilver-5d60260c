@@ -260,6 +260,7 @@ function CategoryPage() {
                 key={subcat.id}
                 categorySlug={slug}
                 subcategory={subcat}
+                count={data.subcategoryCounts?.[subcat.id] ?? 0}
               />
             ))}
           </div>
