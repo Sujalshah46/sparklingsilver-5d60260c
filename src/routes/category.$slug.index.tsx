@@ -276,7 +276,7 @@ function CategoryPage() {
           <div ref={gridRef} className={gridClass}>
             {items.map((p, i) => (
               <div key={p.id} data-card data-idx={i}>
-                <CatalogueCard p={p} compact={view === "compact"} />
+                <CatalogueCard p={p} compact={view === "compact"} priority={i < 4} />
               </div>
             ))}
           </div>
