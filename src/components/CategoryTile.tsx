@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router";
 import { resolveProductImage, categoryPlaceholder } from "@/lib/product-images";
 
 export function CategoryTile({
-  slug, name, image, count, newCount,
-}: { slug: string; name: string; image?: string | null; count?: number; newCount?: number }) {
+  slug, name, image, count, newCount, priority = false,
+}: { slug: string; name: string; image?: string | null; count?: number; newCount?: number; priority?: boolean }) {
   const [src, setSrc] = useState(() => resolveProductImage(image ?? null, categoryPlaceholder));
   return (
     <Link
@@ -16,7 +16,9 @@ export function CategoryTile({
         <img
           src={src}
           alt={name}
-          loading="lazy"
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
           onError={() => setSrc(categoryPlaceholder)}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />

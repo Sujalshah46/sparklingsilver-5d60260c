@@ -61,8 +61,8 @@ export function CatalogueCard({
   });
 
   const rawSrc = resolveProductImage(p.image_url);
-  const thumbW = compact ? 320 : 600;
-  const src = productThumbUrl(rawSrc, { width: thumbW, quality: 72 });
+  const thumbW = compact ? 260 : 420;
+  const src = productThumbUrl(rawSrc, { width: thumbW, quality: 58 });
 
   return (
     <div className="flex flex-col overflow-hidden border border-[#EEE] bg-white">
