@@ -192,59 +192,8 @@ function CategoryPage() {
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <h1 className="text-[16px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
-          {data.category.name} <span className="font-normal text-[#777]">({data.products.length})</span>
+          {data.category.name} <span className="font-normal text-[#777]">({data.subcategories.length})</span>
         </h1>
-      </div>
-
-      {/* Sort / Filter / View toolbar */}
-      <div className="sticky top-[52px] z-20 flex items-stretch justify-between border-b border-[#E5E5E5] bg-white text-[12px] font-semibold text-[#1A1A1A]">
-        <button
-          onClick={() => setSortOpen(true)}
-          className="flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]"
-        >
-          <ArrowUpDown className="h-3.5 w-3.5 text-teal" />
-          <span className="uppercase tracking-wider">Sort</span>
-        </button>
-        <div className="w-px bg-[#E5E5E5]" />
-        <button
-          onClick={() => setFilterOpen(true)}
-          className="relative flex flex-1 items-center justify-center gap-1.5 py-3 hover:bg-[#F8F8F8]"
-        >
-          <ListFilter className="h-3.5 w-3.5 text-teal" />
-          <span className="uppercase tracking-wider">Filter</span>
-          {activeFilterCount > 0 && (
-            <span className="ml-1 grid h-4 min-w-4 place-items-center rounded-full bg-teal px-1 text-[10px] text-white">
-              {activeFilterCount}
-            </span>
-          )}
-        </button>
-        <div className="w-px bg-[#E5E5E5]" />
-        <div className="flex flex-1 items-center justify-center gap-2 py-2">
-          <span className="text-[11px] uppercase tracking-wider text-[#777]">View</span>
-          <div className="inline-flex overflow-hidden rounded-[2px] border border-[#DDD]">
-            <button
-              aria-label="Two column"
-              onClick={() => updateView("grid2")}
-              className={`grid h-7 w-8 place-items-center ${view === "grid2" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button
-              aria-label="One column"
-              onClick={() => updateView("grid1")}
-              className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "grid1" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
-              <Rows2 className="h-3.5 w-3.5" />
-            </button>
-            <button
-              aria-label="Compact grid"
-              onClick={() => updateView("compact")}
-              className={`grid h-7 w-8 place-items-center border-l border-[#DDD] ${view === "compact" ? "bg-teal text-white" : "text-[#555]"}`}
-            >
-              <Rows3 className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Subcategories */}
@@ -268,30 +217,6 @@ function CategoryPage() {
         </section>
       )}
 
-
-      {/* Grid */}
-      <div className="px-2 py-3">
-        {items.length === 0 ? (
-          <p className="py-20 text-center text-[#888]">No products match your filters.</p>
-        ) : (
-          <div ref={gridRef} className={gridClass}>
-            {items.map((p, i) => (
-              <div key={p.id} data-card data-idx={i}>
-                <CatalogueCard p={p} compact={view === "compact"} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Floating product-count pill */}
-      {total > 0 && (
-        <div className="pointer-events-none fixed inset-x-0 bottom-[112px] z-20 flex justify-center">
-          <div className="pointer-events-auto rounded-full bg-[#1A1A1A]/85 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white shadow-lg backdrop-blur">
-            {Math.max(1, visibleCount)} / {total} Product(s)
-          </div>
-        </div>
-      )}
 
       {/* Bottom access banner */}
       <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5">
