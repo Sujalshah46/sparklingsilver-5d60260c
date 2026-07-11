@@ -62,7 +62,7 @@ const categoryQuery = (slug: string) =>
     },
   });
 
-export const Route = createFileRoute("/category/$slug")({
+export const Route = createFileRoute("/category/$slug/")({
   head: ({ params, loaderData }) => {
     const ld = loaderData as { category?: { name: string } } | undefined;
     const name = ld?.category?.name ?? params.slug;
