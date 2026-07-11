@@ -127,7 +127,6 @@ function CategoryPage() {
   const items = useMemo(() => {
     if (!data) return [] as CatalogueCardData[];
     let arr = [...data.products] as (CatalogueCardData & { subcategory_id?: string | null; is_new?: boolean; is_bestseller?: boolean; created_at?: string })[];
-    if (selectedSubcategoryId) arr = arr.filter((p) => p.subcategory_id === selectedSubcategoryId);
     if (filters.onlyNew) arr = arr.filter((p) => p.is_new);
     if (filters.onlyBestseller) arr = arr.filter((p) => p.is_bestseller);
     switch (sort) {
@@ -138,7 +137,7 @@ function CategoryPage() {
       default: break;
     }
     return arr;
-  }, [data, selectedSubcategoryId, sort, filters]);
+  }, [data, sort, filters]);
 
   // scroll spy: track how many cards have entered the viewport
   const gridRef = useRef<HTMLDivElement | null>(null);
