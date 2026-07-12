@@ -1,6 +1,6 @@
 ---
 name: jewelry-image-pipeline
-description: Sparkling Silver locked pipeline for upscaling jewelry product photos with Lovable AI, overlaying the brand logo top-right without overlapping the subject, and syncing SKU + gross weight from an uploaded Excel sheet into the products table so the web app renders them. Use whenever the user asks to enhance, upscale, re-render, or bulk-process product images for any category (necklace, long set, matil, bangles, tika/tikka, tops, etc.).
+description: Sparkling Silver locked pipeline for upscaling jewelry product photos with Lovable AI, overlaying the brand logo top-right without overlapping the subject, and syncing SKU + gross weight from an uploaded Excel sheet into the products table so the web app renders them. Use whenever the user asks to enhance, upscale, re-render, or bulk-process product images for any category (necklace, long set, matil, bangles, tika/tikka, tops, belt, choker, jhumka, etc.).
 ---
 
 # Jewelry Image Pipeline (Sparkling Silver)
@@ -15,15 +15,12 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 4. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
 5. **Save**: JPEG quality 95, 4:4:4 chroma subsampling.
 6. **Excel sync**: user uploads an .xlsx with at minimum `SKU` and `Gross Weight` columns (accept common variants: `sku`, `Item Code`, `gross_weight`, `Gross Wt`, `GW`). For each processed image, match by SKU and UPDATE `public.products` setting `gross_weight` (numeric grams). Never overwrite `price`, `making_charge`, `gst`, or other pricing fields (see mem://preferences/no-auto-pricing). Product `name` stays as-is unless user asks; SKU is the join key, not something to write onto the image.
-7. **Upload**: put files in `product-images/<category>/<subcategory>/<sku>.jpg`, upsert, then set `products.image_path` + `products.image_url` + `has_image = true` for the matched SKU row.
-8. **Quick bulk app workflow**: for category batches already prepared in the uploaded zip, prefer the fast workflow used for Long Set / Necklace / Pendant Set:
-   - parse the Excel first
-   - bulk insert any missing product rows into `public.products` with category/subcategory/SKU/name/gross_weight and safe defaults
-   - upload all processed JPGs to storage paths in one batch
-   - call `/api/public/admin-bulk-link-images` with `x-cron-secret` and a payload of `{ items: [{ sku, storage_path }] }`
-   - let that endpoint create signed URLs and update `image_url`, `image_path`, `has_image=true`
-   - verify with a read query that the rows are visible in the app
-9. **Pricing safety**: the bulk insert step must leave `price` untouched unless the user explicitly gives prices. If a new row must be created, use `0` or existing safe defaults only for placeholder required fields — never auto-calculate commercial pricing.
+7. **Upload + link (SIMPLE PIPELINE — PREFERRED)**: this is the workflow that actually works reliably for every category (CZ Matil, CZ Belt, and the antique batches). Skip the admin bulk-link endpoint and any admin panel UI. Do everything directly with the service role key from a local Python script:
+   - Upload each processed JPG to `product-images/<category>/<subcategory>/<sku>.jpg` via Storage REST (`POST /storage/v1/object/product-images/...` with `Authorization: Bearer <SUPABASE_SERVICE_ROLE_KEY>`, `x-upsert: true`, `content-type: image/jpeg`).
+   - Mint a long-lived signed URL for each object (`POST /storage/v1/object/sign/product-images/<path>` with body `{"expiresIn": 946080000}` ≈ 30 years). The response gives a relative `signedURL`; prepend `${SUPABASE_URL}/storage/v1` to store the full absolute URL.
+   - PATCH the matching product row by SKU via PostgREST (`PATCH /rest/v1/products?sku=eq.<sku>` with headers `apikey`, `Authorization: Bearer <service-role>`, `Content-Type: application/json`, `Prefer: return=minimal`) setting `image_url`, `image_path`, `has_image=true`.
+   - No edge function, no `/api/public/admin-bulk-link-images` call, no admin UI upload. If the SKU row does not exist yet, insert it first (see Bulk insert shape) — same PostgREST endpoint with POST.
+8. **Pricing safety**: never touch `price`, `making_charge_pct`, `gst`, etc. If a new row must be created, use `0` or existing safe defaults only for required placeholder fields — never auto-calculate commercial pricing.
 
 ## Steps
 
@@ -35,12 +32,12 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
    - prompt for pair categories such as Tops: `"Studio product photo of this exact pair of earrings on an opaque dark green velvet backdrop (#0E3A2E). Preserve the original metal color and gemstone tones exactly — do not recolor. Show BOTH earrings together, centered, with generous empty space in the TOP-RIGHT corner reserved for a logo. Soft studio lighting, sharp focus, subtle vignette, no text, no watermark, no props."`
 4. Overlay logo with PIL (see `scripts/overlay_logo.py`).
 5. Save JPEG q95 subsampling=0.
-6. **Fast batch route**:
-   - insert all missing product rows in one bulk DB operation
-   - upload all JPGs to `product-images/<category>/<subcategory>/<sku>.jpg`
-   - POST the whole list once to `/api/public/admin-bulk-link-images`
-7. Sync `gross_weight` from Excel by SKU if not already applied during insert.
-8. Verify with a read query that each row shows the new image + gross_weight.
+6. **Simple link route** (canonical — use this every time):
+   - Ensure product rows exist (PostgREST POST for missing SKUs; see Bulk insert shape).
+   - Upload every JPG to `product-images/<category>/<subcategory>/<sku>.jpg` via Storage REST with the service role key.
+   - Sign each object for ~30 years and PATCH the `products` row by SKU with `image_url`, `image_path`, `has_image=true`.
+7. Sync `gross_weight` from Excel by SKU (PATCH) if not already applied during insert.
+8. Verify with a read query that each row shows the new image + gross_weight, then load the category page in the web app to confirm the tiles render.
 
 ## Excel parsing
 
@@ -72,9 +69,9 @@ rows = [
 
 ## Bulk insert shape
 
-Use one bulk operation for all missing rows. Safe default row shape:
+Safe default row shape (used only when a SKU row does not already exist):
 
-```sql
+```
 sku,
 name = '<Category label> <Subcategory label> ' || sku,
 category_id,
@@ -94,26 +91,73 @@ has_image = false,
 import_status = 'active'
 ```
 
-If the SKU already exists, do not duplicate it.
+Never duplicate an existing SKU.
 
-## Bulk link endpoint
+## Simple upload + link pipeline (Python, canonical)
 
-Canonical endpoint already in app:
+Uses only `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`. This is the exact
+shape that shipped CZ Matil and CZ Belt end-to-end.
 
-- `POST /api/public/admin-bulk-link-images`
-- header: `x-cron-secret: <CRON_SECRET>`
-- body:
+```python
+import os, requests, mimetypes, pathlib
 
-```json
-{
-  "items": [
-    { "sku": "AR(TK)-34", "storage_path": "antique/tikka/AR(TK)-34.jpg" },
-    { "sku": "AR(TP)-01", "storage_path": "antique/tops/AR(TP)-01.jpg" }
-  ]
+SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
+KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+H_JSON = {
+    "apikey": KEY,
+    "Authorization": f"Bearer {KEY}",
+    "Content-Type": "application/json",
 }
+
+def upload(local_path: str, storage_path: str) -> None:
+    with open(local_path, "rb") as f:
+        r = requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/product-images/{storage_path}",
+            headers={
+                "Authorization": f"Bearer {KEY}",
+                "apikey": KEY,
+                "x-upsert": "true",
+                "content-type": mimetypes.guess_type(local_path)[0] or "image/jpeg",
+            },
+            data=f.read(),
+        )
+    r.raise_for_status()
+
+def sign(storage_path: str) -> str:
+    r = requests.post(
+        f"{SUPABASE_URL}/storage/v1/object/sign/product-images/{storage_path}",
+        headers=H_JSON,
+        json={"expiresIn": 946080000},  # ~30 years
+    )
+    r.raise_for_status()
+    return f"{SUPABASE_URL}/storage/v1{r.json()['signedURL']}"
+
+def patch_product(sku: str, storage_path: str, signed_url: str) -> None:
+    r = requests.patch(
+        f"{SUPABASE_URL}/rest/v1/products",
+        headers={**H_JSON, "Prefer": "return=minimal"},
+        params={"sku": f"eq.{sku}"},
+        json={
+            "image_url": signed_url,
+            "image_path": storage_path,
+            "has_image": True,
+        },
+    )
+    r.raise_for_status()
+
+def link_batch(category: str, subcategory: str, items: list[tuple[str, str]]) -> None:
+    # items: [(sku, local_jpg_path), ...]
+    for sku, local in items:
+        storage_path = f"{category}/{subcategory}/{sku}.jpg"
+        upload(local, storage_path)
+        signed = sign(storage_path)
+        patch_product(sku, storage_path, signed)
 ```
 
-This endpoint signs the storage URL and updates `products.image_url`, `products.image_path`, and `has_image`.
+Do NOT reach for `/api/public/admin-bulk-link-images`, the `link-images` edge
+function, or the admin panel image uploader. Those routes have failed in
+practice (404s, missing secrets, RLS). The simple pipeline above is the one to
+reuse for every remaining category.
 
 ## Logo overlay (canonical)
 
