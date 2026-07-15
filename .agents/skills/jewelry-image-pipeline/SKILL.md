@@ -37,7 +37,7 @@ Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "
 
 After generating a batch, run these checks with PIL on every `final/*.jpg`. Regenerate any SKU that fails, then re-run overlay + upload for it.
 
-1. **Bust color check**: sample a strip along the bottom-center where the bust sits and require the dominant hue to be emerald green (H≈140-165, S>25, V>15 in HSV). Flag near-black, grey, beige, or golden busts and regenerate.
+1. **Bust color + presence check (necklaces/long sets/chokers/bridal only)**: for every neck-worn piece, sample the strip immediately behind the necklace (upper-center + lower-center) and require dominant hue in emerald range (H≈140-165, S>25, V>15 in HSV). Flag BLACK (V<0.15 without emerald hue), GOLD/BEIGE (H<0.15), MARBLE/GREY (S<0.20), or missing bust (piece "floating" — no distinct silhouette contrast between the neck stand and the surrounding backdrop). Regenerate every flagged SKU using the neck-bust prompt above. Flat pieces (matil/belt/bangle/pendant) do not require a bust — skip this check for them.
 2. **Top-right patch check**: crop the top-right ~18% of the frame, compute local color variance / edge density vs the rest of the backdrop. A blurred rectangular box shows up as a low-variance patch with a hard edge; regenerate any SKU that trips this.
 3. **Logo-presence check**: count near-white pixels (R,G,B > 235) inside the top-right 18% box. A properly overlaid logo returns > ~2000 white pixels at 1920x1920. Zero white pixels means the overlay step was skipped — re-run `overlay_logo.py` on that file.
 4. **Uniform backdrop check**: sample the four corners; all four should be within ΔE ≈ 15 of the target emerald hex. Large deltas mean the model painted a gradient or reserved area.
