@@ -9,9 +9,9 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 ## Rules (non-negotiable)
 
-1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **1920x1920** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on an **opaque dark green velvet** backdrop (`#0E3A2E`), subject centered, with headroom in the top-right corner reserved for the logo so the logo never overlaps the jewellery.
+1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **1920x1920** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
 2. **Pairs rule for earrings / tops**: when the source SKU is a pair product (for example Tops), the generated image must show **both earrings** together. Never output only one earring unless the source itself is intentionally a single-piece product.
-3. **Logo overlay** (PIL, after upscale): white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png`, **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. Must NOT overlap the subject — if it does, re-run the edit prompt with more top-right negative space; do not shrink or move the logo.
+3. **Logo overlay is applied ONLY in the PIL post-step, never by the AI model.** Do NOT ask the model to reserve space, leave headroom, or draw a logo — that produces the blurred top-right square/patch artifact. Instead the AI prompt asks for a fully uniform emerald backdrop, and the PIL overlay drops the white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` in the **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. The PIL step is mandatory on every generated frame — never ship a raw generated image without running `overlay_logo.py` over it.
 4. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
 5. **Save**: JPEG quality 95, 4:4:4 chroma subsampling.
 6. **Excel sync**: user uploads an .xlsx with at minimum `SKU` and `Gross Weight` columns (accept common variants: `sku`, `Item Code`, `gross_weight`, `Gross Wt`, `GW`). For each processed image, match by SKU and UPDATE `public.products` setting `gross_weight` (numeric grams). Never overwrite `price`, `making_charge`, `gst`, or other pricing fields (see mem://preferences/no-auto-pricing). Product `name` stays as-is unless user asks; SKU is the join key, not something to write onto the image.
@@ -22,22 +22,48 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
    - No edge function, no `/api/public/admin-bulk-link-images` call, no admin UI upload. If the SKU row does not exist yet, insert it first (see Bulk insert shape) — same PostgREST endpoint with POST.
 8. **Pricing safety**: never touch `price`, `making_charge_pct`, `gst`, etc. If a new row must be created, use `0` or existing safe defaults only for required placeholder fields — never auto-calculate commercial pricing.
 
+## Prompt templates (locked)
+
+Use these verbatim. They were derived from repeatedly fixing the exact failure modes below.
+
+- **Single-piece (necklace, long set, choker, matil, belt, pendant, tika):**
+  `"Studio product photo of this exact jewellery piece on a completely uniform emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge with NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing on its bust. Soft studio lighting, sharp focus, subtle vignette, no text, no props."`
+- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered."
+
+Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step.
+
+## Post-generation audit (mandatory before shipping)
+
+After generating a batch, run these checks with PIL on every `final/*.jpg`. Regenerate any SKU that fails, then re-run overlay + upload for it.
+
+1. **Bust color check**: sample a strip along the bottom-center where the bust sits and require the dominant hue to be emerald green (H≈140-165, S>25, V>15 in HSV). Flag near-black, grey, beige, or golden busts and regenerate.
+2. **Top-right patch check**: crop the top-right ~18% of the frame, compute local color variance / edge density vs the rest of the backdrop. A blurred rectangular box shows up as a low-variance patch with a hard edge; regenerate any SKU that trips this.
+3. **Logo-presence check**: count near-white pixels (R,G,B > 235) inside the top-right 18% box. A properly overlaid logo returns > ~2000 white pixels at 1920x1920. Zero white pixels means the overlay step was skipped — re-run `overlay_logo.py` on that file.
+4. **Uniform backdrop check**: sample the four corners; all four should be within ΔE ≈ 15 of the target emerald hex. Large deltas mean the model painted a gradient or reserved area.
+
+Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declare a batch done until 0 SKUs are flagged.
+
 ## Steps
 
 1. Extract source zip to `/tmp/<batch>-src/`. Only touch raw originals.
 2. Parse the category Excel with pandas and normalize columns.
-3. For each raw image, call `imagegen--edit_image` with:
-   - `model: "premium"`, `width: 1920`, `height: 1920`
-   - prompt for single-piece categories: `"Studio product photo of this exact jewellery piece on an opaque dark green velvet backdrop (#0E3A2E). Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece with generous empty space in the TOP-RIGHT corner reserved for a logo (do not place any part of the jewellery in the top-right ~18% of the frame). Soft studio lighting, sharp focus, subtle vignette, no text, no watermark, no props."`
-   - prompt for pair categories such as Tops: `"Studio product photo of this exact pair of earrings on an opaque dark green velvet backdrop (#0E3A2E). Preserve the original metal color and gemstone tones exactly — do not recolor. Show BOTH earrings together, centered, with generous empty space in the TOP-RIGHT corner reserved for a logo. Soft studio lighting, sharp focus, subtle vignette, no text, no watermark, no props."`
-4. Overlay logo with PIL (see `scripts/overlay_logo.py`).
+3. For each raw image, call `imagegen--edit_image` with `model: "premium"`, `width: 1920`, `height: 1920`, using the locked prompt above.
+4. Overlay logo with PIL (see `scripts/overlay_logo.py`) — MANDATORY on every generated frame.
 5. Save JPEG q95 subsampling=0.
-6. **Simple link route** (canonical — use this every time):
+6. Run the post-generation audit (bust color, top-right patch, logo presence, uniform backdrop). Regenerate + re-overlay any flagged SKU until the audit is clean.
+7. **Simple link route** (canonical — use this every time):
    - Ensure product rows exist (PostgREST POST for missing SKUs; see Bulk insert shape).
    - Upload every JPG to `product-images/<category>/<subcategory>/<sku>.jpg` via Storage REST with the service role key.
    - Sign each object for ~30 years and PATCH the `products` row by SKU with `image_url`, `image_path`, `has_image=true`.
-7. Sync `gross_weight` from Excel by SKU (PATCH) if not already applied during insert.
-8. Verify with a read query that each row shows the new image + gross_weight, then load the category page in the web app to confirm the tiles render.
+8. Sync `gross_weight` from Excel by SKU (PATCH) if not already applied during insert.
+9. Verify with a read query that each row shows the new image + gross_weight, then load the category page in the web app to confirm the tiles render.
+
+## Known failure modes (learned the hard way — do not repeat)
+
+- **Blurred square/rectangle in top-right corner**: caused by prompting the model to "reserve space" or "leave headroom" for a logo. Fix: use the locked prompt (no reservation language) and rely on the PIL overlay. Re-audit and regenerate any SKU with a top-right patch.
+- **Non-emerald bust (black, grey, beige, gold)**: model reverted the stand to the source photo's tone. Fix: prompt explicitly says "completely uniform emerald green velvet edge-to-edge, front-facing bust". Detect via HSV bottom-center sample and regenerate.
+- **Missing logo on shipped images**: happens when the AI-generated file is uploaded directly without running `overlay_logo.py`. Fix: pipeline is `gen/<sku>.jpg -> overlay -> final/<sku>.jpg -> upload`. Upload only from `final/`. Audit with white-pixel count in the top-right box.
+- **Shipping the batch before auditing**: every past fix cycle came from skipping the audit. The audit is not optional — run it before telling the user the batch is done.
 
 ## Excel parsing
 
@@ -161,7 +187,7 @@ reuse for every remaining category.
 
 ## Logo overlay (canonical)
 
-See `scripts/overlay_logo.py`. Copy to /tmp before running.
+See `scripts/overlay_logo.py`. Copy to /tmp before running. Never skip this step; upload only from the `final/` directory it writes to.
 
 ## References
 
