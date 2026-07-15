@@ -26,9 +26,10 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 Use these verbatim. They were derived from repeatedly fixing the exact failure modes below.
 
-- **Single-piece (necklace, long set, choker, matil, belt, pendant, tika):**
-  `"Studio product photo of this exact jewellery piece on a completely uniform emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge with NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing on its bust. Soft studio lighting, sharp focus, subtle vignette, no text, no props."`
-- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered."
+- **Neck-worn piece (necklace, long set, choker, bridal) — REQUIRES A VISIBLE EMERALD VELVET BUST:**
+  `"Studio product photo of this exact necklace mounted on a tall EMERALD GREEN VELVET NECK BUST (mannequin-style shoulders + neck stand fully covered in emerald green velvet #0E5A3E for CZ / #0E3A2E for antique). The bust silhouette MUST be clearly visible behind the necklace — do NOT let the piece float in mid-air, and the bust MUST be emerald green velvet, NOT black, NOT gold, NOT beige, NOT marble. The backdrop is completely uniform emerald green velvet filling the ENTIRE frame edge-to-edge with NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Preserve original metal color and gemstone tones exactly. Center front-facing. Soft studio lighting, sharp focus, subtle vignette. No text, no props."`
+- **Flat piece (matil, belt, pendant, tika, bangle):** same locked emerald backdrop, no bust required — just `"...on a completely uniform emerald green velvet backdrop..."` (older single-piece phrasing works).
+- **Pair (tops, earrings, jhumka):** same emerald backdrop, add "this exact pair of earrings ... Show BOTH earrings together, centered."
 
 Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step.
 
