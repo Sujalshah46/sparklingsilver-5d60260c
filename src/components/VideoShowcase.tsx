@@ -143,7 +143,7 @@ function VideoCard({
         type="button"
         onClick={(e) => { e.stopPropagation(); onToggleMute(); }}
         aria-label={muted ? "Unmute" : "Mute"}
-        className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+        className="absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/80"
       >
         {muted ? (
           <svg viewBox="0 0 24 24" className="h-5 w-5 fill-white">
