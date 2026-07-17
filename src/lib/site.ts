@@ -31,6 +31,11 @@ export const WHATSAPP_DEFAULT_MESSAGE =
 
 export const WHATSAPP_LINK_TARGET = "_blank";
 
+// Categories that exist in the database but are hidden from the public web app.
+// Products in these categories won't be reachable via category pages, product pages, or search.
+export const HIDDEN_CATEGORY_SLUGS: readonly string[] = ["open-close", "victoria"];
+export const HIDDEN_CATEGORY_NAMES_LC: readonly string[] = ["open close", "victoria"];
+
 export function whatsappUrl(message: string = WHATSAPP_DEFAULT_MESSAGE) {
   // Use the official WhatsApp short link. A click handler opens it externally
   // so the Lovable preview iframe does not try to embed WhatsApp.
