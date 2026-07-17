@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import {
   Sheet,
   SheetContent,
