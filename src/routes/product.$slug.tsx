@@ -21,12 +21,15 @@ const productQuery = (slug: string) =>
     queryFn: async () => {
       const { data: product } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
       if (!product) return null;
-      const { data: similar } = await supabase
+      const similarQuery = supabase
         .from("products")
         .select("*")
         .eq("category_id", product.category_id!)
         .neq("id", product.id)
-        .limit(4);
+        .limit(12);
+      const { data: similar } = product.subcategory_id
+        ? await similarQuery.eq("subcategory_id", product.subcategory_id)
+        : await similarQuery.is("subcategory_id", null);
       return { product, similar: (similar ?? []) as ProductCardData[] };
     },
   });
