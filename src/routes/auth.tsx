@@ -49,7 +49,7 @@ function AuthPage() {
           <img src={logo} alt="Sparkling Silver" className="h-28 w-auto" />
         </div>
 
-        <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
           <div className="mb-4 flex items-center gap-2 text-white">
             <User className="h-4 w-4" />
             <h1 className="text-sm font-semibold tracking-wide">Sign In</h1>
