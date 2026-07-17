@@ -47,7 +47,7 @@ function ChangePasswordPage() {
         <div className="flex flex-col items-center text-center">
           <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
         </div>
-        <div className="mt-6 rounded-2xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+        <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
           <div className="mb-4">
             <h1 className="text-sm font-semibold text-white">Set a new password</h1>
             <p className="mt-1 text-[12px] text-white/70">First-time login — please set your own password to continue.</p>
