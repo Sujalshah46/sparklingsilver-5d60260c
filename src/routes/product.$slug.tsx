@@ -138,7 +138,7 @@ function ProductPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">SKU {product.sku}</p>
           <h1 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">{product.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="border-gold/40 text-foreground">{/^antique/i.test((product as any).categories?.name ?? "") ? "925 Ultra Antique Jewellery" : `${product.purity} ${product.metal}`}</Badge>
+            <Badge variant="outline" className="border-gold/40 text-foreground">{(() => { const c = ((product as any).categories?.name ?? "").toLowerCase(); if (c.startsWith("antique")) return "925 Ultra Antique Jewellery"; if (c === "cz") return "925 Premium CZ Jewellery"; return `${product.purity} ${product.metal}`; })()}</Badge>
             {product.stone_type && <Badge variant="outline">{product.stone_type}</Badge>}
             {product.occasion && <Badge variant="outline">{product.occasion}</Badge>}
           </div>
