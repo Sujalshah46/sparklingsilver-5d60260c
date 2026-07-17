@@ -40,7 +40,7 @@ export function whatsappUrl(message: string = WHATSAPP_DEFAULT_MESSAGE) {
 export function openWhatsAppUrl(url: string) {
   if (typeof window === "undefined") return;
 
-  const popup = window.open(url, WHATSAPP_LINK_TARGET, "noopener,noreferrer");
+  const popup = window.open(url, WHATSAPP_LINK_TARGET);
   if (popup) {
     popup.opener = null;
     return;
