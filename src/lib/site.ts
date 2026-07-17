@@ -30,7 +30,10 @@ export const WHATSAPP_DEFAULT_MESSAGE =
   "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
 
 export function whatsappUrl(message: string = WHATSAPP_DEFAULT_MESSAGE) {
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+  // Use web.whatsapp.com directly to avoid the api.whatsapp.com redirect,
+  // which is blocked on some networks/browsers. web.whatsapp.com handles both
+  // desktop (opens WhatsApp Web) and mobile (deep-links into the app).
+  return `https://web.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
 }
 
 export function absoluteUrl(path: string) {
