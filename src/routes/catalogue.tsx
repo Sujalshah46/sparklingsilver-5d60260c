@@ -97,7 +97,7 @@ function Catalogue() {
             <p className="mt-1 text-sm text-[#888]">Try widening your search.</p>
           </div>
         ) : (
-          <div className={view === "grid2" ? "grid grid-cols-2 gap-[2px]" : "grid grid-cols-1 gap-2"}>
+          <div className={view === "grid2" ? "grid grid-cols-2 gap-[2px] md:grid-cols-3 md:gap-2 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5 2xl:grid-cols-6" : "grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"}>
             {products.map((p, i) => (
               <CatalogueCard key={p.id} p={p as unknown as CatalogueCardData} priority={i < 4} />
             ))}

@@ -155,9 +155,10 @@ function SubcategoryPage() {
 
   const total = items.length;
   const gridClass =
-    view === "grid1" ? "grid grid-cols-1 gap-2" :
-    view === "compact" ? "grid grid-cols-3 gap-[2px]" :
-    "grid grid-cols-2 gap-[2px]";
+    view === "grid1" ? "grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3" :
+    view === "compact" ? "grid grid-cols-3 gap-[2px] md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-8" :
+    "grid grid-cols-2 gap-[2px] md:grid-cols-3 md:gap-2 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5 2xl:grid-cols-6";
+
   const activeFilterCount = (filters.onlyNew ? 1 : 0) + (filters.onlyBestseller ? 1 : 0);
   const whatsAppHref = whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name} / ${data.subcategory.name}.`);
 

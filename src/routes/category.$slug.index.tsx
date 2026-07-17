@@ -112,7 +112,7 @@ function CategoryPage() {
             <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
             <span className="mt-1 block h-px w-8 bg-teal" />
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-6">
             {data.subcategories.map((subcat, i) => (
               <SubcategoryTile
                 key={subcat.id}
