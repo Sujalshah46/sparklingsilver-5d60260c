@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, Minus, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -61,8 +61,16 @@ export function CatalogueCard({
   });
 
   const rawSrc = resolveProductImage(p.image_url);
-  const thumbW = compact ? 260 : 420;
-  const src = productThumbUrl(rawSrc, { width: thumbW, quality: 58 });
+  // Responsive thumbnails: small tile for 2-col mobile, larger for wider screens.
+  // Only rewrite for Supabase render URLs; local bundled assets pass through untouched.
+  const { src, srcSet } = useMemo(() => {
+    const isRenderable = typeof rawSrc === "string" && rawSrc.includes("/storage/v1/");
+    if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined };
+    const base = compact ? 220 : 300;
+    const src = productThumbUrl(rawSrc, { width: base, quality: 55 });
+    const w2x = productThumbUrl(rawSrc, { width: base * 2, quality: 55 });
+    return { src, srcSet: `${src} 1x, ${w2x} 2x` };
+  }, [rawSrc, compact]);
 
   return (
     <div className="group flex flex-col overflow-hidden border border-[#EEE] bg-white lg:transition-all lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-lg lg:hover:border-teal/40">
@@ -83,13 +91,15 @@ export function CatalogueCard({
           )}
           <img
             src={src}
+            srcSet={srcSet}
+            sizes={compact ? "(min-width:1280px) 180px, (min-width:768px) 220px, 45vw" : "(min-width:1280px) 260px, (min-width:768px) 300px, 48vw"}
             alt={p.name}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
             {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(true)}
-            className={`absolute inset-0 h-full w-full object-contain p-3 transition-all duration-300 lg:group-hover:scale-[1.04] ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+            className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
         </div>
