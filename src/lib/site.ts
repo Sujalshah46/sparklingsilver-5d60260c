@@ -6,7 +6,25 @@ export const SITE_URL: string =
 
 // WhatsApp number in E.164 without "+" (wa.me format).
 // Official Sparkling Silver LLP number. Used by WhatsAppFab and Contact page.
-export const WHATSAPP_NUMBER = "919330615237";
+const RAW_WHATSAPP_NUMBER = "919330615237";
+
+/**
+ * Validates an E.164-style WhatsApp number (digits only, no "+"):
+ * - 8 to 15 digits (ITU-T E.164 max is 15)
+ * - Must start with a non-zero country code digit
+ * Throws at module load if the configured number is invalid.
+ */
+export function validateWhatsAppNumber(raw: string): string {
+  const digits = raw.replace(/[\s\-()+]/g, "");
+  if (!/^[1-9]\d{7,14}$/.test(digits)) {
+    throw new Error(
+      `Invalid WhatsApp number "${raw}": must be 8-15 digits in E.164 format without leading zero.`,
+    );
+  }
+  return digits;
+}
+
+export const WHATSAPP_NUMBER = validateWhatsAppNumber(RAW_WHATSAPP_NUMBER);
 
 export const WHATSAPP_DEFAULT_MESSAGE =
   "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
