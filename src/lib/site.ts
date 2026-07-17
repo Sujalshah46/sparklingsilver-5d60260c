@@ -4,9 +4,9 @@ export const SITE_URL: string =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SITE_URL) ||
   "https://sparkling-jewellers-llp.lovable.app";
 
-// WhatsApp number in E.164 without "+" (wa.me format). TODO: replace with the
-// official Sparkling Silver LLP number. Used by WhatsAppFab and Contact page.
-export const WHATSAPP_NUMBER = "919999999999";
+// WhatsApp number in E.164 without "+" (wa.me format).
+// Official Sparkling Silver LLP number. Used by WhatsAppFab and Contact page.
+export const WHATSAPP_NUMBER = "919330615237";
 
 export const WHATSAPP_DEFAULT_MESSAGE =
   "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
