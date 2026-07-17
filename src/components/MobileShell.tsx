@@ -97,11 +97,20 @@ function SideMenu() {
 export function TopBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-[#E5E5E5] bg-white">
-      <div className="mx-auto flex max-w-2xl items-center justify-between px-2" style={{ height: 52 }}>
-        <SideMenu />
-        <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
-          Sparkling Silver LLP
-        </Link>
+      <div className="mx-auto flex max-w-2xl items-center justify-between px-2 lg:max-w-[1600px] lg:px-8" style={{ height: 52 }}>
+        <div className="flex items-center gap-1">
+          <SideMenu />
+          <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A] lg:text-[17px]">
+            Sparkling Silver LLP
+          </Link>
+        </div>
+        <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#333]">
+          <Link to="/" className="hover:text-teal">Home</Link>
+          <Link to="/catalogue" className="hover:text-teal">Catalogue</Link>
+          <Link to="/category/$slug" params={{ slug: "antique" }} className="hover:text-teal">Antique</Link>
+          <Link to="/category/$slug" params={{ slug: "cz" }} className="hover:text-teal">CZ</Link>
+          <Link to="/contact" className="hover:text-teal">Contact</Link>
+        </nav>
         <div className="flex shrink-0 items-center">
           <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
             <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
@@ -114,6 +123,7 @@ export function TopBar() {
     </header>
   );
 }
+
 
 const buzz = (ms = 15) => {
   if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
@@ -132,9 +142,10 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-4 items-center"
+        className="mx-auto grid max-w-2xl grid-cols-4 items-center lg:max-w-[1600px] lg:px-8"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
+
         <Link
           to="/"
           onClick={() => buzz(12)}
@@ -196,7 +207,7 @@ export function MobileShell({ children, hideTopBar = false }: { children: ReactN
   return (
     <div className="min-h-screen bg-background">
       {!hideTopBar && <TopBar />}
-      <main className="mx-auto max-w-2xl pb-safe-nav">{children}</main>
+      <main className="mx-auto max-w-2xl pb-safe-nav lg:max-w-[1600px] lg:px-6">{children}</main>
       <BottomNav />
     </div>
   );

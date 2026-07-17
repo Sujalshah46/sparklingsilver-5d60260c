@@ -15,7 +15,7 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   }, [slides.length]);
 
   return (
-    <section className="relative w-full overflow-hidden bg-black" style={{ height: "55vh", minHeight: 320 }}>
+    <section className="relative w-full overflow-hidden bg-black h-[55vh] min-h-[320px] lg:h-[70vh] lg:max-h-[720px]">
       {slides.map((s, idx) => (
         <Link
           key={s.src}

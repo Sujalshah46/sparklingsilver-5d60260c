@@ -65,7 +65,7 @@ export function CatalogueCard({
   const src = productThumbUrl(rawSrc, { width: thumbW, quality: 58 });
 
   return (
-    <div className="flex flex-col overflow-hidden border border-[#EEE] bg-white">
+    <div className="group flex flex-col overflow-hidden border border-[#EEE] bg-white lg:transition-all lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-lg lg:hover:border-teal/40">
       <Link to="/product/$slug" params={{ slug: p.slug }} className="relative block">
         <button
           aria-label="Save to wishlist"
@@ -89,7 +89,7 @@ export function CatalogueCard({
             {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(true)}
-            className={`absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-300 ${imgLoaded ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 h-full w-full object-contain p-3 transition-all duration-300 lg:group-hover:scale-[1.04] ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
         </div>

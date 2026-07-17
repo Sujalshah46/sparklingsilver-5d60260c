@@ -97,7 +97,7 @@ function Catalogue() {
             <p className="mt-1 text-sm text-[#888]">Try widening your search.</p>
           </div>
         ) : (
-          <div className={view === "grid2" ? "grid grid-cols-2 gap-[2px]" : "grid grid-cols-1 gap-2"}>
+          <div className={view === "grid2" ? "grid grid-cols-2 gap-[2px] md:grid-cols-3 md:gap-2 lg:grid-cols-4 lg:gap-4 xl:grid-cols-5 2xl:grid-cols-6" : "grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3"}>
             {products.map((p, i) => (
               <CatalogueCard key={p.id} p={p as unknown as CatalogueCardData} priority={i < 4} />
             ))}
@@ -107,7 +107,7 @@ function Catalogue() {
 
       {/* Sticky banner */}
       <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5" style={{ paddingBottom: 10 }}>
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
+        <div className="mx-auto flex max-w-2xl lg:max-w-[1600px] lg:px-6 items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-[12px] font-semibold text-[#1A1A1A]">Want our entire range?</p>
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us now</p>

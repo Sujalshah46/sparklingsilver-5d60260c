@@ -112,7 +112,7 @@ function CategoryPage() {
             <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Subcategories</p>
             <span className="mt-1 block h-px w-8 bg-teal" />
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-6">
             {data.subcategories.map((subcat, i) => (
               <SubcategoryTile
                 key={subcat.id}
@@ -128,7 +128,7 @@ function CategoryPage() {
 
       {/* Bottom access banner */}
       <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5">
-        <div className="mx-auto flex max-w-2xl items-center justify-between gap-2">
+        <div className="mx-auto flex max-w-2xl lg:max-w-[1600px] lg:px-6 items-center justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-[12px] font-semibold text-[#1A1A1A]">Want to view our entire range?</p>
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
