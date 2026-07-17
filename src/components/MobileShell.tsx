@@ -142,9 +142,10 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-4 items-center"
+        className="mx-auto grid max-w-2xl grid-cols-4 items-center lg:max-w-[1600px] lg:px-8"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
+
         <Link
           to="/"
           onClick={() => buzz(12)}
