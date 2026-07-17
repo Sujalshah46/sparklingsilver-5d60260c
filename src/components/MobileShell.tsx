@@ -207,7 +207,7 @@ export function MobileShell({ children, hideTopBar = false }: { children: ReactN
   return (
     <div className="min-h-screen bg-background">
       {!hideTopBar && <TopBar />}
-      <main className="mx-auto max-w-2xl pb-safe-nav">{children}</main>
+      <main className="mx-auto max-w-2xl pb-safe-nav lg:max-w-[1600px] lg:px-6">{children}</main>
       <BottomNav />
     </div>
   );
