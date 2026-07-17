@@ -204,7 +204,7 @@ function ProductPage() {
         )}
       </div>
 
-      <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background/95 px-4 py-3 backdrop-blur" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
+      <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background px-4 py-3" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2">
           <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
             <Heart className="h-5 w-5" />
