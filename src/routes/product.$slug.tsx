@@ -20,7 +20,7 @@ const productQuery = (slug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data: product } = await supabase.from("products").select("*").eq("slug", slug).maybeSingle();
+      const { data: product } = await supabase.from("products").select("*, categories(name)").eq("slug", slug).maybeSingle();
       if (!product) return null;
       const similarQuery = supabase
         .from("products")
@@ -28,6 +28,7 @@ const productQuery = (slug: string) =>
         .eq("category_id", product.category_id!)
         .neq("id", product.id)
         .limit(12);
+
       const { data: similar } = product.subcategory_id
         ? await similarQuery.eq("subcategory_id", product.subcategory_id)
         : await similarQuery.is("subcategory_id", null);
@@ -137,7 +138,7 @@ function ProductPage() {
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">SKU {product.sku}</p>
           <h1 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">{product.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="border-gold/40 text-foreground">{product.purity} {product.metal}</Badge>
+            <Badge variant="outline" className="border-gold/40 text-foreground">{/^antique/i.test((product as any).categories?.name ?? "") ? "925 Ultra Antique Jewellery" : `${product.purity} ${product.metal}`}</Badge>
             {product.stone_type && <Badge variant="outline">{product.stone_type}</Badge>}
             {product.occasion && <Badge variant="outline">{product.occasion}</Badge>}
           </div>
