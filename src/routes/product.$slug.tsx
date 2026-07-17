@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
+import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
 
 
 const productQuery = (slug: string) =>
@@ -208,7 +209,7 @@ function ProductPage() {
             <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
           </Button>
           <Button asChild className="h-12 flex-1 bg-burgundy text-ivory hover:bg-burgundy/90">
-            <a href={`https://wa.me/919999999999?text=${encodeURIComponent(`Hi, I'm interested in ${product.name} (${product.sku})`)}`} target="_blank" rel="noopener noreferrer">
+            <a href={whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`)} target={WHATSAPP_LINK_TARGET} rel="noopener noreferrer">
               <MessageCircle className="mr-1.5 h-4 w-4" /> Enquire
             </a>
           </Button>

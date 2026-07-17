@@ -1,11 +1,11 @@
-import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE, WHATSAPP_LINK_TARGET } from "@/lib/site";
 
 export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: string }) {
   const url = whatsappUrl(message);
   return (
     <a
       href={url}
-      target="_blank"
+      target={WHATSAPP_LINK_TARGET}
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
       title="Chat with us on WhatsApp"

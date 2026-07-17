@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
-import { whatsappUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
 import {
   Sheet,
   SheetContent,
@@ -241,7 +241,7 @@ function SubcategoryPage() {
           </div>
           <a
             href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name} / ${data.subcategory.name}.`)}
-            target="_blank"
+            target={WHATSAPP_LINK_TARGET}
             rel="noopener noreferrer"
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
           >

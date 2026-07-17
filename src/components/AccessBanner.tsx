@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
-import { whatsappUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
 
 const KEY = "sj.dismissed.accessBanner";
 
@@ -23,7 +23,7 @@ export function AccessBanner() {
       <div className="flex shrink-0 flex-col items-end gap-1">
         <a
           href={whatsappUrl("Hello, I'd like full app access on Sparkling Silver LLP.")}
-          target="_blank"
+          target={WHATSAPP_LINK_TARGET}
           rel="noopener noreferrer"
           className="rounded-[2px] bg-teal px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal-dark"
         >

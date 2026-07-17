@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import { whatsappUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalogue"],
@@ -113,7 +113,7 @@ function Catalogue() {
           </div>
           <a
             href={whatsappUrl("Hi, I'd like full catalogue access.")}
-            target="_blank"
+            target={WHATSAPP_LINK_TARGET}
             rel="noopener noreferrer"
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
           >
