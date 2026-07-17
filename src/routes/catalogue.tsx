@@ -19,7 +19,7 @@ const catalogQuery = queryOptions({
   queryFn: async () => {
     const [products, categories] = await Promise.all([
       supabase.from("products").select("*").limit(120),
-      supabase.from("categories").select("*").order("sort_order"),
+      supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order"),
     ]);
     return {
       products: (products.data ?? []) as (CatalogueCardData & { category_id: string })[],
