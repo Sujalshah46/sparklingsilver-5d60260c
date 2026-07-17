@@ -4,7 +4,7 @@ export const SITE_URL: string =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SITE_URL) ||
   "https://sparkling-jewellers-llp.lovable.app";
 
-// WhatsApp number in E.164 without "+" (wa.me format).
+// WhatsApp number in E.164 without "+" (WhatsApp deep-link format).
 // Official Sparkling Silver LLP number. Used by WhatsAppFab and Contact page.
 const RAW_WHATSAPP_NUMBER = "919330615237";
 
@@ -29,11 +29,12 @@ export const WHATSAPP_NUMBER = validateWhatsAppNumber(RAW_WHATSAPP_NUMBER);
 export const WHATSAPP_DEFAULT_MESSAGE =
   "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
 
+export const WHATSAPP_LINK_TARGET = "_top";
+
 export function whatsappUrl(message: string = WHATSAPP_DEFAULT_MESSAGE) {
-  // Use web.whatsapp.com directly to avoid the api.whatsapp.com redirect,
-  // which is blocked on some networks/browsers. web.whatsapp.com handles both
-  // desktop (opens WhatsApp Web) and mobile (deep-links into the app).
-  return `https://web.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(message)}`;
+  // Use wa.me and open it in the top browsing context. Loading WhatsApp Web
+  // inside the Lovable preview iframe is blocked by WhatsApp's frame policy.
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
 }
 
 export function absoluteUrl(path: string) {

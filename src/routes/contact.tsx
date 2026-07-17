@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
+import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
 
 const schema = z.object({
   name: z.string().trim().min(1).max(100),
@@ -98,7 +99,7 @@ function ContactPage() {
             <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />Mon–Sat: 10:30 AM – 8:30 PM</div>
           </div>
           <Button asChild className="mt-4 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white">
-            <a href="https://wa.me/919999999999" target="_blank" rel="noopener noreferrer">
+            <a href={whatsappUrl()} target={WHATSAPP_LINK_TARGET} rel="noopener noreferrer">
               <MessageCircle className="mr-2 h-4 w-4" /> Chat on WhatsApp
             </a>
           </Button>
