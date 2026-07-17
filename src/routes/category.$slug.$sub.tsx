@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 import {
   Sheet,
   SheetContent,
@@ -158,6 +158,7 @@ function SubcategoryPage() {
     view === "compact" ? "grid grid-cols-3 gap-[2px]" :
     "grid grid-cols-2 gap-[2px]";
   const activeFilterCount = (filters.onlyNew ? 1 : 0) + (filters.onlyBestseller ? 1 : 0);
+  const whatsAppHref = whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name} / ${data.subcategory.name}.`);
 
   return (
     <MobileShell title={`${data.category.name} — ${data.subcategory.name}`}>
@@ -240,9 +241,13 @@ function SubcategoryPage() {
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
           </div>
           <a
-            href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name} / ${data.subcategory.name}.`)}
+            href={whatsAppHref}
             target={WHATSAPP_LINK_TARGET}
             rel="noopener noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              openWhatsAppUrl(whatsAppHref);
+            }}
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
           >
             Ask for Access

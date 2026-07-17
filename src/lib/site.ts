@@ -29,12 +29,24 @@ export const WHATSAPP_NUMBER = validateWhatsAppNumber(RAW_WHATSAPP_NUMBER);
 export const WHATSAPP_DEFAULT_MESSAGE =
   "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
 
-export const WHATSAPP_LINK_TARGET = "_top";
+export const WHATSAPP_LINK_TARGET = "_blank";
 
 export function whatsappUrl(message: string = WHATSAPP_DEFAULT_MESSAGE) {
-  // Use wa.me and open it in the top browsing context. Loading WhatsApp Web
-  // inside the Lovable preview iframe is blocked by WhatsApp's frame policy.
+  // Use the official WhatsApp short link. A click handler opens it externally
+  // so the Lovable preview iframe does not try to embed WhatsApp.
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+}
+
+export function openWhatsAppUrl(url: string) {
+  if (typeof window === "undefined") return;
+
+  const popup = window.open(url, WHATSAPP_LINK_TARGET);
+  if (popup) {
+    popup.opener = null;
+    return;
+  }
+
+  window.location.assign(url);
 }
 
 export function absoluteUrl(path: string) {

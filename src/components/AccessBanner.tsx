@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { AlertTriangle, X } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 const KEY = "sj.dismissed.accessBanner";
 
 export function AccessBanner() {
   const [show, setShow] = useState(false);
+  const whatsAppHref = whatsappUrl("Hello, I'd like full app access on Sparkling Silver LLP.");
   useEffect(() => {
     if (typeof window === "undefined") return;
     setShow(localStorage.getItem(KEY) !== "1");
@@ -22,9 +23,13 @@ export function AccessBanner() {
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
         <a
-          href={whatsappUrl("Hello, I'd like full app access on Sparkling Silver LLP.")}
+          href={whatsAppHref}
           target={WHATSAPP_LINK_TARGET}
           rel="noopener noreferrer"
+          onClick={(event) => {
+            event.preventDefault();
+            openWhatsAppUrl(whatsAppHref);
+          }}
           className="rounded-[2px] bg-teal px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal-dark"
         >
           Ask for access

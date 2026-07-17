@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 
 const productQuery = (slug: string) =>
@@ -95,6 +95,7 @@ function ProductPage() {
   const qc = useQueryClient();
   const product = data!.product;
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
+  const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
 
   const addToCart = useMutation({
@@ -209,7 +210,15 @@ function ProductPage() {
             <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
           </Button>
           <Button asChild className="h-12 flex-1 bg-burgundy text-ivory hover:bg-burgundy/90">
-            <a href={whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`)} target={WHATSAPP_LINK_TARGET} rel="noopener noreferrer">
+            <a
+              href={whatsAppHref}
+              target={WHATSAPP_LINK_TARGET}
+              rel="noopener noreferrer"
+              onClick={(event) => {
+                event.preventDefault();
+                openWhatsAppUrl(whatsAppHref);
+              }}
+            >
               <MessageCircle className="mr-1.5 h-4 w-4" /> Enquire
             </a>
           </Button>

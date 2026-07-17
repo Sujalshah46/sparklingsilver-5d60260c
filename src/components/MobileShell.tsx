@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useCartWeight } from "@/hooks/use-cart-weight";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -125,6 +125,7 @@ export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const weight = useCartWeight();
   const navigate = useNavigate();
+  const whatsAppHref = whatsappUrl();
   const isActive = (to: string, exact = false) =>
     exact ? pathname === to : pathname === to || pathname.startsWith(to + "/");
 
@@ -167,10 +168,14 @@ export function BottomNav() {
           <span className="mt-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#777]">Total (g)</span>
         </button>
         <a
-          href={whatsappUrl()}
+          href={whatsAppHref}
           target={WHATSAPP_LINK_TARGET}
           rel="noopener noreferrer"
-          onClick={() => buzz(20)}
+          onClick={(event) => {
+            event.preventDefault();
+            buzz(20);
+            openWhatsAppUrl(whatsAppHref);
+          }}
           aria-label="Chat on WhatsApp"
           className="mx-auto grid h-11 w-11 shrink-0 place-items-center rounded-full shadow-[0_4px_12px_rgba(37,211,102,0.35)] active:scale-95 transition-transform"
         >
