@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_NAMES_LC } from "@/lib/site";
 
 
 const productQuery = (slug: string) =>
@@ -22,6 +22,8 @@ const productQuery = (slug: string) =>
     queryFn: async () => {
       const { data: product } = await supabase.from("products").select("*, categories(name)").eq("slug", slug).maybeSingle();
       if (!product) return null;
+      const catName = ((product as any).categories?.name ?? "").toLowerCase();
+      if (HIDDEN_CATEGORY_NAMES_LC.includes(catName)) return null;
       const similarQuery = supabase
         .from("products")
         .select("*")

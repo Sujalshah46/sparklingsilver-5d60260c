@@ -4,7 +4,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ChevronLeft } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 type Subcategory = {
@@ -21,6 +21,7 @@ const categoryQuery = (slug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
+      if (HIDDEN_CATEGORY_SLUGS.includes(slug)) return null;
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
       if (!cat) return null;
       const { data: links } = await supabase

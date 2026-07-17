@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import {
   Sheet,
   SheetContent,
@@ -31,6 +31,7 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
+      if (HIDDEN_CATEGORY_SLUGS.includes(catSlug)) return null;
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", catSlug).maybeSingle();
       if (!cat) return null;
       const { data: sub } = await supabase.from("subcategories").select("*").eq("slug", subSlug).maybeSingle();

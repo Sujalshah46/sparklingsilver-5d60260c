@@ -36,10 +36,19 @@ function SearchPage() {
       // Escape PostgREST filter special chars to prevent filter injection via .or()
       const safe = q.replace(/[\\%_,()*"']/g, (c) => `\\${c}`);
       const pattern = `%${safe}%`;
-      const { data } = await supabase
+      // Exclude products from hidden categories (Open Close, Victoria)
+      const { HIDDEN_CATEGORY_SLUGS } = await import("@/lib/site");
+      const { data: hiddenCats } = await supabase
+        .from("categories")
+        .select("id")
+        .in("slug", HIDDEN_CATEGORY_SLUGS as unknown as string[]);
+      const hiddenIds = (hiddenCats ?? []).map((c) => c.id as string);
+      let query = supabase
         .from("products")
         .select("*")
         .or(`name.ilike.${pattern},sku.ilike.${pattern},description.ilike.${pattern}`);
+      if (hiddenIds.length) query = query.not("category_id", "in", `(${hiddenIds.join(",")})`);
+      const { data } = await query;
       return (data ?? []) as ProductCardData[];
     },
   });
