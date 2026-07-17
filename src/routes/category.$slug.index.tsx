@@ -4,7 +4,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ChevronLeft } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 type Subcategory = {
@@ -90,6 +90,8 @@ function CategoryPage() {
 
   if (!data) return null;
 
+  const whatsAppHref = whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name}.`);
+
   return (
     <MobileShell title={data.category.name}>
       {/* Header */}
@@ -131,9 +133,13 @@ function CategoryPage() {
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
           </div>
           <a
-            href={whatsappUrl(`Hi, I'd like full access — viewing ${data.category.name}.`)}
+            href={whatsAppHref}
             target={WHATSAPP_LINK_TARGET}
             rel="noopener noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              openWhatsAppUrl(whatsAppHref);
+            }}
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
           >
             Ask for Access

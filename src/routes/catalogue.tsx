@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 const catalogQuery = queryOptions({
   queryKey: ["catalogue"],
@@ -48,6 +48,7 @@ export const Route = createFileRoute("/catalogue")({
 
 function Catalogue() {
   const { data } = useSuspenseQuery(catalogQuery);
+  const whatsAppHref = whatsappUrl("Hi, I'd like full catalogue access.");
   const [sort, setSort] = useState("newest");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [purities, setPurities] = useState<string[]>([]);
@@ -112,9 +113,13 @@ function Catalogue() {
             <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us now</p>
           </div>
           <a
-            href={whatsappUrl("Hi, I'd like full catalogue access.")}
+            href={whatsAppHref}
             target={WHATSAPP_LINK_TARGET}
             rel="noopener noreferrer"
+            onClick={(event) => {
+              event.preventDefault();
+              openWhatsAppUrl(whatsAppHref);
+            }}
             className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
           >
             Ask for Access

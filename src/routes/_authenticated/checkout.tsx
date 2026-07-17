@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, MessageCircle } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [{ title: "Checkout — Sparkling Silver" }] }),
@@ -71,6 +71,7 @@ function Checkout() {
   if (placed) {
     const placedOn = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
     const itemCount = (items ?? []).reduce((n, it) => n + it.quantity, 0);
+    const whatsAppHref = whatsappUrl(`Hello Sparkling Silver, I just placed order ${placed.order_no}. Please confirm.`);
     return (
       <MobileShell title="Order Placed">
         <div className="p-6 text-center">
@@ -98,9 +99,13 @@ function Checkout() {
             </Button>
             <Button asChild variant="outline" className="border-green-600 text-green-700 hover:bg-green-50">
               <a
-                href={whatsappUrl(`Hello Sparkling Silver, I just placed order ${placed.order_no}. Please confirm.`)}
+                href={whatsAppHref}
                 target={WHATSAPP_LINK_TARGET}
                 rel="noopener noreferrer"
+                onClick={(event) => {
+                  event.preventDefault();
+                  openWhatsAppUrl(whatsAppHref);
+                }}
               >
                 <MessageCircle className="mr-2 h-4 w-4" /> Notify us on WhatsApp
               </a>

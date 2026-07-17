@@ -1,4 +1,4 @@
-import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE, WHATSAPP_LINK_TARGET } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: string }) {
   const url = whatsappUrl(message);
@@ -7,6 +7,10 @@ export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: 
       href={url}
       target={WHATSAPP_LINK_TARGET}
       rel="noopener noreferrer"
+      onClick={(event) => {
+        event.preventDefault();
+        openWhatsAppUrl(url);
+      }}
       aria-label="Chat with us on WhatsApp"
       title="Chat with us on WhatsApp"
       className="group fixed right-3 z-40 grid place-items-center rounded-full text-white shadow-[0_6px_18px_rgba(37,211,102,0.45)] ring-1 ring-black/10 transition-all duration-200 hover:scale-105 hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
