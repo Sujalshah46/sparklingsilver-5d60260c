@@ -21,6 +21,7 @@ const categoryQuery = (slug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
+      if (HIDDEN_CATEGORY_SLUGS.includes(slug)) return null;
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", slug).maybeSingle();
       if (!cat) return null;
       const { data: links } = await supabase
