@@ -20,7 +20,7 @@ const homeQuery = queryOptions({
   gcTime: 30 * 60_000,
   queryFn: async () => {
     const [categories, products, allProducts, totalRes] = await Promise.all([
-      supabase.from("categories").select("*").order("sort_order"),
+      supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order"),
       supabase.from("products").select("*").or("is_new.eq.true,is_bestseller.eq.true").limit(24),
       supabase.from("products").select("category_id"),
       supabase.from("products").select("*", { count: "exact", head: true }),

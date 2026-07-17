@@ -26,7 +26,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         ];
 
         const [{ data: categories }, { data: products }] = await Promise.all([
-          supabase.from("categories").select("slug"),
+          supabase.from("categories").select("slug").in("slug", ["antique", "cz"]),
           supabase.from("products").select("slug, created_at"),
         ]);
 
