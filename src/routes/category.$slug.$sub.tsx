@@ -31,6 +31,7 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
+      if (HIDDEN_CATEGORY_SLUGS.includes(catSlug)) return null;
       const { data: cat } = await supabase.from("categories").select("*").eq("slug", catSlug).maybeSingle();
       if (!cat) return null;
       const { data: sub } = await supabase.from("subcategories").select("*").eq("slug", subSlug).maybeSingle();
