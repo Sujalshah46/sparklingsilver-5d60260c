@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_NAMES_LC } from "@/lib/site";
 
 
 const productQuery = (slug: string) =>
