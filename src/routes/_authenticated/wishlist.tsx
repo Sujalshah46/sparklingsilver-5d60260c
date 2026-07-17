@@ -64,7 +64,7 @@ function WishlistPage() {
                   <ProductCard p={it.product as unknown as ProductCardData} />
                   <button
                     onClick={() => remove.mutate(it.id)}
-                    className="absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-background/95 backdrop-blur"
+                    className="absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-full bg-background shadow"
                     aria-label="Remove"
                   >
                     <X className="h-4 w-4" />
