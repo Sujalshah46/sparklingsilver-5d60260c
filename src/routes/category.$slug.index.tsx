@@ -4,7 +4,7 @@ import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ChevronLeft } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 type Subcategory = {
