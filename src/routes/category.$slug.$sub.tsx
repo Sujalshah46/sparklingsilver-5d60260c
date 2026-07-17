@@ -230,7 +230,7 @@ function SubcategoryPage() {
 
       {total > 0 && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[112px] z-20 flex justify-center">
-          <div className="pointer-events-auto rounded-full bg-[#1A1A1A]/85 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white shadow-lg backdrop-blur">
+          <div className="pointer-events-auto rounded-full bg-[#1A1A1A] px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-white shadow-lg">
             {Math.max(1, visibleCount)} / {total} Product(s)
           </div>
         </div>
