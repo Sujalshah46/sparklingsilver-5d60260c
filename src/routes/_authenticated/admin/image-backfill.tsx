@@ -180,7 +180,7 @@ function BackfillPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {!running ? (
             <Button onClick={runBatch} disabled={rows.length === 0}>
               {rows.length === 0 ? "All done" : `Start (${rows.length} remaining)`}
@@ -190,7 +190,33 @@ function BackfillPage() {
               Pause
             </Button>
           )}
+          <Button
+            variant="outline"
+            disabled={repairing || running}
+            onClick={async () => {
+              setRepairing(true);
+              setRepairResult(null);
+              try {
+                const r = await repair();
+                setRepairResult({ updated: r.updated, failed: r.failed });
+                toast.success(`Repaired ${r.updated} · Failed ${r.failed}`);
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Repair failed");
+              } finally {
+                setRepairing(false);
+              }
+            }}
+          >
+            {repairing ? "Repairing URLs..." : "Repair variant URLs"}
+          </Button>
         </div>
+
+        {repairResult && (
+          <p className="text-xs text-gray-600">
+            Repair pass: updated <strong>{repairResult.updated}</strong> rows,
+            failed <strong>{repairResult.failed}</strong>.
+          </p>
+        )}
 
         {failed.length > 0 && (
           <div className="rounded-lg border bg-white p-4 text-xs">
