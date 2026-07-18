@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { deleteProduct } from "@/lib/products.functions";
 import { setProductFlag } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({
   head: () => ({ meta: [{ title: "Admin — Products" }] }),
@@ -117,7 +117,7 @@ function ProductsAdmin() {
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-start gap-3">
                     <img
-                      src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                      src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 128, quality: 55 })}
                       alt={p.name}
                       loading="lazy"
                       onError={(e) => {

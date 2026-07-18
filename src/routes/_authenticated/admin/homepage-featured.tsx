@@ -11,7 +11,7 @@ import { Search, ArrowUp, ArrowDown, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { setHomepageFeatured, reorderHomepageFeatured, clearHomepageFeatured } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/homepage-featured")({
   head: () => ({ meta: [{ title: "Admin — Homepage New Arrival" }] }),
@@ -138,7 +138,7 @@ function HomepageFeaturedAdmin() {
                     {i + 1}
                   </span>
                   <img
-                    src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 96, quality: 55 })}
                     alt={p.name}
                     className="h-10 w-10 rounded-md bg-secondary object-cover"
                   />
@@ -198,7 +198,7 @@ function HomepageFeaturedAdmin() {
                     className="h-4 w-4 cursor-pointer accent-burgundy disabled:cursor-not-allowed disabled:opacity-40"
                   />
                   <img
-                    src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 96, quality: 55 })}
                     alt={p.name}
                     loading="lazy"
                     className="h-12 w-12 rounded-md bg-secondary object-cover"
@@ -228,7 +228,7 @@ function HomepageFeaturedAdmin() {
               {featured.map((p) => (
                 <div key={p.id} className="w-[170px] shrink-0 rounded-lg border border-border p-2">
                   <img
-                    src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 340, quality: 60 })}
                     alt={p.name}
                     className="aspect-square w-full rounded-md bg-secondary object-cover"
                   />

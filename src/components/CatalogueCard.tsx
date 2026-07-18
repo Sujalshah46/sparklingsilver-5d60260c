@@ -4,7 +4,7 @@ import { Heart, Minus, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl, productLqipUrl } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export type CatalogueCardData = {
@@ -63,15 +63,15 @@ export function CatalogueCard({
   const rawSrc = resolveProductImage(p.image_url);
   // Responsive thumbnails: small tile for 2-col mobile, larger for wider screens.
   // Only rewrite for Supabase render URLs; local bundled assets pass through untouched.
-  const { src, srcSet, detailPrefetchUrl } = useMemo(() => {
+  const { src, srcSet, detailPrefetchUrl, lqip } = useMemo(() => {
     const isRenderable = typeof rawSrc === "string" && rawSrc.includes("/storage/v1/");
-    if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined, detailPrefetchUrl: undefined as string | undefined };
+    if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined, detailPrefetchUrl: undefined as string | undefined, lqip: undefined as string | undefined };
     const base = compact ? 220 : 300;
     const src = productThumbUrl(rawSrc, { width: base, quality: 55 });
     const w2x = productThumbUrl(rawSrc, { width: base * 2, quality: 55 });
-    // Detail-page image, prefetched on hover/touch so tapping the SKU paints instantly.
     const detailPrefetchUrl = productThumbUrl(rawSrc, { width: 800, quality: 70 });
-    return { src, srcSet: `${src} 1x, ${w2x} 2x`, detailPrefetchUrl };
+    const lqip = productLqipUrl(rawSrc);
+    return { src, srcSet: `${src} 1x, ${w2x} 2x`, detailPrefetchUrl, lqip };
   }, [rawSrc, compact]);
 
   const prefetchDetail = () => {
@@ -92,11 +92,17 @@ export function CatalogueCard({
           <Heart className="h-3.5 w-3.5" />
         </button>
         <div className="ruler-frame aspect-square w-full bg-[#F5F5F3]">
-          {!imgLoaded && (
-            <div
+          {lqip && !imgLoaded && (
+            <img
               aria-hidden
-              className="absolute inset-0 animate-pulse bg-gradient-to-br from-[#F0EFEA] via-[#F6F5F1] to-[#EAE9E3]"
+              src={lqip}
+              alt=""
+              className="absolute inset-0 h-full w-full object-contain p-3"
+              style={{ paddingLeft: 14, paddingBottom: 14, filter: "blur(12px)", transform: "scale(1.05)" }}
             />
+          )}
+          {!lqip && !imgLoaded && (
+            <div aria-hidden className="absolute inset-0 bg-[#F0EFEA]" />
           )}
           <img
             src={src}
@@ -109,7 +115,7 @@ export function CatalogueCard({
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(true)}
             className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
-            style={{ paddingLeft: 14, paddingBottom: 14 }}
+            style={{ paddingLeft: 14, paddingBottom: 14, opacity: imgLoaded ? 1 : 0, transition: "opacity 150ms ease-out" }}
           />
         </div>
       </Link>

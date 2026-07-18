@@ -495,4 +495,18 @@ export function productThumbUrl(
   return `${out}${sep}${params.toString()}`;
 }
 
+/**
+ * Ultra-tiny blurred preview URL (~500 bytes) rendered by Supabase's image
+ * transformer. Paints in a single packet so the card is never blank while the
+ * full-resolution thumbnail streams in.
+ */
+export function productLqipUrl(url: string): string {
+  if (!url || !url.includes("/storage/v1/")) return url;
+  let out = url;
+  out = out.replace("/storage/v1/object/sign/", "/storage/v1/render/image/sign/");
+  out = out.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
+  const sep = out.includes("?") ? "&" : "?";
+  return `${out}${sep}width=24&quality=20&resize=contain`;
+}
+
 
