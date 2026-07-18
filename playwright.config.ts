@@ -10,7 +10,19 @@ export default defineConfig({
     trace: "retain-on-failure",
   },
   projects: [
-    { name: "desktop-fast", use: { ...devices["Desktop Chrome"] } },
-    { name: "mobile-slow", use: { ...devices["Pixel 5"] } },
+    {
+      name: "desktop-fast",
+      use: {
+        ...devices["Desktop Chrome"],
+        launchOptions: { executablePath: process.env.CHROMIUM_PATH || undefined },
+      },
+    },
+    {
+      name: "mobile-slow",
+      use: {
+        ...devices["Pixel 5"],
+        launchOptions: { executablePath: process.env.CHROMIUM_PATH || undefined },
+      },
+    },
   ],
 });
