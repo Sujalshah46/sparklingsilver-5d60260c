@@ -29,7 +29,7 @@ function AdminDashboard() {
       const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-      const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList] = await Promise.all([
+      const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList, missingVariants] = await Promise.all([
         supabase.from("orders").select("id, status, created_at"),
         supabase
           .from("orders")
@@ -45,6 +45,11 @@ function AdminDashboard() {
           .select("id, name, sku, stock_quantity, low_stock_threshold, image_url")
           .order("stock_quantity", { ascending: true })
           .limit(20),
+        supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .is("image_variants", null)
+          .not("image_url", "is", null),
       ]);
 
       const rows = ordersAll.data ?? [];
