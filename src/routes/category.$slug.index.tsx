@@ -128,27 +128,6 @@ function CategoryPage() {
         </section>
       )}
 
-      {/* Bottom access banner */}
-      <div className="fixed inset-x-0 bottom-[56px] z-20 border-t border-[#E5E5E5] bg-white px-3 py-2.5">
-        <div className="mx-auto flex max-w-2xl lg:max-w-[1600px] lg:px-6 items-center justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-[12px] font-semibold text-[#1A1A1A]">Want to view our entire range?</p>
-            <p className="truncate text-[10.5px] text-[#666]">Call / WhatsApp us Now!</p>
-          </div>
-          <a
-            href={whatsAppHref}
-            target={WHATSAPP_LINK_TARGET}
-            rel="noopener noreferrer"
-            onClick={(event) => {
-              event.preventDefault();
-              openWhatsAppUrl(whatsAppHref);
-            }}
-            className="rounded-[2px] bg-teal-dark px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-white hover:bg-teal"
-          >
-            Ask for Access
-          </a>
-        </div>
-      </div>
 
       <div className="h-28" />
     </MobileShell>
