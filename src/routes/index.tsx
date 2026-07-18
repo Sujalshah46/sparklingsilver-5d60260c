@@ -193,8 +193,8 @@ function Home() {
           </div>
         </div>
         <div className="mt-3 flex flex-col gap-3 px-3 lg:grid lg:grid-cols-2 lg:gap-6">
-          {data.categories.map((c, i) => {
-            const count = data.counts.get(c.id) ?? 0;
+          {categories.map((c, i) => {
+            const count = counts.get(c.id) ?? 0;
             const dbImage = (c as unknown as { image_url?: string | null }).image_url;
             const premium = PREMIUM_CATEGORY_IMAGES[c.slug];
             const classic = resolveProductImage(c.slug === "jewelry-sets" ? "cat-necklaces-a.jpg" : `cat-${c.slug}-a.jpg`);
