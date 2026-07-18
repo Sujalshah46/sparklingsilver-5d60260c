@@ -38,14 +38,13 @@ export const Route = createFileRoute("/contact")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
-          name: "Arika Multijewel Works",
+          name: "Sparkling Silver",
           url: "https://sparkling-jewellers-llp.lovable.app/contact",
           telephone: "+91-93306-15237",
-          email: "arikafactory@gmail.com",
+          email: "sparklingsilverjewellery@gmail.com",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "DAG No-390, Mouza No-50, Ratanpur Main Road, Singur",
-            addressLocality: "Ratanpur, Hooghly",
+            addressLocality: "Kolkata",
             postalCode: "712409",
             addressRegion: "WB",
             addressCountry: "IN",
