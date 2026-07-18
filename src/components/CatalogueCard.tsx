@@ -83,7 +83,7 @@ export function CatalogueCard({
 
   return (
     <div className="group flex flex-col overflow-hidden border border-[#EEE] bg-white lg:transition-all lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-lg lg:hover:border-teal/40">
-      <Link to="/product/$slug" params={{ slug: p.slug }} className="relative block">
+      <Link to="/product/$slug" params={{ slug: p.slug }} className="relative block" onPointerEnter={prefetchDetail} onTouchStart={prefetchDetail}>
         <button
           aria-label="Save to wishlist"
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); wish.mutate(); }}
