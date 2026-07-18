@@ -63,7 +63,6 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/" },
-      { rel: "preload", as: "image", href: heroBridal, fetchPriority: "high" } as unknown as { rel: string; href: string },
     ],
     scripts: [
       {
