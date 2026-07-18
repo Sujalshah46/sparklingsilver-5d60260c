@@ -1,78 +1,62 @@
-## Overview
+## Goal
+Make product images appear effectively instantly (perceived <100 ms) on homepage, category, subcategory, product detail, and admin lists — without changing image content or overlays.
 
-Add admin control for **New Arrival** / **Bestseller** tagging (already partially wired via `is_new` + `is_bestseller`) and a new **Homepage New Arrival** selector that hand-picks up to 10 SKUs, in a chosen order, for the homepage carousel.
+> Note: true 0.1–0.2 ms is below a single network round‑trip. What we can guarantee is **instant paint** using cached/precomputed thumbs + a colored placeholder that swaps to the sharp image within one frame (<100 ms) on repeat views, and 200–500 ms on cold loads.
 
-## 1. Database (migration)
+## Root causes today
+1. **Same Supabase render endpoint hit per visit** — every card triggers a signed on‑the‑fly resize (300 px + 600 px 2x) on Supabase's image transformer. First hit per size is slow (~400–900 ms) and it isn't aggressively edge‑cached because signed URLs vary per session.
+2. **No CDN in front of images** — served straight from Supabase Storage, no Cloudflare cache, no immutable URLs.
+3. **No blurred placeholder** — cards show a grey pulse until the full image arrives, so "loading" is visible.
+4. **Admin lists request the full‑size image**, not a thumb.
+5. **No preloading** of the next viewport's images or of homepage hero thumbs.
+6. **Service worker** caches only a few assets, not product thumbs.
 
-Add to `public.products`:
-- `homepage_featured boolean NOT NULL DEFAULT false`
-- `homepage_featured_order integer NULL`
-- Partial unique index on `homepage_featured_order` where `homepage_featured = true` (keeps ordering clean)
-- Trigger enforcing max 10 rows with `homepage_featured = true` (raise exception on 11th)
-- Trigger: when a product is soft-archived (`import_status <> 'active'`) or deleted, auto-clear its `homepage_featured` + `homepage_featured_order`
-- Index on `(homepage_featured, homepage_featured_order)` for the homepage query
+## Fix plan
 
-Keep existing columns as-is:
-- `is_new` = "New Arrival" tag (already exists, already default false)
-- `is_bestseller` = "Bestseller" tag (already exists)
+### 1. Precompute and store two fixed thumbnail sizes per product (biggest win)
+- On upload / relink, generate `thumb-320.webp` (grid) and `thumb-800.webp` (detail) into the `product-images` bucket next to the original.
+- Store `thumb_url` and `detail_url` columns on `products`.
+- Serve those static public URLs — no signed render call, fully cacheable.
+- One‑time backfill script for existing ~970 SKUs.
 
-## 2. Admin — Product list (`/admin/products`)
+### 2. Put Cloudflare in front of the storage bucket
+- Route thumbs through `cdn.sparklingsilver.in` (Cloudflare Worker proxy) with `Cache-Control: public, max-age=31536000, immutable`.
+- First user in a region warms cache; every subsequent user gets ~20–60 ms edge hits.
 
-File: `src/routes/_authenticated/admin/products.index.tsx`
-- Add two inline checkbox toggles per row: **New Arrival** (`is_new`) and **Bestseller** (`is_bestseller`)
-- Optimistic update via a `toggleProductFlag` server fn; invalidate list query on success
-- Header summary: `X SKUs tagged New Arrival · Y SKUs tagged Bestseller` (single count server fn)
+### 3. Tiny LQIP (base64, ~400 bytes) inlined in the DB row
+- Column `lqip` = 24 px blurred WebP base64.
+- Card shows it instantly as `background-image`; sharp thumb fades in on top. Zero perceived load.
 
-The existing product edit page (`products.$id.tsx`) already has both toggles — leave it.
+### 4. Card + admin table tweaks
+- `CatalogueCard`: use `thumb_url` (no runtime `productThumbUrl` rewrite), keep `srcSet` only if a 2× exists; replace the grey pulse with the LQIP.
+- Admin `products.index.tsx`: switch full images to `thumb_url` (currently loads originals).
+- Homepage hero carousel: `<link rel="preload" as="image">` for slide 1 only.
+- First row of any grid: `priority` + `fetchpriority="high"`; rest lazy.
 
-## 3. Admin — Homepage New Arrival selector (new route)
+### 5. Service worker: cache thumbs
+- Add a runtime cache rule for `/product-images/**thumb-*.webp` — stale‑while‑revalidate, cap 300 entries. Repeat visits paint from disk (<10 ms).
 
-File: `src/routes/_authenticated/admin/homepage-featured.tsx` (linked from admin nav)
-- Two-panel layout:
-  - **Left:** searchable product list (reuse product tile: image, SKU, gross wt, purity) with a "Feature on Homepage" checkbox per row.
-  - **Right:** the currently selected up-to-10 SKUs as a reorderable list (up/down arrow buttons — simpler than DnD, matches request's fallback).
-- Live counter: `Selected: N / 10`. When `N === 10`, disable unchecked checkboxes and show `You've selected 10/10 SKUs. Uncheck one to add another.`
-- Buttons: **Clear All**, **Preview** (opens modal that renders the actual homepage carousel component with the selected 10 in order).
-- Server fns:
-  - `getHomepageFeatured()` — list of the ≤10 selected, ordered
-  - `setHomepageFeatured({ productId, featured })` — insert/remove; assigns next-available order on add; enforces cap (backend + DB trigger)
-  - `reorderHomepageFeatured({ orderedIds: string[] })` — rewrites `homepage_featured_order` 1..N
-  - `clearHomepageFeatured()`
-- All server fns use `requireSupabaseAuth` + admin role check (existing `has_role` pattern).
+### 6. Cleanup
+- Drop `productThumbUrl` render‑endpoint calls once thumbs exist.
+- Keep original full image only for product zoom.
 
-## 4. Homepage
+## Rollout (one turn each)
+1. Migration: add `thumb_url`, `detail_url`, `lqip` columns + indexes; make bucket public‑read for thumbs only.
+2. Server fn + script to generate thumbs + LQIP for all existing products; backfill.
+3. Update upload/link pipeline to emit thumbs on every future image.
+4. Swap `CatalogueCard`, product detail, admin lists, homepage carousel to new columns; add LQIP background; add preload for hero.
+5. Update `public/sw.js` with SWR cache for thumbs.
+6. Optional: Cloudflare Worker CDN in front of storage (requires DNS change — I'll flag before doing).
 
-File: `src/routes/index.tsx`
-- Replace the current "new arrival / bestseller mixed" query with a dedicated fetch: `products where homepage_featured = true order by homepage_featured_order asc limit 10`.
-- If 0 selected, hide the section (buyer-facing) but keep the section header + "not configured" note visible only to admins.
-- Card design unchanged.
-
-## 5. Catalogue filters
-
-File: `src/routes/category.$slug.$sub.tsx` (and any equivalent modal wiring)
-- Confirm the "New Arrivals only" checkbox filters by `is_new` (currently uses `is_new` — verify variable name in filter state; rename UI label if needed to "New Arrivals only").
-- "Bestsellers only" filters by `is_bestseller` (already wired).
-- Both applied together = AND. Already the case.
-
-## 6. Edge cases
-
-- 11th selection: DB trigger raises exception → server fn returns friendly error → UI toast.
-- Product delete/archive → trigger clears `homepage_featured` automatically.
-- `is_new` untagged on a homepage-featured SKU → no side effect (independent).
+## Expected result
+- Repeat visit / warm CDN: **10–50 ms** to paint sharp thumb.
+- Cold visit: LQIP paints in first frame (<50 ms), sharp thumb swaps in 150–400 ms.
+- Admin lists: ~10× less bytes per row.
 
 ## Technical notes
+- Thumb generation via `sharp` runs in a Node script locally (not in the Cloudflare Worker runtime — Worker doesn't support sharp). Output uploaded via `supabaseAdmin`.
+- WebP q75 for 320 px (~8 KB), q78 for 800 px (~35 KB).
+- LQIP = 24 px WebP q30, base64 (~350–500 bytes), stored inline.
+- No changes to image content, logo overlay, or emerald‑velvet pipeline — this is a delivery‑layer change only.
 
-- Uses existing `has_role(auth.uid(), 'admin')` for RLS on new columns (admin-only UPDATE); public SELECT already covers products.
-- No new tables. All changes on `products`.
-- Reuse existing shadcn `Checkbox`, `Button`, `Badge`, `Dialog`, `Input` — no new components in the design system.
-- No re-deploy needed after admin toggle — queries hit Supabase live and homepage query has `staleTime: 0` (or add `router.invalidate()` after admin changes).
-
-## File touchlist
-
-- **New migration**: 2 columns + 2 triggers + index
-- **Edit** `src/routes/index.tsx` — swap homepage query
-- **Edit** `src/routes/_authenticated/admin/products.index.tsx` — inline toggles + summary
-- **New** `src/routes/_authenticated/admin/homepage-featured.tsx`
-- **New** `src/lib/homepage-featured.functions.ts` (server fns)
-- **Edit** admin nav (`_authenticated/admin/route.tsx` or index) to link the new page
-- **Verify** `src/routes/category.$slug.$sub.tsx` filter wiring; adjust label if needed
+Approve and I'll start with step 1 (migration + backfill script).
