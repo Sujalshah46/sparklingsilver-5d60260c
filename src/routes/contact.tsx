@@ -86,13 +86,28 @@ function ContactPage() {
         <h1 className="font-serif text-2xl font-bold">Get in Touch</h1>
 
         <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-serif text-base font-semibold">Visit Our Store</h2>
-          <div className="mt-3 space-y-2 text-sm">
-            <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />123 Jewellers Lane, Zaveri Bazaar, Mumbai 400001</div>
-            <div className="flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />+91 99999 99999</div>
-            <div className="flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />hello@sparklingjewellers.in</div>
-            <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />Mon–Sat: 10:30 AM – 8:30 PM</div>
+          <h2 className="font-serif text-base font-semibold">Visit Our Factory</h2>
+          <div className="mt-3 space-y-3 text-sm">
+            <div className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />
+              <div>
+                <div className="font-medium">Arika Multijewel Works</div>
+                <div className="text-muted-foreground">Ground Floor, DAG No-390, Mouza No-50,<br />Ratanpur Main Road, Singur,<br />Ratanpur, Hooghly, West Bengal – 712409</div>
+                <div className="mt-1 text-xs text-muted-foreground">GST: 19CMLPS4598G1Z5</div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Factory (Sapnil &amp; Kuldeep)</div>
+              <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+919330615237" className="hover:underline">+91 93306 15237</a></div>
+              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikafactory@gmail.com" className="hover:underline break-all">arikafactory@gmail.com</a></div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Accounts (Sunil)</div>
+              <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+918585831729" className="hover:underline">+91 85858 31729</a></div>
+              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikamultijewel@gmail.com" className="hover:underline break-all">arikamultijewel@gmail.com</a></div>
+            </div>
           </div>
+
           <Button asChild className="mt-4 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white">
             <a
               href={whatsAppHref}
