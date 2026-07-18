@@ -20,8 +20,8 @@ export type CatalogueCardData = {
 };
 
 export function CatalogueCard({
-  p, compact = false, showCart = true, priority = false,
-}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean; priority?: boolean }) {
+  p, compact = false, showCart = true, priority = false, eager = false,
+}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean; priority?: boolean; eager?: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
