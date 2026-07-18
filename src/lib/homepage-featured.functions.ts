@@ -24,8 +24,8 @@ export const setProductFlag = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
-    const patch: Record<string, boolean> = {};
-    patch[data.field] = data.value;
+    const patch =
+      data.field === "is_new" ? { is_new: data.value } : { is_bestseller: data.value };
     const { error } = await supabase.from("products").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
