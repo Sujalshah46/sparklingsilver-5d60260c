@@ -33,20 +33,17 @@ const categoryQuery = (slug: string) =>
         ? await supabase.from("subcategories").select("*").in("id", ids).order("sort_order")
         : { data: [] as Subcategory[] };
 
-      // Per-subcategory product counts (scoped to this category)
+      // Per-subcategory product counts (scoped to this category) — single RPC.
+      const { data: countRows } = await supabase.rpc("get_subcategory_product_counts", {
+        _category_id: cat.id as string,
+      });
       const counts: Record<string, number> = {};
-      await Promise.all(
-        (subcategories ?? []).map(async (s) => {
-          const { count } = await supabase
-            .from("products")
-            .select("id", { count: "exact", head: true })
-            .eq("category_id", cat.id as string)
-            .eq("subcategory_id", s.id);
-          counts[s.id] = count ?? 0;
-        }),
-      );
+      for (const row of (countRows ?? []) as Array<{ subcategory_id: string; product_count: number }>) {
+        counts[row.subcategory_id] = Number(row.product_count) || 0;
+      }
 
       const visibleSubcategories = (subcategories ?? []).filter((s) => (counts[s.id] ?? 0) > 0);
+
 
       return {
         category: cat,
