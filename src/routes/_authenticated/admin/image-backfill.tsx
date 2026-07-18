@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { productThumbUrl } from "@/lib/product-images";
-import { repairImageVariants } from "@/lib/image-variants.functions";
+
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
@@ -81,9 +80,9 @@ function BackfillPage() {
   const [currentSku, setCurrentSku] = useState<string>("");
   const [batchSize] = useState(5);
   const [repairing, setRepairing] = useState(false);
-  const [repairResult, setRepairResult] = useState<{ updated: number; failed: number } | null>(null);
-  const repair = useServerFn(repairImageVariants);
+  const [repairProgress, setRepairProgress] = useState({ done: 0, total: 0, updated: 0, failed: 0 });
   const abortRef = useRef(false);
+
 
   useEffect(() => {
     void (async () => {
@@ -195,11 +194,48 @@ function BackfillPage() {
             disabled={repairing || running}
             onClick={async () => {
               setRepairing(true);
-              setRepairResult(null);
+              setRepairProgress({ done: 0, total: 0, updated: 0, failed: 0 });
               try {
-                const r = await repair();
-                setRepairResult({ updated: r.updated, failed: r.failed });
-                toast.success(`Repaired ${r.updated} · Failed ${r.failed}`);
+                // Fetch all rows that have image_url set (repair covers previously-backfilled rows too).
+                const { data: allRows, error: fetchErr } = await supabase
+                  .from("products")
+                  .select("id, sku, image_url")
+                  .not("image_url", "is", null)
+                  .order("sku", { ascending: true });
+                if (fetchErr) throw new Error(fetchErr.message);
+                const list = (allRows ?? []) as Row[];
+                setRepairProgress((p) => ({ ...p, total: list.length }));
+
+                const CHUNK = 50;
+                let updated = 0;
+                let failed = 0;
+                for (let i = 0; i < list.length; i += CHUNK) {
+                  const chunk = list.slice(i, i + CHUNK);
+                  await Promise.all(
+                    chunk.map(async (row) => {
+                      if (!row.image_url) return;
+                      const variants: Record<string, string> = {};
+                      let ok = true;
+                      for (const size of SIZES) {
+                        const path = variantPath(row.image_url, size.key);
+                        const { data: signed, error: signErr } = await supabase.storage
+                          .from(BUCKET)
+                          .createSignedUrl(path, SIGN_EXPIRES);
+                        if (signErr || !signed?.signedUrl) { ok = false; break; }
+                        variants[size.key] = signed.signedUrl;
+                      }
+                      if (!ok) { failed++; return; }
+                      const { error: updErr } = await supabase
+                        .from("products")
+                        .update({ image_variants: variants })
+                        .eq("id", row.id);
+                      if (updErr) { failed++; return; }
+                      updated++;
+                    }),
+                  );
+                  setRepairProgress({ done: Math.min(i + CHUNK, list.length), total: list.length, updated, failed });
+                }
+                toast.success(`Repaired ${updated} · Failed ${failed}`);
               } catch (e) {
                 toast.error(e instanceof Error ? e.message : "Repair failed");
               } finally {
@@ -207,16 +243,17 @@ function BackfillPage() {
               }
             }}
           >
-            {repairing ? "Repairing URLs..." : "Repair variant URLs"}
+            {repairing ? `Repairing ${repairProgress.done}/${repairProgress.total}...` : "Repair variant URLs"}
           </Button>
         </div>
 
-        {repairResult && (
+        {(repairProgress.updated > 0 || repairProgress.failed > 0) && (
           <p className="text-xs text-gray-600">
-            Repair pass: updated <strong>{repairResult.updated}</strong> rows,
-            failed <strong>{repairResult.failed}</strong>.
+            Repair pass: updated <strong>{repairProgress.updated}</strong> rows,
+            failed <strong>{repairProgress.failed}</strong>.
           </p>
         )}
+
 
         {failed.length > 0 && (
           <div className="rounded-lg border bg-white p-4 text-xs">
