@@ -23,6 +23,7 @@ function ProductsAdmin() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const del = useServerFn(deleteProduct);
+  const toggleFlag = useServerFn(setProductFlag);
 
   const { data: products } = useQuery({
     queryKey: ["admin-products"],
