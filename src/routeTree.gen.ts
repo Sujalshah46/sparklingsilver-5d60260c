@@ -38,6 +38,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
+import { Route as AuthenticatedAdminImageQualityPreviewRouteImport } from './routes/_authenticated/admin/image-quality-preview'
 import { Route as AuthenticatedAdminHomepageFeaturedRouteImport } from './routes/_authenticated/admin/homepage-featured'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin/categories'
 import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products.index'
@@ -198,6 +199,12 @@ const AuthenticatedAdminInventoryRoute =
     path: '/inventory',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminImageQualityPreviewRoute =
+  AuthenticatedAdminImageQualityPreviewRouteImport.update({
+    id: '/image-quality-preview',
+    path: '/image-quality-preview',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminHomepageFeaturedRoute =
   AuthenticatedAdminHomepageFeaturedRouteImport.update({
     id: '/homepage-featured',
@@ -281,6 +288,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/admin/scan': typeof AuthenticatedAdminScanRoute
@@ -320,6 +328,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -361,6 +370,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/_authenticated/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/admin/categories'
     | '/admin/homepage-featured'
+    | '/admin/image-quality-preview'
     | '/admin/inventory'
     | '/admin/products'
     | '/admin/scan'
@@ -442,6 +453,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/admin/categories'
     | '/admin/homepage-featured'
+    | '/admin/image-quality-preview'
     | '/admin/inventory'
     | '/admin/scan'
     | '/admin/users'
@@ -482,6 +494,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/homepage-featured'
+    | '/_authenticated/admin/image-quality-preview'
     | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/scan'
@@ -724,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInventoryRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/image-quality-preview': {
+      id: '/_authenticated/admin/image-quality-preview'
+      path: '/image-quality-preview'
+      fullPath: '/admin/image-quality-preview'
+      preLoaderRoute: typeof AuthenticatedAdminImageQualityPreviewRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/homepage-featured': {
       id: '/_authenticated/admin/homepage-featured'
       path: '/homepage-featured'
@@ -836,6 +856,7 @@ const AuthenticatedAdminProductsRouteWithChildren =
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminHomepageFeaturedRoute: typeof AuthenticatedAdminHomepageFeaturedRoute
+  AuthenticatedAdminImageQualityPreviewRoute: typeof AuthenticatedAdminImageQualityPreviewRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRouteWithChildren
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
   AuthenticatedAdminScanRoute: typeof AuthenticatedAdminScanRoute
@@ -850,6 +871,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
     AuthenticatedAdminHomepageFeaturedRoute:
       AuthenticatedAdminHomepageFeaturedRoute,
+    AuthenticatedAdminImageQualityPreviewRoute:
+      AuthenticatedAdminImageQualityPreviewRoute,
     AuthenticatedAdminInventoryRoute:
       AuthenticatedAdminInventoryRouteWithChildren,
     AuthenticatedAdminProductsRoute:
@@ -924,13 +947,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
