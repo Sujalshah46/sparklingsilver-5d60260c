@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { productThumbUrl } from "@/lib/product-images";
+import { repairImageVariants } from "@/lib/image-variants.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
@@ -12,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
 });
 
 type Row = { id: string; sku: string; image_url: string | null };
+// 10 years — matches original product image signed-URL expiry.
+const SIGN_EXPIRES = 60 * 60 * 24 * 365 * 10;
 
 const SIZES: Array<{ key: "thumb" | "card" | "detail"; width: number; quality: number }> = [
   { key: "thumb", width: 300, quality: 75 },
