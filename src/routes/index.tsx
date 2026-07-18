@@ -123,7 +123,8 @@ function SectionHeader({ title, total, to }: { title: string; total?: number | s
 }
 
 function Home() {
-  const { data } = useSuspenseQuery(homeQuery);
+  // Client-side fetch: no SSR blocking; shell paints immediately.
+  const { data } = useQuery(homeQuery);
   const [style, setStyle] = useState<"premium" | "classic">("premium");
   useEffect(() => {
     const saved = (typeof window !== "undefined" && localStorage.getItem("sj.categoryStyle")) as
@@ -136,7 +137,9 @@ function Home() {
     setStyle(s);
     try { localStorage.setItem("sj.categoryStyle", s); } catch {}
   };
-  const newArrivals = data.products.slice(0, 10);
+  const newArrivals = data?.products.slice(0, 10) ?? [];
+  const categories = data?.categories ?? [];
+  const counts = data?.counts ?? new Map<string, number>();
 
   return (
     <MobileShell>
