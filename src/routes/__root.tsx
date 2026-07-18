@@ -97,6 +97,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children: authGateScript,
+      },
+      {
         children: themeInitScript,
       },
       {
