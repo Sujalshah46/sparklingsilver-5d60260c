@@ -142,9 +142,9 @@ function Home() {
         <section className="pt-6">
           <SectionHeader title="New Arrival" to="/catalogue" />
           <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
-            {newArrivals.map((p) => (
+            {newArrivals.map((p, i) => (
               <div key={p.id} className="w-[170px] shrink-0">
-                <CatalogueCard p={p} showCart={false} compact />
+                <CatalogueCard p={p} showCart={false} compact priority={i < 4} eager={i < 6} />
               </div>
             ))}
           </div>
