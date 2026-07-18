@@ -16,13 +16,18 @@ import heroDaily from "@/assets/hero-daily.jpg";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
-  staleTime: 10 * 60_000,
+  staleTime: 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
     const categoriesRes = await supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order");
     const visibleIds = (categoriesRes.data ?? []).map((c) => c.id);
     const [products, allProducts] = await Promise.all([
-      supabase.from("products").select("*").in("category_id", visibleIds).or("is_new.eq.true,is_bestseller.eq.true").limit(24),
+      supabase
+        .from("products")
+        .select("*")
+        .eq("homepage_featured", true)
+        .order("homepage_featured_order", { ascending: true })
+        .limit(10),
       supabase.from("products").select("category_id").in("category_id", visibleIds),
     ]);
     const counts = new Map<string, number>();
@@ -31,13 +36,11 @@ const homeQuery = queryOptions({
       counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
     }
     const total = (allProducts.data ?? []).length;
-    const categories = categoriesRes;
-    const totalRes = { count: total };
     return {
-      categories: categories.data ?? [],
+      categories: categoriesRes.data ?? [],
       products: (products.data ?? []) as CatalogueCardData[],
       counts,
-      total: totalRes.count ?? 0,
+      total,
     };
   },
 });
@@ -125,29 +128,28 @@ function Home() {
     setStyle(s);
     try { localStorage.setItem("sj.categoryStyle", s); } catch {}
   };
-  const newArrivals = (data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new).slice(0, 10).length
-    ? data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new)
-    : data.products
-  ).slice(0, 10);
+  const newArrivals = data.products.slice(0, 10);
 
   return (
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
-      
+
       <VideoShowcase />
       <AccessBanner />
 
-      {/* NEW ARRIVAL */}
-      <section className="pt-6">
-        <SectionHeader title="New Arrival" total={data.total} to="/catalogue" />
-        <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
-          {newArrivals.map((p) => (
-            <div key={p.id} className="w-[170px] shrink-0">
-              <CatalogueCard p={p} showCart={false} compact />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* NEW ARRIVAL — admin-curated */}
+      {newArrivals.length > 0 && (
+        <section className="pt-6">
+          <SectionHeader title="New Arrival" to="/catalogue" />
+          <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
+            {newArrivals.map((p) => (
+              <div key={p.id} className="w-[170px] shrink-0">
+                <CatalogueCard p={p} showCart={false} compact />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
 
 

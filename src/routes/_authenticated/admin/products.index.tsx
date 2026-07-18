@@ -10,6 +10,7 @@ import { Search, Plus, Pencil, Trash2, AlertTriangle, PackageX } from "lucide-re
 import { toast } from "sonner";
 
 import { deleteProduct } from "@/lib/products.functions";
+import { setProductFlag } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
@@ -22,6 +23,7 @@ function ProductsAdmin() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const del = useServerFn(deleteProduct);
+  const toggleFlag = useServerFn(setProductFlag);
 
   const { data: products } = useQuery({
     queryKey: ["admin-products"],
@@ -54,6 +56,21 @@ function ProductsAdmin() {
     }
   }
 
+  async function handleFlag(id: string, field: "is_new" | "is_bestseller", value: boolean) {
+    try {
+      await toggleFlag({ data: { id, field, value } });
+      qc.setQueryData(["admin-products"], (prev: any) =>
+        (prev ?? []).map((p: any) => (p.id === id ? { ...p, [field]: value } : p)),
+      );
+      qc.invalidateQueries({ queryKey: ["home"] });
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  const newCount = (products ?? []).filter((p: any) => p.is_new).length;
+  const bestCount = (products ?? []).filter((p: any) => p.is_bestseller).length;
+
   return (
     <MobileShell title="Products">
       <div className="space-y-3 p-4">
@@ -69,6 +86,18 @@ function ProductsAdmin() {
         >
           <Plus className="h-4 w-4" /> Add product
         </Link>
+
+        <Link
+          to="/admin/homepage-featured"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-burgundy px-3 py-2 text-sm font-medium text-burgundy hover:bg-burgundy/5"
+        >
+          Manage Homepage New Arrival section
+        </Link>
+
+        <p className="rounded-lg bg-secondary px-3 py-2 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">{newCount}</span> SKUs tagged New Arrival ·{" "}
+          <span className="font-semibold text-foreground">{bestCount}</span> SKUs tagged Bestseller
+        </p>
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -114,20 +143,42 @@ function ProductsAdmin() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 flex justify-end gap-2">
-                    <Link
-                      to="/admin/products/$id"
-                      params={{ id: p.id }}
-                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-gold"
-                    >
-                      <Pencil className="h-3 w-3" /> Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(p.id, p.name)}
-                      className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] text-destructive hover:bg-destructive/5"
-                    >
-                      <Trash2 className="h-3 w-3" /> Delete
-                    </button>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={!!p.is_new}
+                          onChange={(e) => handleFlag(p.id, "is_new", e.target.checked)}
+                          className="h-3.5 w-3.5 accent-burgundy"
+                        />
+                        New Arrival
+                      </label>
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={!!p.is_bestseller}
+                          onChange={(e) => handleFlag(p.id, "is_bestseller", e.target.checked)}
+                          className="h-3.5 w-3.5 accent-burgundy"
+                        />
+                        Bestseller
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link
+                        to="/admin/products/$id"
+                        params={{ id: p.id }}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-gold"
+                      >
+                        <Pencil className="h-3 w-3" /> Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(p.id, p.name)}
+                        className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] text-destructive hover:bg-destructive/5"
+                      >
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </button>
+                    </div>
                   </div>
                 </li>
               );

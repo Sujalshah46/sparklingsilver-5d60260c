@@ -431,6 +431,8 @@ export type Database = {
           family: string | null
           gross_weight: number
           has_image: boolean
+          homepage_featured: boolean
+          homepage_featured_order: number | null
           id: string
           image_path: string | null
           image_url: string | null
@@ -470,6 +472,8 @@ export type Database = {
           family?: string | null
           gross_weight: number
           has_image?: boolean
+          homepage_featured?: boolean
+          homepage_featured_order?: number | null
           id?: string
           image_path?: string | null
           image_url?: string | null
@@ -509,6 +513,8 @@ export type Database = {
           family?: string | null
           gross_weight?: number
           has_image?: boolean
+          homepage_featured?: boolean
+          homepage_featured_order?: number | null
           id?: string
           image_path?: string | null
           image_url?: string | null
