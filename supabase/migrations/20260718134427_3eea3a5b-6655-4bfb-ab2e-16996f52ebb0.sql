@@ -1,0 +1,1 @@
+UPDATE products SET image_url = REPLACE(image_url, '?v=cznkfix2', '&v=cznkfix3') WHERE image_url LIKE '%?token=%?v=cznkfix2';
