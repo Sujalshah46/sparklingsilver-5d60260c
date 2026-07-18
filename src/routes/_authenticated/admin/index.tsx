@@ -143,6 +143,24 @@ function AdminDashboard() {
           </Button>
         </div>
 
+        {(stats?.missingVariantsCount ?? 0) > 0 && (
+          <Link
+            to="/admin/image-backfill"
+            className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900 transition hover:border-amber-500"
+          >
+            <Images className="mt-0.5 h-5 w-5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">
+                {stats!.missingVariantsCount} product{stats!.missingVariantsCount === 1 ? "" : "s"} need pre-resized image variants
+              </p>
+              <p className="text-[11px] leading-snug">
+                New uploads ship without WebP variants and load slowly. Run the backfill to generate 300w/600w/1200w WebPs.
+              </p>
+            </div>
+            <span className="rounded-md bg-amber-900 px-2 py-1 text-[11px] font-semibold text-white">Fix</span>
+          </Link>
+        )}
+
         {/* Stat grid */}
         <div className="grid grid-cols-2 gap-3">
           {statCards.map((s) => (
