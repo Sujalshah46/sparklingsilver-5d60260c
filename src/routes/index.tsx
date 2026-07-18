@@ -128,29 +128,28 @@ function Home() {
     setStyle(s);
     try { localStorage.setItem("sj.categoryStyle", s); } catch {}
   };
-  const newArrivals = (data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new).slice(0, 10).length
-    ? data.products.filter((p) => (p as unknown as { is_new?: boolean }).is_new)
-    : data.products
-  ).slice(0, 10);
+  const newArrivals = data.products.slice(0, 10);
 
   return (
     <MobileShell>
       <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
-      
+
       <VideoShowcase />
       <AccessBanner />
 
-      {/* NEW ARRIVAL */}
-      <section className="pt-6">
-        <SectionHeader title="New Arrival" total={data.total} to="/catalogue" />
-        <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
-          {newArrivals.map((p) => (
-            <div key={p.id} className="w-[170px] shrink-0">
-              <CatalogueCard p={p} showCart={false} compact />
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* NEW ARRIVAL — admin-curated */}
+      {newArrivals.length > 0 && (
+        <section className="pt-6">
+          <SectionHeader title="New Arrival" to="/catalogue" />
+          <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
+            {newArrivals.map((p) => (
+              <div key={p.id} className="w-[170px] shrink-0">
+                <CatalogueCard p={p} showCart={false} compact />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
 
 
