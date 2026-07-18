@@ -1,67 +1,60 @@
-## Goal
-Make every product image on the site paint near-instantly (blurred placeholder < 100ms, sharp image within one frame of arrival), without changing any layout, card, or design.
+# Site Speed Fixes — Lighthouse Audit Response
 
-## Where we are today
-- Supabase render/image transform already wired via `productThumbUrl` + `productLqipUrl` (`src/lib/product-images.ts`).
-- Service Worker already caches product image responses (stale-while-revalidate).
-- Catalogue currently uses `limit(120)` and renders all in one page — no pagination/virtualization.
-- Homepage plays `sparkling-video-8.mp4` (~38 MB). No `poster`, `preload="metadata"` unclear.
-- No `srcset` on some card / admin surfaces; product detail already has srcset.
-- No `fetchpriority`/`sizes` audit on homepage carousel / category tiles.
+Three prioritized fixes based on the audit. Each has a concrete change and a verification step.
 
-The main real wins left are: (1) enforce the transform + srcset + lazy on **every** `<img>` that renders a product photo, (2) paginate catalogue, (3) fix the homepage video, (4) add a `?fmt=webp`/format hint and long cache header on the transform URL, (5) run a pilot batch before touching anything else.
+---
 
-## Plan
+## 1. Kill the 6.5s server response (highest priority)
 
-### Phase 1 — Pilot (must approve before Phase 2)
-1. Pick 10 representative SKUs (mix: heavy antique long-set, plain bangle, CZ tops pair, belt, pendant, choker) and generate a side-by-side preview page at `/admin/image-quality-preview` (admin-only) showing, per SKU:
-   - Original (untransformed signed URL)
-   - Card thumb (w=400 q=75 webp)
-   - Detail (w=1200 q=80 webp)
-   - LQIP (w=24 q=20)
-   - File sizes for each variant
-2. Ship only this preview page. No site-wide changes yet. Wait for explicit approval.
+**Root cause (confirmed in code):** `src/routes/index.tsx` runs a `loader` that awaits three Supabase queries (`categories`, featured `products`, and a full `products` scan for counts) *during SSR* before any HTML is sent. On a cold Cloudflare Worker this easily produces the ~6.5s document latency the audit reports. Every other route with a loader has the same shape.
 
-### Phase 2 — Delivery layer (site-wide, no DB changes)
-Apply the approved variant recipe by upgrading `productThumbUrl` / `productLqipUrl` only:
-- Default `quality=75`, add `format=webp` (Supabase transform supports it via `format=origin` fallback; if unsupported by our tier we omit and rely on q=75 gain).
-- Add helpers `productCardUrl(400)`, `productDetailUrl(1200)`, `productZoomUrl(original)` for clarity.
-- Sweep every `<img>` that renders a product photo and enforce:
-  - `srcset` at 300 / 600 / 900 for cards, 800 / 1200 / 1600 for detail.
-  - `sizes` matching the grid columns.
-  - `loading="lazy"` + `decoding="async"` on everything except the first 2 tiles of homepage & catalogue (kept `fetchpriority="high"`).
-  - LQIP background via CSS `background-image` on the wrapper — paints in one packet, sharp image cross-fades in.
-- Files touched: `src/components/CatalogueCard.tsx`, `src/components/HeroSlider.tsx`, `src/components/CategoryTile.tsx`, `src/routes/product.$slug.tsx`, admin lists (`admin/products.index.tsx`, `admin/inventory.tsx`, `admin/homepage-featured.tsx`) — admin stays on 96–128px thumbs (already done, verify).
-- Zoom/lightbox on product detail keeps the untouched original URL — quality unchanged.
+**Changes:**
+- **Homepage:** remove the SSR loader. Convert `homeQuery` to client-only `useSuspenseQuery` inside the component (or `useQuery` + skeleton) so the HTML shell is returned immediately and Supabase runs in the browser in parallel with the JS bundle.
+- **Category counts query:** replace the "fetch every product row just to count" scan with a single grouped count (RPC or `select('category_id', { count: 'exact', head: true })` per category, run in parallel). This is the heaviest query in the loader.
+- **Audit other public routes** (`catalogue`, `category.$slug.*`, `product.$slug`) — for each: keep the loader only if it's cheap and cached; otherwise drop to client-fetch with suspense. Protected `_authenticated/*` routes already gate on auth so no change needed.
+- **Add HTTP cache headers** on the SSR response for public routes (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300`) so repeat/edge hits skip the render entirely.
 
-### Phase 3 — Catalogue pagination
-- Change `/catalogue` from `.limit(120)` to a paged query (page size 30) using TanStack Query's `useInfiniteQuery`.
-- Sentinel div + `IntersectionObserver` triggers `fetchNextPage`.
-- Keep filter/sort UI identical; filters run server-side on the paged query.
-- No visual change — same grid, same cards.
+**Verify:** rerun Lighthouse; target `document-latency` < 600ms. Also check TTFB in DevTools Network on a hard reload.
 
-### Phase 4 — Homepage video
-- Compress `sparkling-video-8.mp4` (H.264 1080p, ~2 Mbps target, ~5–8 MB) via ffmpeg; re-upload via `lovable-assets create` and swap the pointer.
-- Add `poster` (a WebP still from frame 0) and `preload="metadata"`.
-- Wrap the `<video>` in an IntersectionObserver so `src` is only attached once it scrolls into view.
+---
 
-### Phase 5 — Caching headers
-- Confirm Supabase render/image responses carry `cache-control: public, max-age=31536000, immutable`. If not, append `&download=` cache-buster only when the underlying SKU image is replaced (we already version with `?v=...` on re-uploads — that's cache-safe).
-- Extend SW cache limit + verify hit-rate in the network panel.
+## 2. Supabase image transformations returning originals
 
-### Phase 6 — Upload pipeline (admin)
-- On new upload in `admin/inventory.import.tsx` / product create, downscale originals > 3 MB with a browser-side canvas (or reject with a clear error suggesting the pipeline).
-- No pre-generated variant files needed — the transform endpoint already handles per-request sizing, backed by Supabase's cache.
+**Investigation first (before code changes):**
+- Confirm from a Network panel screenshot that a request like `.../render/image/sign/...?width=440&quality=55` returns `content-length` ≈ full original (300–700KB) and `content-type: image/jpeg` unchanged. Check response headers for any Supabase error hint.
+- Image Transformations is a paid Supabase add-on. On Lovable Cloud this may not be enabled on the current plan. **I'll report back which case applies** before doing large work here.
 
-## Rollout gate
-- Phase 1 preview → approval → Phases 2–6 shipped in one batch.
-- No SKU images are re-uploaded or replaced. This is purely a delivery + rendering change; original files in Storage are untouched.
+**If transforms are enabled but the URL shape is wrong:** fix the rewrite in `src/lib/product-images.ts` (`productThumbUrl`) — verify `render/image/sign` vs current SDK's expected path.
 
-## Acceptance
-- Every product `<img>` uses `srcset`+`sizes`, lazy except LCP, and a transformed URL.
-- Catalogue paginates at 30/page.
-- Homepage video < 10 MB with poster and lazy attach.
-- Pilot 10 SKUs approved before rollout.
-- No visual/layout regression.
+**If transforms are unavailable (plan limit):** flag it to you and implement the fallback:
+- Add a one-time backfill job (admin route) that, for each existing product image, generates three fixed variants (`thumb-300.webp`, `card-600.webp`, `detail-1200.webp`) via `sharp`-equivalent (Worker-safe: use `@cf-wasm/photon` or an edge image API) and stores them alongside the original in the same bucket.
+- Update the upload pipeline in `admin/products` and `admin/inventory.import` to write the three variants at upload time going forward.
+- Change `productThumbUrl` / `CatalogueCard` to point at the pre-sized variant matching the requested width instead of appending transform params.
 
-Reply **"approve pilot"** to ship Phase 1 (the admin preview page) so you can eyeball quality on 10 SKUs before I touch the rest of the site.
+**Verify:** homepage product image transfer size in DevTools drops to ~20–60KB per card.
+
+---
+
+## 3. Trim unused JavaScript
+
+Lower priority — do after #1 and #2 land and re-measure.
+
+- Move admin-only imports out of shared chunks. Audit `src/routes/_authenticated/admin/*` for any util currently re-exported through a barrel that pulls admin code into the public bundle.
+- Confirm `autoCodeSplitting` is doing its job per-route (it is on by default); the 79% unused on `client-*.js` suggests a shared vendor chunk with heavy libs used only on admin/checkout. Candidates to audit: `@dnd-kit/*`, chart libs, rich-text editors, `xlsx` — dynamic-import these inside the admin routes that use them instead of top-level import.
+- Rebuild and re-run Lighthouse; check `unused-javascript` bytes.
+
+---
+
+## Out of scope (per your instructions — already correct)
+
+Lazy-loading, `srcset`/`sizes`, WebP for pre-built assets. Not touching.
+
+---
+
+## Order of execution
+
+1. Ship #1 (loader → client fetch + count query fix + cache headers). Re-measure.
+2. Diagnose #2, report Supabase plan status, then either fix URL or build variant pipeline. Re-measure.
+3. Ship #3 (dynamic-import admin-only deps). Re-measure and share final Lighthouse score.
+
+Approve and I'll start with step 1.
