@@ -19,17 +19,20 @@ const homeQuery = queryOptions({
   staleTime: 10 * 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
-    const [categories, products, allProducts, totalRes] = await Promise.all([
-      supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order"),
-      supabase.from("products").select("*").or("is_new.eq.true,is_bestseller.eq.true").limit(24),
-      supabase.from("products").select("category_id"),
-      supabase.from("products").select("*", { count: "exact", head: true }),
+    const categoriesRes = await supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order");
+    const visibleIds = (categoriesRes.data ?? []).map((c) => c.id);
+    const [products, allProducts] = await Promise.all([
+      supabase.from("products").select("*").in("category_id", visibleIds).or("is_new.eq.true,is_bestseller.eq.true").limit(24),
+      supabase.from("products").select("category_id").in("category_id", visibleIds),
     ]);
     const counts = new Map<string, number>();
     for (const row of (allProducts.data ?? []) as { category_id: string | null }[]) {
       if (!row.category_id) continue;
       counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
     }
+    const total = (allProducts.data ?? []).length;
+    const categories = categoriesRes;
+    const totalRes = { count: total };
     return {
       categories: categories.data ?? [],
       products: (products.data ?? []) as CatalogueCardData[],
