@@ -1,52 +1,43 @@
-## Goal
+# Faster product image on SKU open
 
-Recreate the exact look of your 4 reference screenshots for 10 antique previews (then the full batch after you approve):
+## Why it's slow today
+On the catalogue/home grid, each tile loads a **300 px thumbnail** through Supabase's image transform (~15–40 KB, cached by the Service Worker).
 
-- Jewellery in tack-sharp focus, rich metal + gemstone detail.
-- Sitting on the original **black velvet bust / stand** from the source photo.
-- **Dark green velvet backdrop** (~`#0E3A2E`, matches references).
-- **SPARKLING SILVER logo** in the **top-right corner**, small and white, matching the reference lockup.
+When you tap a SKU, the product detail page (`src/routes/product.$slug.tsx`) requests the **original full-resolution image** (`image_url` as-is → 2048×2048, often 1–2 MB). This URL is different from the thumbnail URL, so:
 
-No transparent PNG. No LANCZOS. No v6 recipe.
+- The Service Worker cache doesn't help (different cache key).
+- The browser has to download the full file over the network before it can paint.
+- No `srcSet`, no `<link rel="preload">`, no hover/tap prefetch.
 
-## Source
+Result: 1–3 seconds of blank grey square after tapping.
 
-`ANTIQUE-2.zip` (just re-uploaded, `user-uploads://ANTIQUE-2.zip`) — extract to `/tmp/antique-src/` and work off the raw originals only.
+## Fix (frontend only, no image regen)
 
-## Pipeline (Real-ESRGAN based)
+1. **Serve a right-sized image on the detail page**
+   Use `productThumbUrl(rawSrc, { width: 800, quality: 70 })` for the main tag and add a `srcSet` at 800w / 1200w / 1600w with `sizes="(min-width:768px) 640px, 100vw"`. Drops payload from ~1.5 MB to ~80–150 KB on mobile.
 
-For each raw JPEG:
+2. **Instant paint from cache — LQIP swap**
+   Render the same 300 px thumbnail URL the grid just used as the initial `src` (already sitting in the SW cache → paints in < 50 ms), then swap to the high-res version once it decodes. User sees the product immediately instead of a grey square.
 
-1. Open raw file from the zip. Never touch already-enhanced copies.
-2. **Real-ESRGAN 4× SR** with `RealESRGAN_x4plus` (general photo model — best for metal + gemstone; not the anime variant).
-3. If long edge > 4000 px after 4×, downscale to 4000 px with area resample (not LANCZOS) so we keep the SR gain.
-4. `rembg` `isnet-general-use` on the SR image → alpha matte around the jewellery **and the black velvet bust together** (mask keeps the stand so the piece still sits on its original support).
-5. Soften matte edge with Gaussian σ ≈ 0.8.
-6. **Composite over the studio background**:
-   - Base: dark green velvet backdrop `#0E3A2E`, rendered once to `/tmp/velvet-bg.jpg` (tileable velvet + subtle grain + soft vignette) and reused for every image so all 845 share the exact same backdrop.
-   - The bust + jewellery cutout is centred over the backdrop, preserving the original scale.
-7. **Overlay the Sparkling Silver logo** in the top-right:
-   - Use the white lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` (I'll pick the cleanest white-on-transparent version).
-   - Width ≈ 12% of image width, ~40 px inset from top and right, 90% opacity.
-8. Save JPEG q95, 4:4:4 chroma.
+3. **Preload the detail image from the card**
+   On `pointerenter` / `touchstart` of a `CatalogueCard` link, kick off a low-priority `fetch()` for the 800 w detail URL. By the time the route transition finishes, the image is already in the HTTP cache.
 
-Nothing from the old v6 recipe (LANCZOS, UnsharpMask, ivory background) is used.
+4. **`<link rel="preload" as="image" imagesrcset=…>` in the route `head()`**
+   TanStack `head()` on `/product/$slug` emits a preload for the 800 w detail URL derived from loader data, so the browser starts the download in parallel with the JS/CSS for the route.
 
-## Steps
+5. **Extend the Service Worker cache to the resized detail URLs**
+   `public/sw.js` already caches `/storage/v1/render/image/…`. Confirm the new 800 w URLs match that pattern (they do) so a second visit to the same SKU is instant.
 
-1. Extract `ANTIQUE-2.zip` → `/tmp/antique-src/`.
-2. Install `realesrgan` + weights (`RealESRGAN_x4plus.pth`).
-3. Render `/tmp/velvet-bg.jpg` once.
-4. Pick the white Sparkling Silver logo file from uploads.
-5. Run the pipeline on the same 10 SKUs already in preview (BJ-03, BNG-118, BT-99, BRC-21, BR-03, CH-108, ER-100, RG-01, JH-257, LS-608) — like-for-like comparison.
-6. Write to `/mnt/documents/antique-preview-10-esrgan/` as JPEGs.
-7. Stop and wait for your sign-off before running the remaining ~835.
+6. **Decoding hints**
+   `decoding="async"`, `fetchpriority="high"` on the detail `<img>`, and drop the fade-in transition so paint isn't delayed one frame.
 
-## Runtime
+## Files to touch
 
-- 10 previews: ~5–10 min on CPU.
-- Full 845 (Phase 2 only after approval): ~2–4 h with 4 parallel workers, resume-safe.
+- `src/routes/product.$slug.tsx` — swap `<img>` for LQIP → hi-res, add `srcSet` / `sizes` / preload in `head()`.
+- `src/components/CatalogueCard.tsx` — add `onPointerEnter` / `onTouchStart` prefetch of the detail-size URL on the `<Link>`.
+- `public/sw.js` — no change expected; verify pattern match.
 
-## Not in scope
-
-No database, admin panel, or app UI changes. Image production only — re-importing the enhanced set into the app is a separate step after you sign off on quality.
+## Expected result
+- First tap on a SKU: image visible in **< 200 ms** (cached thumbnail LQIP) and sharp within **300–800 ms** on 4G (was 1.5–3 s).
+- Repeat visits: **instant** from Service Worker cache.
+- No image regeneration, no database changes, no impact on look/quality.
