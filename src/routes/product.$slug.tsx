@@ -150,15 +150,32 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <div className="aspect-square w-full overflow-hidden bg-secondary">
+      <div className="relative aspect-square w-full overflow-hidden bg-secondary">
+        {isRenderable && !hiResLoaded && (
+          <img
+            src={lqipSrc}
+            alt=""
+            aria-hidden
+            width={1024}
+            height={1024}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ filter: "blur(6px)", transform: "scale(1.02)" }}
+          />
+        )}
         <img
-          src={resolveProductImage(product.image_url)}
+          src={imgSrc}
+          srcSet={imgSrcSet}
+          sizes="(min-width:768px) 640px, 100vw"
           alt={product.name}
           width={1024}
           height={1024}
-          className="h-full w-full object-cover"
+          decoding="async"
+          fetchPriority="high"
+          onLoad={() => setHiResLoaded(true)}
+          className="relative h-full w-full object-cover"
         />
       </div>
+
 
       <div className="space-y-5 p-4">
         <div>
