@@ -1,62 +1,67 @@
 ## Goal
-Make product images appear effectively instantly (perceived <100 ms) on homepage, category, subcategory, product detail, and admin lists — without changing image content or overlays.
+Make every product image on the site paint near-instantly (blurred placeholder < 100ms, sharp image within one frame of arrival), without changing any layout, card, or design.
 
-> Note: true 0.1–0.2 ms is below a single network round‑trip. What we can guarantee is **instant paint** using cached/precomputed thumbs + a colored placeholder that swaps to the sharp image within one frame (<100 ms) on repeat views, and 200–500 ms on cold loads.
+## Where we are today
+- Supabase render/image transform already wired via `productThumbUrl` + `productLqipUrl` (`src/lib/product-images.ts`).
+- Service Worker already caches product image responses (stale-while-revalidate).
+- Catalogue currently uses `limit(120)` and renders all in one page — no pagination/virtualization.
+- Homepage plays `sparkling-video-8.mp4` (~38 MB). No `poster`, `preload="metadata"` unclear.
+- No `srcset` on some card / admin surfaces; product detail already has srcset.
+- No `fetchpriority`/`sizes` audit on homepage carousel / category tiles.
 
-## Root causes today
-1. **Same Supabase render endpoint hit per visit** — every card triggers a signed on‑the‑fly resize (300 px + 600 px 2x) on Supabase's image transformer. First hit per size is slow (~400–900 ms) and it isn't aggressively edge‑cached because signed URLs vary per session.
-2. **No CDN in front of images** — served straight from Supabase Storage, no Cloudflare cache, no immutable URLs.
-3. **No blurred placeholder** — cards show a grey pulse until the full image arrives, so "loading" is visible.
-4. **Admin lists request the full‑size image**, not a thumb.
-5. **No preloading** of the next viewport's images or of homepage hero thumbs.
-6. **Service worker** caches only a few assets, not product thumbs.
+The main real wins left are: (1) enforce the transform + srcset + lazy on **every** `<img>` that renders a product photo, (2) paginate catalogue, (3) fix the homepage video, (4) add a `?fmt=webp`/format hint and long cache header on the transform URL, (5) run a pilot batch before touching anything else.
 
-## Fix plan
+## Plan
 
-### 1. Precompute and store two fixed thumbnail sizes per product (biggest win)
-- On upload / relink, generate `thumb-320.webp` (grid) and `thumb-800.webp` (detail) into the `product-images` bucket next to the original.
-- Store `thumb_url` and `detail_url` columns on `products`.
-- Serve those static public URLs — no signed render call, fully cacheable.
-- One‑time backfill script for existing ~970 SKUs.
+### Phase 1 — Pilot (must approve before Phase 2)
+1. Pick 10 representative SKUs (mix: heavy antique long-set, plain bangle, CZ tops pair, belt, pendant, choker) and generate a side-by-side preview page at `/admin/image-quality-preview` (admin-only) showing, per SKU:
+   - Original (untransformed signed URL)
+   - Card thumb (w=400 q=75 webp)
+   - Detail (w=1200 q=80 webp)
+   - LQIP (w=24 q=20)
+   - File sizes for each variant
+2. Ship only this preview page. No site-wide changes yet. Wait for explicit approval.
 
-### 2. Put Cloudflare in front of the storage bucket
-- Route thumbs through `cdn.sparklingsilver.in` (Cloudflare Worker proxy) with `Cache-Control: public, max-age=31536000, immutable`.
-- First user in a region warms cache; every subsequent user gets ~20–60 ms edge hits.
+### Phase 2 — Delivery layer (site-wide, no DB changes)
+Apply the approved variant recipe by upgrading `productThumbUrl` / `productLqipUrl` only:
+- Default `quality=75`, add `format=webp` (Supabase transform supports it via `format=origin` fallback; if unsupported by our tier we omit and rely on q=75 gain).
+- Add helpers `productCardUrl(400)`, `productDetailUrl(1200)`, `productZoomUrl(original)` for clarity.
+- Sweep every `<img>` that renders a product photo and enforce:
+  - `srcset` at 300 / 600 / 900 for cards, 800 / 1200 / 1600 for detail.
+  - `sizes` matching the grid columns.
+  - `loading="lazy"` + `decoding="async"` on everything except the first 2 tiles of homepage & catalogue (kept `fetchpriority="high"`).
+  - LQIP background via CSS `background-image` on the wrapper — paints in one packet, sharp image cross-fades in.
+- Files touched: `src/components/CatalogueCard.tsx`, `src/components/HeroSlider.tsx`, `src/components/CategoryTile.tsx`, `src/routes/product.$slug.tsx`, admin lists (`admin/products.index.tsx`, `admin/inventory.tsx`, `admin/homepage-featured.tsx`) — admin stays on 96–128px thumbs (already done, verify).
+- Zoom/lightbox on product detail keeps the untouched original URL — quality unchanged.
 
-### 3. Tiny LQIP (base64, ~400 bytes) inlined in the DB row
-- Column `lqip` = 24 px blurred WebP base64.
-- Card shows it instantly as `background-image`; sharp thumb fades in on top. Zero perceived load.
+### Phase 3 — Catalogue pagination
+- Change `/catalogue` from `.limit(120)` to a paged query (page size 30) using TanStack Query's `useInfiniteQuery`.
+- Sentinel div + `IntersectionObserver` triggers `fetchNextPage`.
+- Keep filter/sort UI identical; filters run server-side on the paged query.
+- No visual change — same grid, same cards.
 
-### 4. Card + admin table tweaks
-- `CatalogueCard`: use `thumb_url` (no runtime `productThumbUrl` rewrite), keep `srcSet` only if a 2× exists; replace the grey pulse with the LQIP.
-- Admin `products.index.tsx`: switch full images to `thumb_url` (currently loads originals).
-- Homepage hero carousel: `<link rel="preload" as="image">` for slide 1 only.
-- First row of any grid: `priority` + `fetchpriority="high"`; rest lazy.
+### Phase 4 — Homepage video
+- Compress `sparkling-video-8.mp4` (H.264 1080p, ~2 Mbps target, ~5–8 MB) via ffmpeg; re-upload via `lovable-assets create` and swap the pointer.
+- Add `poster` (a WebP still from frame 0) and `preload="metadata"`.
+- Wrap the `<video>` in an IntersectionObserver so `src` is only attached once it scrolls into view.
 
-### 5. Service worker: cache thumbs
-- Add a runtime cache rule for `/product-images/**thumb-*.webp` — stale‑while‑revalidate, cap 300 entries. Repeat visits paint from disk (<10 ms).
+### Phase 5 — Caching headers
+- Confirm Supabase render/image responses carry `cache-control: public, max-age=31536000, immutable`. If not, append `&download=` cache-buster only when the underlying SKU image is replaced (we already version with `?v=...` on re-uploads — that's cache-safe).
+- Extend SW cache limit + verify hit-rate in the network panel.
 
-### 6. Cleanup
-- Drop `productThumbUrl` render‑endpoint calls once thumbs exist.
-- Keep original full image only for product zoom.
+### Phase 6 — Upload pipeline (admin)
+- On new upload in `admin/inventory.import.tsx` / product create, downscale originals > 3 MB with a browser-side canvas (or reject with a clear error suggesting the pipeline).
+- No pre-generated variant files needed — the transform endpoint already handles per-request sizing, backed by Supabase's cache.
 
-## Rollout (one turn each)
-1. Migration: add `thumb_url`, `detail_url`, `lqip` columns + indexes; make bucket public‑read for thumbs only.
-2. Server fn + script to generate thumbs + LQIP for all existing products; backfill.
-3. Update upload/link pipeline to emit thumbs on every future image.
-4. Swap `CatalogueCard`, product detail, admin lists, homepage carousel to new columns; add LQIP background; add preload for hero.
-5. Update `public/sw.js` with SWR cache for thumbs.
-6. Optional: Cloudflare Worker CDN in front of storage (requires DNS change — I'll flag before doing).
+## Rollout gate
+- Phase 1 preview → approval → Phases 2–6 shipped in one batch.
+- No SKU images are re-uploaded or replaced. This is purely a delivery + rendering change; original files in Storage are untouched.
 
-## Expected result
-- Repeat visit / warm CDN: **10–50 ms** to paint sharp thumb.
-- Cold visit: LQIP paints in first frame (<50 ms), sharp thumb swaps in 150–400 ms.
-- Admin lists: ~10× less bytes per row.
+## Acceptance
+- Every product `<img>` uses `srcset`+`sizes`, lazy except LCP, and a transformed URL.
+- Catalogue paginates at 30/page.
+- Homepage video < 10 MB with poster and lazy attach.
+- Pilot 10 SKUs approved before rollout.
+- No visual/layout regression.
 
-## Technical notes
-- Thumb generation via `sharp` runs in a Node script locally (not in the Cloudflare Worker runtime — Worker doesn't support sharp). Output uploaded via `supabaseAdmin`.
-- WebP q75 for 320 px (~8 KB), q78 for 800 px (~35 KB).
-- LQIP = 24 px WebP q30, base64 (~350–500 bytes), stored inline.
-- No changes to image content, logo overlay, or emerald‑velvet pipeline — this is a delivery‑layer change only.
-
-Approve and I'll start with step 1 (migration + backfill script).
+Reply **"approve pilot"** to ship Phase 1 (the admin preview page) so you can eyeball quality on 10 SKUs before I touch the rest of the site.
