@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
-import { HeroSlider } from "@/components/HeroSlider";
 import { AccessBanner } from "@/components/AccessBanner";
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
@@ -13,31 +12,45 @@ import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-imag
 
 
 
+type CategoryRow = { id: string; slug: string; name: string; sort_order?: number | null; image_url?: string | null };
+
 const homeQuery = queryOptions({
   queryKey: ["home"],
   staleTime: 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
-    const categoriesRes = await supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order");
-    const visibleIds = (categoriesRes.data ?? []).map((c) => c.id);
-    const [products, allProducts] = await Promise.all([
+    // Parallel: featured products + visible categories. Do NOT scan the full
+    // products table just to derive per-category counts — cheap head-count
+    // queries per visible category in parallel are dramatically smaller.
+    const [featuredRes, categoriesRes] = await Promise.all([
       supabase
         .from("products")
         .select("*")
         .eq("homepage_featured", true)
         .order("homepage_featured_order", { ascending: true })
         .limit(10),
-      supabase.from("products").select("category_id").in("category_id", visibleIds),
+      supabase
+        .from("categories")
+        .select("id,slug,name,sort_order,image_url")
+        .in("slug", ["antique", "cz"])
+        .order("sort_order"),
     ]);
-    const counts = new Map<string, number>();
-    for (const row of (allProducts.data ?? []) as { category_id: string | null }[]) {
-      if (!row.category_id) continue;
-      counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
-    }
-    const total = (allProducts.data ?? []).length;
+    const categories = (categoriesRes.data ?? []) as CategoryRow[];
+    const countPairs = await Promise.all(
+      categories.map(async (c) => {
+        const { count } = await supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .eq("category_id", c.id);
+        return [c.id, count ?? 0] as const;
+      }),
+    );
+    const counts = new Map<string, number>(countPairs);
+    let total = 0;
+    for (const [, n] of countPairs) total += n;
     return {
-      categories: categoriesRes.data ?? [],
-      products: (products.data ?? []) as CatalogueCardData[],
+      categories,
+      products: (featuredRes.data ?? []) as CatalogueCardData[],
       counts,
       total,
     };
