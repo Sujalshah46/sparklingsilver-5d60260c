@@ -26,7 +26,7 @@ export function CatalogueCard({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [qty, setQty] = useState(1);
-  const [imgLoaded, setImgLoaded] = useState(false);
+  
 
   const wish = useMutation({
     mutationFn: async () => {
