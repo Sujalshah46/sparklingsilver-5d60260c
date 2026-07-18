@@ -61,15 +61,16 @@ async function canvasToWebp(
 }
 
 function variantPath(originalImageUrl: string, sizeKey: string): string {
-  // Strip query string BEFORE splitting on `/`, otherwise "?token=..." bleeds
-  // into the filename. Then swap the extension to `.webp`.
+  // Existing backfilled files kept the ORIGINAL filename (e.g. `AR(BT)-10.jpg`)
+  // even though the bytes are WebP. Match that exact convention — do NOT
+  // rewrite the extension, or repair signs a path that doesn't exist.
   const beforeQuery = originalImageUrl.split(/[?#]/)[0] ?? originalImageUrl;
   const base = beforeQuery.split("/").pop() ?? beforeQuery;
   let decoded = base;
   try { decoded = decodeURIComponent(base); } catch { /* keep raw */ }
-  const stem = decoded.replace(/\.[^.]+$/, "");
-  return `variants/${sizeKey}/${stem}.webp`;
+  return `variants/${sizeKey}/${decoded}`;
 }
+
 
 function BackfillPage() {
   const [rows, setRows] = useState<Row[]>([]);
