@@ -60,15 +60,43 @@ async function canvasToWebp(
   });
 }
 
-function variantPath(originalImageUrl: string, sizeKey: string): string {
+function cleanBasename(value: string): string {
   // Existing backfilled files kept the ORIGINAL filename (e.g. `AR(BT)-10.jpg`)
   // even though the bytes are WebP. Match that exact convention — do NOT
   // rewrite the extension, or repair signs a path that doesn't exist.
-  const beforeQuery = originalImageUrl.split(/[?#]/)[0] ?? originalImageUrl;
+  const beforeQuery = value.split(/[?#]/)[0] ?? value;
   const base = beforeQuery.split("/").pop() ?? beforeQuery;
   let decoded = base;
   try { decoded = decodeURIComponent(base); } catch { /* keep raw */ }
+  return decoded;
+}
+
+function storagePathFromImageUrl(imageUrl: string): string | null {
+  const marker = `/${BUCKET}/`;
+  const markerIndex = imageUrl.indexOf(marker);
+  if (markerIndex === -1) return null;
+  const rawPath = imageUrl.slice(markerIndex + marker.length).split(/[?#]/)[0];
+  if (!rawPath) return null;
+  try { return decodeURIComponent(rawPath); } catch { return rawPath; }
+}
+
+function variantPath(row: Row, sizeKey: string): string {
+  const source = (row.image_url && storagePathFromImageUrl(row.image_url)) || row.image_url || row.sku;
+  const decoded = cleanBasename(source);
   return `variants/${sizeKey}/${decoded}`;
+}
+
+async function signedSourceUrl(row: Row): Promise<string> {
+  if (!row.image_url) throw new Error("no image_url");
+  const storagePath = storagePathFromImageUrl(row.image_url);
+  if (storagePath) {
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(storagePath, 60 * 30);
+    if (error || !data?.signedUrl) throw new Error(`source sign: ${error?.message ?? "no url"}`);
+    return data.signedUrl;
+  }
+  return row.image_url;
 }
 
 
@@ -99,18 +127,19 @@ function BackfillPage() {
   }, []);
 
   async function processOne(row: Row): Promise<void> {
-    if (!row.image_url) throw new Error("no image_url");
-    // Load the full-resolution original via the render endpoint at max width
-    // to bypass any tiny cached thumbnail.
-    const sourceUrl = row.image_url.includes("/storage/v1/")
-      ? productThumbUrl(row.image_url, { width: 2048, quality: 90 })
-      : row.image_url;
+    // Use a fresh signed URL parsed from image_url whenever possible. The remaining
+    // belt rows have cache-buster strings appended to image_url (`?v=v7belt`),
+    // which breaks the render/image URL rewrite and causes every load to fail.
+    const freshSourceUrl = await signedSourceUrl(row);
+    const sourceUrl = freshSourceUrl.includes("/storage/v1/")
+      ? productThumbUrl(freshSourceUrl, { width: 2048, quality: 90 })
+      : freshSourceUrl;
     const img = await loadImage(sourceUrl);
 
     const variants: Record<string, string> = {};
     for (const size of SIZES) {
       const blob = await canvasToWebp(img, size.width, size.quality);
-      const path = variantPath(row.image_url, size.key);
+      const path = variantPath(row, size.key);
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
         .upload(path, blob, { upsert: true, contentType: "image/webp", cacheControl: "31536000" });
@@ -218,7 +247,7 @@ function BackfillPage() {
                       const variants: Record<string, string> = {};
                       let ok = true;
                       for (const size of SIZES) {
-                        const path = variantPath(row.image_url, size.key);
+                        const path = variantPath(row, size.key);
                         const { data: signed, error: signErr } = await supabase.storage
                           .from(BUCKET)
                           .createSignedUrl(path, SIGN_EXPIRES);
