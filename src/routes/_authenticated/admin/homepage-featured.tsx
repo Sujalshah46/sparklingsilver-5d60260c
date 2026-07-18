@@ -11,7 +11,7 @@ import { Search, ArrowUp, ArrowDown, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { setHomepageFeatured, reorderHomepageFeatured, clearHomepageFeatured } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/homepage-featured")({
   head: () => ({ meta: [{ title: "Admin — Homepage New Arrival" }] }),

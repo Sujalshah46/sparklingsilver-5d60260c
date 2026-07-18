@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Minus, Plus, Search, AlertTriangle, PackageX } from "lucide-react";
 import { toast } from "sonner";
 import { adjustStock } from "@/lib/inventory.functions";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
   head: () => ({ meta: [{ title: "Admin — Inventory" }] }),
@@ -132,7 +132,7 @@ function InventoryPage() {
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-center gap-3">
                     <img
-                      src={resolveProductImage(p.image_url, categoryPlaceholder)}
+                      src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 112, quality: 55 })}
                       alt={p.name}
                       loading="lazy"
                       onError={(e) => {
