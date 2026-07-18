@@ -10,6 +10,7 @@ import { Search, Plus, Pencil, Trash2, AlertTriangle, PackageX } from "lucide-re
 import { toast } from "sonner";
 
 import { deleteProduct } from "@/lib/products.functions";
+import { setProductFlag } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
