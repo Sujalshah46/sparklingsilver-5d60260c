@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   component: BackfillPage,
 });
 
-type Row = { id: string; sku: string; image_url: string | null };
+type Row = { id: string; sku: string; image_url: string | null; image_path: string | null };
 // 10 years — matches original product image signed-URL expiry.
 const SIGN_EXPIRES = 60 * 60 * 24 * 365 * 10;
 
@@ -60,15 +60,33 @@ async function canvasToWebp(
   });
 }
 
-function variantPath(originalImageUrl: string, sizeKey: string): string {
+function cleanBasename(value: string): string {
   // Existing backfilled files kept the ORIGINAL filename (e.g. `AR(BT)-10.jpg`)
   // even though the bytes are WebP. Match that exact convention — do NOT
   // rewrite the extension, or repair signs a path that doesn't exist.
-  const beforeQuery = originalImageUrl.split(/[?#]/)[0] ?? originalImageUrl;
+  const beforeQuery = value.split(/[?#]/)[0] ?? value;
   const base = beforeQuery.split("/").pop() ?? beforeQuery;
   let decoded = base;
   try { decoded = decodeURIComponent(base); } catch { /* keep raw */ }
+  return decoded;
+}
+
+function variantPath(row: Row, sizeKey: string): string {
+  const source = row.image_path?.trim() || row.image_url || row.sku;
+  const decoded = cleanBasename(source);
   return `variants/${sizeKey}/${decoded}`;
+}
+
+async function signedSourceUrl(row: Row): Promise<string> {
+  if (row.image_path?.trim()) {
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .createSignedUrl(row.image_path.trim(), 60 * 30);
+    if (error || !data?.signedUrl) throw new Error(`source sign: ${error?.message ?? "no url"}`);
+    return data.signedUrl;
+  }
+  if (!row.image_url) throw new Error("no image_url");
+  return row.image_url;
 }
 
 
@@ -89,7 +107,7 @@ function BackfillPage() {
     void (async () => {
       const { data, count } = await supabase
         .from("products")
-        .select("id, sku, image_url", { count: "exact" })
+        .select("id, sku, image_url, image_path", { count: "exact" })
         .is("image_variants", null)
         .not("image_url", "is", null)
         .order("sku", { ascending: true });
@@ -99,18 +117,16 @@ function BackfillPage() {
   }, []);
 
   async function processOne(row: Row): Promise<void> {
-    if (!row.image_url) throw new Error("no image_url");
-    // Load the full-resolution original via the render endpoint at max width
-    // to bypass any tiny cached thumbnail.
-    const sourceUrl = row.image_url.includes("/storage/v1/")
-      ? productThumbUrl(row.image_url, { width: 2048, quality: 90 })
-      : row.image_url;
+    // Use a fresh signed URL from image_path whenever possible. The remaining
+    // belt rows have cache-buster strings appended to image_url (`?v=v7belt`),
+    // which breaks the render/image URL rewrite and causes every load to fail.
+    const sourceUrl = row.image_path ? await signedSourceUrl(row) : productThumbUrl(await signedSourceUrl(row), { width: 2048, quality: 90 });
     const img = await loadImage(sourceUrl);
 
     const variants: Record<string, string> = {};
     for (const size of SIZES) {
       const blob = await canvasToWebp(img, size.width, size.quality);
-      const path = variantPath(row.image_url, size.key);
+      const path = variantPath(row, size.key);
       const { error: upErr } = await supabase.storage
         .from(BUCKET)
         .upload(path, blob, { upsert: true, contentType: "image/webp", cacheControl: "31536000" });
@@ -200,7 +216,7 @@ function BackfillPage() {
                 // Fetch all rows that have image_url set (repair covers previously-backfilled rows too).
                 const { data: allRows, error: fetchErr } = await supabase
                   .from("products")
-                  .select("id, sku, image_url")
+                  .select("id, sku, image_url, image_path")
                   .not("image_url", "is", null)
                   .order("sku", { ascending: true });
                 if (fetchErr) throw new Error(fetchErr.message);
@@ -218,7 +234,7 @@ function BackfillPage() {
                       const variants: Record<string, string> = {};
                       let ok = true;
                       for (const size of SIZES) {
-                        const path = variantPath(row.image_url, size.key);
+                        const path = variantPath(row, size.key);
                         const { data: signed, error: signErr } = await supabase.storage
                           .from(BUCKET)
                           .createSignedUrl(path, SIGN_EXPIRES);
