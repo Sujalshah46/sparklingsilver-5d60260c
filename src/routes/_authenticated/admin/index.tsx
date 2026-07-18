@@ -74,6 +74,7 @@ function AdminDashboard() {
         newEnquiries: enquiries.count ?? 0,
         lowStock,
         outOfStock,
+        missingVariantsCount: missingVariants.count ?? 0,
         recent: ordersRecent.data ?? [],
         lowStockList: (lowStockList.data ?? []).filter(
           (p: any) => (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0),
