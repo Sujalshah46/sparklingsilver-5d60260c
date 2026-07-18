@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
-import { resolveProductImage } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,19 @@ export const Route = createFileRoute("/product/$slug")({
         { name: "twitter:description", content: desc },
         { name: "twitter:image", content: img },
       ],
-      links: [{ rel: "canonical", href: url }],
+      links: [
+        { rel: "canonical", href: url },
+        ...(p?.image_url && p.image_url.includes("/storage/v1/")
+          ? [{
+              rel: "preload",
+              as: "image",
+              href: productThumbUrl(p.image_url, { width: 800, quality: 70 }),
+              imagesrcset: `${productThumbUrl(p.image_url, { width: 800, quality: 70 })} 800w, ${productThumbUrl(p.image_url, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(p.image_url, { width: 1600, quality: 72 })} 1600w`,
+              imagesizes: "(min-width:768px) 640px, 100vw",
+              fetchpriority: "high",
+            } as any]
+          : []),
+      ],
       scripts: p
         ? [
             {
@@ -100,6 +112,19 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
   const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
+  const rawImg = resolveProductImage(product.image_url);
+  const isRenderable = typeof rawImg === "string" && rawImg.includes("/storage/v1/");
+  const { imgSrc, imgSrcSet, lqipSrc } = useMemo(() => {
+    if (!isRenderable) return { imgSrc: rawImg, imgSrcSet: undefined as string | undefined, lqipSrc: rawImg };
+    return {
+      imgSrc: productThumbUrl(rawImg, { width: 800, quality: 70 }),
+      imgSrcSet: `${productThumbUrl(rawImg, { width: 800, quality: 70 })} 800w, ${productThumbUrl(rawImg, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(rawImg, { width: 1600, quality: 72 })} 1600w`,
+      // Same URL the grid tile just cached in the SW — paints instantly as LQIP.
+      lqipSrc: productThumbUrl(rawImg, { width: 300, quality: 55 }),
+    };
+  }, [rawImg, isRenderable]);
+  const [hiResLoaded, setHiResLoaded] = useState(false);
+
 
   const addToCart = useMutation({
     mutationFn: async () => {
@@ -125,15 +150,32 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <div className="aspect-square w-full overflow-hidden bg-secondary">
+      <div className="relative aspect-square w-full overflow-hidden bg-secondary">
+        {isRenderable && !hiResLoaded && (
+          <img
+            src={lqipSrc}
+            alt=""
+            aria-hidden
+            width={1024}
+            height={1024}
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ filter: "blur(6px)", transform: "scale(1.02)" }}
+          />
+        )}
         <img
-          src={resolveProductImage(product.image_url)}
+          src={imgSrc}
+          srcSet={imgSrcSet}
+          sizes="(min-width:768px) 640px, 100vw"
           alt={product.name}
           width={1024}
           height={1024}
-          className="h-full w-full object-cover"
+          decoding="async"
+          fetchPriority="high"
+          onLoad={() => setHiResLoaded(true)}
+          className="relative h-full w-full object-cover"
         />
       </div>
+
 
       <div className="space-y-5 p-4">
         <div>
