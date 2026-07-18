@@ -16,13 +16,18 @@ import heroDaily from "@/assets/hero-daily.jpg";
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
-  staleTime: 10 * 60_000,
+  staleTime: 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
     const categoriesRes = await supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order");
     const visibleIds = (categoriesRes.data ?? []).map((c) => c.id);
     const [products, allProducts] = await Promise.all([
-      supabase.from("products").select("*").in("category_id", visibleIds).or("is_new.eq.true,is_bestseller.eq.true").limit(24),
+      supabase
+        .from("products")
+        .select("*")
+        .eq("homepage_featured", true)
+        .order("homepage_featured_order", { ascending: true })
+        .limit(10),
       supabase.from("products").select("category_id").in("category_id", visibleIds),
     ]);
     const counts = new Map<string, number>();
@@ -31,13 +36,11 @@ const homeQuery = queryOptions({
       counts.set(row.category_id, (counts.get(row.category_id) ?? 0) + 1);
     }
     const total = (allProducts.data ?? []).length;
-    const categories = categoriesRes;
-    const totalRes = { count: total };
     return {
-      categories: categories.data ?? [],
+      categories: categoriesRes.data ?? [],
       products: (products.data ?? []) as CatalogueCardData[],
       counts,
-      total: totalRes.count ?? 0,
+      total,
     };
   },
 });
