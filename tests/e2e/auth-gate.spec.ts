@@ -26,14 +26,15 @@ const HOMEPAGE_MARKERS = [
 async function throttleIfSlow(page: import("@playwright/test").Page, projectName: string) {
   if (projectName !== "mobile-slow") return;
   const client = await page.context().newCDPSession(page);
-  // 6x CPU slowdown + Slow 3G-ish network.
-  await client.send("Emulation.setCPUThrottlingRate", { rate: 6 });
+  // 4x CPU slowdown + roughly Slow 3G. Enough to expose a hydration-flash,
+  // not so extreme that the initial HTML never arrives.
+  await client.send("Emulation.setCPUThrottlingRate", { rate: 4 });
   await client.send("Network.enable");
   await client.send("Network.emulateNetworkConditions", {
     offline: false,
-    downloadThroughput: (400 * 1024) / 8, // 400 Kbps
-    uploadThroughput: (400 * 1024) / 8,
-    latency: 400,
+    downloadThroughput: (750 * 1024) / 8, // 750 Kbps
+    uploadThroughput: (750 * 1024) / 8,
+    latency: 200,
   });
 }
 
