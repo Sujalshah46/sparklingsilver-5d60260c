@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
-import { useSuspenseInfiniteQuery, infiniteQueryOptions, useQuery } from "@tanstack/react-query";
+import { useSuspenseInfiniteQuery, infiniteQueryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
