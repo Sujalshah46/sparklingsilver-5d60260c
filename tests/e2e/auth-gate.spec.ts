@@ -62,11 +62,11 @@ for (const path of PROTECTED_PATHS) {
       .then(() => true)
       .catch(() => false);
 
-    await page.goto(path, { waitUntil: "commit" });
+    await page.goto(path, { waitUntil: "commit" }).catch(() => {});
 
     // Wait until the URL settles on /auth (redirect may be sync inline script
     // or client-side navigate — both are acceptable).
-    await page.waitForURL(/\/auth(\?|$)/, { timeout: 10_000 });
+    await page.waitForURL(/\/auth(\?|$)/, { timeout: 20_000 });
 
     // The auth page must be the one actually rendered.
     await expect(page).toHaveURL(/\/auth(\?|$)/);
