@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
-import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useState, useMemo, useEffect, useRef } from "react";
+import { useSuspenseInfiniteQuery, infiniteQueryOptions, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
@@ -10,20 +10,44 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
-const catalogQuery = queryOptions({
-  queryKey: ["catalogue"],
+const PAGE_SIZE = 30;
+
+async function fetchVisibleCategories() {
+  const { data } = await supabase
+    .from("categories")
+    .select("*")
+    .in("slug", ["antique", "cz"])
+    .order("sort_order");
+  return data ?? [];
+}
+
+const catalogInfiniteQuery = infiniteQueryOptions({
+  queryKey: ["catalogue-infinite"],
   staleTime: 10 * 60_000,
   gcTime: 30 * 60_000,
-  queryFn: async () => {
-    const categories = await supabase.from("categories").select("*").in("slug", ["antique", "cz"]).order("sort_order");
-    const visibleIds = (categories.data ?? []).map((c) => c.id);
-    const products = await supabase.from("products").select("*").in("category_id", visibleIds).limit(120);
+  initialPageParam: 0,
+  queryFn: async ({ pageParam }) => {
+    const from = (pageParam as number) * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
+    const categories = await fetchVisibleCategories();
+    const visibleIds = categories.map((c) => c.id);
+    const { data, count } = await supabase
+      .from("products")
+      .select("*", { count: "exact" })
+      .in("category_id", visibleIds)
+      .order("created_at", { ascending: false })
+      .range(from, to);
     return {
-      products: (products.data ?? []) as (CatalogueCardData & { category_id: string })[],
-      categories: categories.data ?? [],
+      products: (data ?? []) as (CatalogueCardData & { category_id: string })[],
+      categories,
+      total: count ?? 0,
+      page: pageParam as number,
     };
+  },
+  getNextPageParam: (last) => {
+    const loaded = (last.page + 1) * PAGE_SIZE;
+    return loaded < last.total ? last.page + 1 : undefined;
   },
 });
 
@@ -41,23 +65,34 @@ export const Route = createFileRoute("/catalogue")({
     ],
     links: [{ rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/catalogue" }],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(catalogQuery),
+  loader: ({ context }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery),
   component: Catalogue,
 });
 
 function Catalogue() {
-  const { data } = useSuspenseQuery(catalogQuery);
-  const whatsAppHref = whatsappUrl("Hi, I'd like full catalogue access.");
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useSuspenseInfiniteQuery(catalogInfiniteQuery);
+
+  const allProducts = useMemo(
+    () => data.pages.flatMap((p) => p.products),
+    [data.pages],
+  );
+  const total = data.pages[0]?.total ?? allProducts.length;
+  const categories = data.pages[0]?.categories ?? [];
+
   const [sort, setSort] = useState("newest");
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [purities, setPurities] = useState<string[]>([]);
-  
   const [view, setView] = useState<"grid2" | "grid1">("grid2");
   const [sortOpen, setSortOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
   const products = useMemo(() => {
-    let list = data.products;
+    let list = allProducts;
     if (categoryIds.length) list = list.filter((p) => p.category_id && categoryIds.includes(p.category_id));
     if (purities.length) list = list.filter((p) => purities.includes((p as unknown as { purity: string }).purity));
     switch (sort) {
@@ -65,12 +100,27 @@ function Catalogue() {
       case "weight-asc": list = [...list].sort((a, b) => Number(a.gross_weight) - Number(b.gross_weight)); break;
     }
     return list;
-  }, [data.products, categoryIds, purities, sort]);
+  }, [allProducts, categoryIds, purities, sort]);
+
+  // Infinite-scroll sentinel
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasNextPage) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting && !isFetchingNextPage) fetchNextPage();
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <MobileShell title="Catalogue">
       <div className="px-3 pt-4">
-        <h1 className="text-[16px] font-bold text-[#1A1A1A]">Catalogue ({products.length})</h1>
+        <h1 className="text-[16px] font-bold text-[#1A1A1A]">
+          Catalogue ({products.length}
+          {allProducts.length < total ? ` of ${total}` : ""})
+        </h1>
       </div>
 
       {/* Sort | Filter | View Style bar */}
@@ -100,6 +150,18 @@ function Catalogue() {
             {products.map((p, i) => (
               <CatalogueCard key={p.id} p={p as unknown as CatalogueCardData} priority={i < 4} />
             ))}
+          </div>
+        )}
+
+        {/* Infinite scroll sentinel + loader */}
+        {hasNextPage && (
+          <div ref={sentinelRef} className="py-8 text-center text-[12px] text-[#888]">
+            {isFetchingNextPage ? "Loading more…" : "Scroll for more"}
+          </div>
+        )}
+        {!hasNextPage && allProducts.length > PAGE_SIZE && (
+          <div className="py-6 text-center text-[11px] uppercase tracking-wider text-[#999]">
+            End of catalogue
           </div>
         )}
       </div>
@@ -145,7 +207,7 @@ function Catalogue() {
             <div>
               <Label className="font-semibold">Category</Label>
               <div className="mt-2 grid grid-cols-2 gap-2">
-                {data.categories.map((c) => (
+                {categories.map((c) => (
                   <label key={c.id} className="flex items-center gap-2 text-sm">
                     <Checkbox
                       checked={categoryIds.includes(c.id)}
