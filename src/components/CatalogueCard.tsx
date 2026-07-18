@@ -20,8 +20,8 @@ export type CatalogueCardData = {
 };
 
 export function CatalogueCard({
-  p, compact = false, showCart = true, priority = false, eager = false,
-}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean; priority?: boolean; eager?: boolean }) {
+  p, compact = false, showCart = true, priority = false,
+}: { p: CatalogueCardData; compact?: boolean; showCart?: boolean; priority?: boolean }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -109,9 +109,9 @@ export function CatalogueCard({
             srcSet={srcSet}
             sizes={compact ? "(min-width:1280px) 180px, (min-width:768px) 220px, 45vw" : "(min-width:1280px) 260px, (min-width:768px) 300px, 48vw"}
             alt={p.name}
-            loading={eager || priority ? "eager" : "lazy"}
+            loading={priority ? "eager" : "lazy"}
             decoding="async"
-            {...(priority ? { fetchPriority: "high" as const } : eager ? {} : { fetchPriority: "low" as const })}
+            {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
             onLoad={() => setImgLoaded(true)}
             onError={() => setImgLoaded(true)}
             className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
