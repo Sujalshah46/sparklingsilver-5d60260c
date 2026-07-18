@@ -10,9 +10,8 @@ import { AccessBanner } from "@/components/AccessBanner";
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
-import heroBridal from "@/assets/hero-bridal.jpg";
-import heroFestive from "@/assets/hero-festive.jpg";
-import heroDaily from "@/assets/hero-daily.jpg";
+
+
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
@@ -64,7 +63,6 @@ export const Route = createFileRoute("/")({
     ],
     links: [
       { rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/" },
-      { rel: "preload", as: "image", href: heroBridal, fetchPriority: "high" } as unknown as { rel: string; href: string },
     ],
     scripts: [
       {
@@ -84,11 +82,8 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const heroSlides = [
-  { src: heroBridal, collection: "Vibrant", to: "/category/necklaces" },
-  { src: heroFestive, collection: "Heritage", to: "/category/bangles" },
-  { src: heroDaily, collection: "Everyday", to: "/category/chains" },
-];
+
+
 
 function SectionHeader({ title, total, to }: { title: string; total?: number | string; to?: string }) {
   return (

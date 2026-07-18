@@ -34,8 +34,25 @@ export function VideoShowcase() {
     }
   };
 
+  // Only mount the <video> element once the showcase is in the viewport.
+  // Prevents ~40 MB of MP4 metadata fetches on first paint of the homepage.
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || inView) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) {
+        setInView(true);
+        io.disconnect();
+      }
+    }, { rootMargin: "200px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [inView]);
+
   return (
-    <section className="pt-5">
+    <section ref={sectionRef} className="pt-5">
       <div className="flex flex-col items-center px-6 text-center">
         
         <span className="mb-1 pl-[0.4em] text-[9px] font-semibold uppercase tracking-[0.4em] text-[#2C7A76]">
@@ -58,13 +75,21 @@ export function VideoShowcase() {
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
-        <VideoCard
-          key={index}
-          src={VIDEOS[index].src}
-          muted={muted}
-          onToggleMute={() => setMuted((m) => !m)}
-          onEnded={handleEnded}
-        />
+        {inView ? (
+          <VideoCard
+            key={index}
+            src={VIDEOS[index].src}
+            muted={muted}
+            onToggleMute={() => setMuted((m) => !m)}
+            onEnded={handleEnded}
+          />
+        ) : (
+          <div
+            className="relative shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
+            style={{ aspectRatio: "4 / 5", height: "min(65vh, 125vw)", maxWidth: "100%" }}
+            aria-hidden
+          />
+        )}
       </div>
 
       {VIDEOS.length > 1 && (
