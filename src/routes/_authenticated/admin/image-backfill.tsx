@@ -112,8 +112,14 @@ function BackfillPage() {
         .from(BUCKET)
         .upload(path, blob, { upsert: true, contentType: "image/webp", cacheControl: "31536000" });
       if (upErr) throw new Error(`upload ${size.key}: ${upErr.message}`);
-      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      variants[size.key] = pub.publicUrl;
+      // Bucket is private — sign with a long expiry (10 years) instead of
+      // relying on getPublicUrl (which returns a non-loading URL for
+      // private buckets).
+      const { data: signed, error: signErr } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, SIGN_EXPIRES);
+      if (signErr || !signed?.signedUrl) throw new Error(`sign ${size.key}: ${signErr?.message ?? "no url"}`);
+      variants[size.key] = signed.signedUrl;
     }
 
     const { error: updErr } = await supabase
