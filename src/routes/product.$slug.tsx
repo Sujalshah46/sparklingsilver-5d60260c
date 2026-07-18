@@ -112,6 +112,19 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
   const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
+  const rawImg = resolveProductImage(product.image_url);
+  const isRenderable = typeof rawImg === "string" && rawImg.includes("/storage/v1/");
+  const { imgSrc, imgSrcSet, lqipSrc } = useMemo(() => {
+    if (!isRenderable) return { imgSrc: rawImg, imgSrcSet: undefined as string | undefined, lqipSrc: rawImg };
+    return {
+      imgSrc: productThumbUrl(rawImg, { width: 800, quality: 70 }),
+      imgSrcSet: `${productThumbUrl(rawImg, { width: 800, quality: 70 })} 800w, ${productThumbUrl(rawImg, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(rawImg, { width: 1600, quality: 72 })} 1600w`,
+      // Same URL the grid tile just cached in the SW — paints instantly as LQIP.
+      lqipSrc: productThumbUrl(rawImg, { width: 300, quality: 55 }),
+    };
+  }, [rawImg, isRenderable]);
+  const [hiResLoaded, setHiResLoaded] = useState(false);
+
 
   const addToCart = useMutation({
     mutationFn: async () => {
