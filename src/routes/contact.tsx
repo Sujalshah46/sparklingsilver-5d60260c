@@ -18,8 +18,9 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
-const CONTACT_TITLE = "Contact Sparkling Silver — Visit, Call, WhatsApp";
-const CONTACT_DESC = "Visit our Mumbai showroom, call +91 99999 99999, or message us on WhatsApp. Open Mon–Sat, 10:30 AM – 8:30 PM.";
+const CONTACT_TITLE = "Contact Arika Multijewel Works — Visit, Call, WhatsApp";
+const CONTACT_DESC = "Visit our Singur, Hooghly factory or reach us on +91 93306 15237 (Factory) / +91 85858 31729 (Accounts). Email arikafactory@gmail.com.";
+
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
