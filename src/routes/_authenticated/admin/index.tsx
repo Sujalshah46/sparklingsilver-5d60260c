@@ -184,6 +184,7 @@ function AdminDashboard() {
             <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
             <QuickAction to="/admin/categories" icon={ImageIcon} label="Category images" />
             <QuickAction to="/admin/homepage-featured" icon={Star} label="Homepage New Arrival" badge={undefined} />
+            <QuickAction to="/admin/image-backfill" icon={Images} label="Image variants" badge={stats?.missingVariantsCount} />
             <QuickAction to="/admin/users" icon={UserCog} label="Buyer accounts" />
           </div>
         </div>
