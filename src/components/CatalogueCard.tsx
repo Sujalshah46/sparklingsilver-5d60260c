@@ -4,7 +4,7 @@ import { Heart, Minus, Plus } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export type CatalogueCardData = {
@@ -15,9 +15,11 @@ export type CatalogueCardData = {
   purity: string;
   metal?: string | null;
   gross_weight: number | string;
-  
+
   image_url: string | null;
+  image_variants?: ImageVariants;
 };
+
 
 export function CatalogueCard({
   p, compact = false, showCart = true, priority = false,
