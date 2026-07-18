@@ -16,6 +16,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeInitScript } from "@/components/ThemeToggle";
 
+const authGateScript = `(function(){try{var p=location.pathname;if(p.indexOf('/auth')===0||p.indexOf('/reset-password')===0||p.indexOf('/api/')===0)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
