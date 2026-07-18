@@ -63,7 +63,19 @@ export const Route = createFileRoute("/product/$slug")({
         { name: "twitter:description", content: desc },
         { name: "twitter:image", content: img },
       ],
-      links: [{ rel: "canonical", href: url }],
+      links: [
+        { rel: "canonical", href: url },
+        ...(p?.image_url && p.image_url.includes("/storage/v1/")
+          ? [{
+              rel: "preload",
+              as: "image",
+              href: productThumbUrl(p.image_url, { width: 800, quality: 70 }),
+              imagesrcset: `${productThumbUrl(p.image_url, { width: 800, quality: 70 })} 800w, ${productThumbUrl(p.image_url, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(p.image_url, { width: 1600, quality: 72 })} 1600w`,
+              imagesizes: "(min-width:768px) 640px, 100vw",
+              fetchpriority: "high",
+            } as any]
+          : []),
+      ],
       scripts: p
         ? [
             {
