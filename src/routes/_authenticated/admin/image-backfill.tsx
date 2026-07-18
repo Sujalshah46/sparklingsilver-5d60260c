@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   component: BackfillPage,
 });
 
-type Row = { id: string; sku: string; image_url: string | null; image_path: string | null };
+type Row = { id: string; sku: string; image_url: string | null };
 // 10 years — matches original product image signed-URL expiry.
 const SIGN_EXPIRES = 60 * 60 * 24 * 365 * 10;
 
@@ -71,21 +71,31 @@ function cleanBasename(value: string): string {
   return decoded;
 }
 
+function storagePathFromImageUrl(imageUrl: string): string | null {
+  const marker = `/${BUCKET}/`;
+  const markerIndex = imageUrl.indexOf(marker);
+  if (markerIndex === -1) return null;
+  const rawPath = imageUrl.slice(markerIndex + marker.length).split(/[?#]/)[0];
+  if (!rawPath) return null;
+  try { return decodeURIComponent(rawPath); } catch { return rawPath; }
+}
+
 function variantPath(row: Row, sizeKey: string): string {
-  const source = row.image_path?.trim() || row.image_url || row.sku;
+  const source = (row.image_url && storagePathFromImageUrl(row.image_url)) || row.image_url || row.sku;
   const decoded = cleanBasename(source);
   return `variants/${sizeKey}/${decoded}`;
 }
 
 async function signedSourceUrl(row: Row): Promise<string> {
-  if (row.image_path?.trim()) {
+  if (!row.image_url) throw new Error("no image_url");
+  const storagePath = storagePathFromImageUrl(row.image_url);
+  if (storagePath) {
     const { data, error } = await supabase.storage
       .from(BUCKET)
-      .createSignedUrl(row.image_path.trim(), 60 * 30);
+      .createSignedUrl(storagePath, 60 * 30);
     if (error || !data?.signedUrl) throw new Error(`source sign: ${error?.message ?? "no url"}`);
     return data.signedUrl;
   }
-  if (!row.image_url) throw new Error("no image_url");
   return row.image_url;
 }
 
@@ -107,7 +117,7 @@ function BackfillPage() {
     void (async () => {
       const { data, count } = await supabase
         .from("products")
-        .select("id, sku, image_url, image_path", { count: "exact" })
+        .select("id, sku, image_url", { count: "exact" })
         .is("image_variants", null)
         .not("image_url", "is", null)
         .order("sku", { ascending: true });
@@ -117,10 +127,13 @@ function BackfillPage() {
   }, []);
 
   async function processOne(row: Row): Promise<void> {
-    // Use a fresh signed URL from image_path whenever possible. The remaining
+    // Use a fresh signed URL parsed from image_url whenever possible. The remaining
     // belt rows have cache-buster strings appended to image_url (`?v=v7belt`),
     // which breaks the render/image URL rewrite and causes every load to fail.
-    const sourceUrl = row.image_path ? await signedSourceUrl(row) : productThumbUrl(await signedSourceUrl(row), { width: 2048, quality: 90 });
+    const freshSourceUrl = await signedSourceUrl(row);
+    const sourceUrl = freshSourceUrl.includes("/storage/v1/")
+      ? productThumbUrl(freshSourceUrl, { width: 2048, quality: 90 })
+      : freshSourceUrl;
     const img = await loadImage(sourceUrl);
 
     const variants: Record<string, string> = {};
@@ -216,7 +229,7 @@ function BackfillPage() {
                 // Fetch all rows that have image_url set (repair covers previously-backfilled rows too).
                 const { data: allRows, error: fetchErr } = await supabase
                   .from("products")
-                  .select("id, sku, image_url, image_path")
+                  .select("id, sku, image_url")
                   .not("image_url", "is", null)
                   .order("sku", { ascending: true });
                 if (fetchErr) throw new Error(fetchErr.message);
