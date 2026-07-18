@@ -18,8 +18,9 @@ const schema = z.object({
   message: z.string().trim().min(5).max(1000),
 });
 
-const CONTACT_TITLE = "Contact Sparkling Silver — Visit, Call, WhatsApp";
-const CONTACT_DESC = "Visit our Mumbai showroom, call +91 99999 99999, or message us on WhatsApp. Open Mon–Sat, 10:30 AM – 8:30 PM.";
+const CONTACT_TITLE = "Contact Arika Multijewel Works — Visit, Call, WhatsApp";
+const CONTACT_DESC = "Visit our Singur, Hooghly factory or reach us on +91 93306 15237 (Factory) / +91 85858 31729 (Accounts). Email arikafactory@gmail.com.";
+
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -37,26 +38,19 @@ export const Route = createFileRoute("/contact")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
-          name: "Sparkling Silver LLP",
+          name: "Arika Multijewel Works",
           url: "https://sparkling-jewellers-llp.lovable.app/contact",
-          telephone: "+91-99999-99999",
-          email: "hello@sparklingjewellers.in",
+          telephone: "+91-93306-15237",
+          email: "arikafactory@gmail.com",
           address: {
             "@type": "PostalAddress",
-            streetAddress: "123 Jewellers Lane, Zaveri Bazaar",
-            addressLocality: "Mumbai",
-            postalCode: "400001",
-            addressRegion: "MH",
+            streetAddress: "DAG No-390, Mouza No-50, Ratanpur Main Road, Singur",
+            addressLocality: "Ratanpur, Hooghly",
+            postalCode: "712409",
+            addressRegion: "WB",
             addressCountry: "IN",
           },
-          openingHoursSpecification: [
-            {
-              "@type": "OpeningHoursSpecification",
-              dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-              opens: "10:30",
-              closes: "20:30",
-            },
-          ],
+
         }),
       },
     ],
@@ -92,13 +86,28 @@ function ContactPage() {
         <h1 className="font-serif text-2xl font-bold">Get in Touch</h1>
 
         <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="font-serif text-base font-semibold">Visit Our Store</h2>
-          <div className="mt-3 space-y-2 text-sm">
-            <div className="flex items-start gap-2"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />123 Jewellers Lane, Zaveri Bazaar, Mumbai 400001</div>
-            <div className="flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />+91 99999 99999</div>
-            <div className="flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />hello@sparklingjewellers.in</div>
-            <div className="flex items-start gap-2"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />Mon–Sat: 10:30 AM – 8:30 PM</div>
+          <h2 className="font-serif text-base font-semibold">Visit Our Factory</h2>
+          <div className="mt-3 space-y-3 text-sm">
+            <div className="flex items-start gap-2">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />
+              <div>
+                <div className="font-medium">Arika Multijewel Works</div>
+                <div className="text-muted-foreground">Ground Floor, DAG No-390, Mouza No-50,<br />Ratanpur Main Road, Singur,<br />Ratanpur, Hooghly, West Bengal – 712409</div>
+                <div className="mt-1 text-xs text-muted-foreground">GST: 19CMLPS4598G1Z5</div>
+              </div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Factory (Sapnil &amp; Kuldeep)</div>
+              <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+919330615237" className="hover:underline">+91 93306 15237</a></div>
+              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikafactory@gmail.com" className="hover:underline break-all">arikafactory@gmail.com</a></div>
+            </div>
+            <div className="border-t border-border pt-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Accounts (Sunil)</div>
+              <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+918585831729" className="hover:underline">+91 85858 31729</a></div>
+              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikamultijewel@gmail.com" className="hover:underline break-all">arikamultijewel@gmail.com</a></div>
+            </div>
           </div>
+
           <Button asChild className="mt-4 w-full bg-[#25D366] hover:bg-[#1ebe5d] text-white">
             <a
               href={whatsAppHref}
