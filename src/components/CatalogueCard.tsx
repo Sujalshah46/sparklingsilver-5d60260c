@@ -63,9 +63,19 @@ export function CatalogueCard({
   });
 
   const rawSrc = resolveProductImage(p.image_url);
-  // Responsive thumbnails: small tile for 2-col mobile, larger for wider screens.
-  // Only rewrite for Supabase render URLs; local bundled assets pass through untouched.
+  // Prefer pre-resized WebP variants (uploaded via backfill). Fall back to
+  // on-the-fly transform URLs for legacy rows without variants.
   const { src, srcSet, detailPrefetchUrl } = useMemo(() => {
+    const variantThumb = productVariantUrl(p.image_variants, "thumb");
+    const variantCard = productVariantUrl(p.image_variants, "card");
+    const variantDetail = productVariantUrl(p.image_variants, "detail");
+    if (variantThumb && variantCard) {
+      return {
+        src: variantThumb,
+        srcSet: `${variantThumb} 1x, ${variantCard} 2x`,
+        detailPrefetchUrl: variantDetail ?? variantCard,
+      };
+    }
     const isRenderable = typeof rawSrc === "string" && rawSrc.includes("/storage/v1/");
     if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined, detailPrefetchUrl: undefined as string | undefined };
     const base = compact ? 220 : 300;
@@ -73,7 +83,8 @@ export function CatalogueCard({
     const w2x = productThumbUrl(rawSrc, { width: base * 2, quality: 55 });
     const detailPrefetchUrl = productThumbUrl(rawSrc, { width: 800, quality: 70 });
     return { src, srcSet: `${src} 1x, ${w2x} 2x`, detailPrefetchUrl };
-  }, [rawSrc, compact]);
+  }, [rawSrc, compact, p.image_variants]);
+
 
   const prefetchDetail = () => {
     if (!detailPrefetchUrl || typeof window === "undefined") return;
