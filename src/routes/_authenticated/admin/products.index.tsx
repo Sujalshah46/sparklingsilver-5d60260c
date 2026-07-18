@@ -87,6 +87,18 @@ function ProductsAdmin() {
           <Plus className="h-4 w-4" /> Add product
         </Link>
 
+        <Link
+          to="/admin/homepage-featured"
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-burgundy px-3 py-2 text-sm font-medium text-burgundy hover:bg-burgundy/5"
+        >
+          Manage Homepage New Arrival section
+        </Link>
+
+        <p className="rounded-lg bg-secondary px-3 py-2 text-[11px] text-muted-foreground">
+          <span className="font-semibold text-foreground">{newCount}</span> SKUs tagged New Arrival ·{" "}
+          <span className="font-semibold text-foreground">{bestCount}</span> SKUs tagged Bestseller
+        </p>
+
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or SKU" className="pl-9" />
