@@ -1,10 +1,10 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
-import { resolveProductImage } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
