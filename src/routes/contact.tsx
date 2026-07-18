@@ -90,20 +90,14 @@ function ContactPage() {
             <div className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" />
               <div>
-                <div className="font-medium">Arika Multijewel Works</div>
-                <div className="text-muted-foreground">Ground Floor, DAG No-390, Mouza No-50,<br />Ratanpur Main Road, Singur,<br />Ratanpur, Hooghly, West Bengal – 712409</div>
-                <div className="mt-1 text-xs text-muted-foreground">GST: 19CMLPS4598G1Z5</div>
+                <div className="font-medium">Sparkling Silver</div>
+                <div className="text-muted-foreground">Kolkata, West Bengal – 712409</div>
               </div>
             </div>
             <div className="border-t border-border pt-3">
               <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Factory (Sapnil &amp; Kuldeep)</div>
               <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+919330615237" className="hover:underline">+91 93306 15237</a></div>
-              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikafactory@gmail.com" className="hover:underline break-all">arikafactory@gmail.com</a></div>
-            </div>
-            <div className="border-t border-border pt-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Accounts (Sunil)</div>
-              <div className="mt-1 flex items-start gap-2"><Phone className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="tel:+918585831729" className="hover:underline">+91 85858 31729</a></div>
-              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:arikamultijewel@gmail.com" className="hover:underline break-all">arikamultijewel@gmail.com</a></div>
+              <div className="mt-1 flex items-start gap-2"><Mail className="mt-0.5 h-4 w-4 shrink-0 text-burgundy" /><a href="mailto:sparklingsilverjewellery@gmail.com" className="hover:underline break-all">sparklingsilverjewellery@gmail.com</a></div>
             </div>
           </div>
 
