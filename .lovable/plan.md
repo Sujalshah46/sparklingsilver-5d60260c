@@ -1,60 +1,61 @@
-# Site Speed Fixes — Lighthouse Audit Response
+# Fix Site Speed — Lighthouse-Driven Plan
 
-Three prioritized fixes based on the audit. Each has a concrete change and a verification step.
+Four confirmed issues from real Lighthouse audits. Fix in priority order.
 
----
+## 1. Homepage server response (6.5s → <600ms) [HIGHEST]
 
-## 1. Kill the 6.5s server response (highest priority)
+The homepage `head()` renders fast, but `homeQuery` runs a categories fetch + **N head-count queries per category** in sequence-of-parallel, plus a featured-products fetch. This is client-side already, so 6.5s TTFB points at **edge/SSR cold-start + serialized round-trips**.
 
-**Root cause (confirmed in code):** `src/routes/index.tsx` runs a `loader` that awaits three Supabase queries (`categories`, featured `products`, and a full `products` scan for counts) *during SSR* before any HTML is sent. On a cold Cloudflare Worker this easily produces the ~6.5s document latency the audit reports. Every other route with a loader has the same shape.
+Actions:
+- Replace per-category `head:true` count queries with a **single RPC** or a cached materialized value stored on the `categories` row (`product_count` int, updated by trigger on `products` insert/update/delete). One query instead of 1 + N.
+- Confirm `src/routes/index.tsx` has no `loader` (it doesn't — good). Verify `__root.tsx` doesn't block on auth network calls during SSR; the auth gate should be a client-only script (already is).
+- Add `staleTime: 5 * 60_000` on `homeQuery` so navigations back to `/` are instant.
+- Check `/category/$slug` and `/category/$slug/$sub` loaders — move any Supabase reads out of the loader into `useSuspenseQuery` in the component so the HTML shell streams immediately.
 
-**Changes:**
-- **Homepage:** remove the SSR loader. Convert `homeQuery` to client-only `useSuspenseQuery` inside the component (or `useQuery` + skeleton) so the HTML shell is returned immediately and Supabase runs in the browser in parallel with the JS bundle.
-- **Category counts query:** replace the "fetch every product row just to count" scan with a single grouped count (RPC or `select('category_id', { count: 'exact', head: true })` per category, run in parallel). This is the heaviest query in the loader.
-- **Audit other public routes** (`catalogue`, `category.$slug.*`, `product.$slug`) — for each: keep the loader only if it's cheap and cached; otherwise drop to client-fetch with suspense. Protected `_authenticated/*` routes already gate on auth so no change needed.
-- **Add HTTP cache headers** on the SSR response for public routes (`Cache-Control: public, s-maxage=60, stale-while-revalidate=300`) so repeat/edge hits skip the render entirely.
+## 2. Supabase image transforms not resizing [HIGHEST]
 
-**Verify:** rerun Lighthouse; target `document-latency` < 600ms. Also check TTFB in DevTools Network on a hard reload.
+Live-tested: `?width=300` still returns 2048×2048. The add-on is **not available in Lovable Cloud's UI** (confirmed with user last turn). Option 1 is off the table.
 
----
+Actions (Option 2 — upload-time variants):
+- Migration: add `image_variants jsonb` on `products` (`{thumb: url, card: url, detail: url}`).
+- Update admin upload flow (`src/routes/_authenticated/admin/*`) to generate 3 WebPs at upload time (300w/600w/1200w, q=75) using browser `canvas`/`createImageBitmap`, upload all three to storage, store URLs in `image_variants`.
+- Update `productThumbUrl()` / `productCardUrl()` / `productDetailUrl()` in `src/lib/product-images.ts` to prefer `image_variants[size]` when present, fall back to current passthrough URL.
+- Wire `srcset` in `CatalogueCard` and product detail to use the variant URLs.
+- Build a **one-time backfill admin page** at `/admin/image-backfill`: paginates through all ~2000 products missing variants, downloads original, generates 3 WebPs client-side, uploads, updates row. Resumable, progress bar, batch size 20.
 
-## 2. Supabase image transformations returning originals
+## 3. Fix layout shift (CLS 0.29 → <0.1) [MEDIUM]
 
-**Investigation first (before code changes):**
-- Confirm from a Network panel screenshot that a request like `.../render/image/sign/...?width=440&quality=55` returns `content-length` ≈ full original (300–700KB) and `content-type: image/jpeg` unchanged. Check response headers for any Supabase error hint.
-- Image Transformations is a paid Supabase add-on. On Lovable Cloud this may not be enabled on the current plan. **I'll report back which case applies** before doing large work here.
+Product cards jump as images load.
 
-**If transforms are enabled but the URL shape is wrong:** fix the rewrite in `src/lib/product-images.ts` (`productThumbUrl`) — verify `render/image/sign` vs current SDK's expected path.
+Actions:
+- In `CatalogueCard.tsx`, wrap the `<img>` in a container with explicit `aspect-ratio: 1/1` (product images are square) and `width:100%`. Set `width` and `height` attributes on the `<img>` element itself (e.g. `width={600} height={600}`) so the browser reserves space before load.
+- Apply the same to product detail hero and any grid using `ProductImage`.
 
-**If transforms are unavailable (plan limit):** flag it to you and implement the fallback:
-- Add a one-time backfill job (admin route) that, for each existing product image, generates three fixed variants (`thumb-300.webp`, `card-600.webp`, `detail-1200.webp`) via `sharp`-equivalent (Worker-safe: use `@cf-wasm/photon` or an edge image API) and stores them alongside the original in the same bucket.
-- Update the upload pipeline in `admin/products` and `admin/inventory.import` to write the three variants at upload time going forward.
-- Change `productThumbUrl` / `CatalogueCard` to point at the pre-sized variant matching the requested width instead of appending transform params.
+## 4. Trim unused JS (639 KiB) [LOW]
 
-**Verify:** homepage product image transfer size in DevTools drops to ~20–60KB per card.
+Actions:
+- Audit `src/routes/__root.tsx` and `src/routes/index.tsx` for eager imports that belong in admin-only or product-detail-only routes (admin components, chart libs, heavy form libs).
+- Convert admin dashboard sub-pages to lazy routes (`.lazy.tsx`) where they aren't already.
+- Check if any large icon set (`lucide-react`) is being imported wholesale anywhere — only named imports.
+- Deprioritize until #1–#3 are shipped and re-measured.
 
----
+## Verification
 
-## 3. Trim unused JavaScript
-
-Lower priority — do after #1 and #2 land and re-measure.
-
-- Move admin-only imports out of shared chunks. Audit `src/routes/_authenticated/admin/*` for any util currently re-exported through a barrel that pulls admin code into the public bundle.
-- Confirm `autoCodeSplitting` is doing its job per-route (it is on by default); the 79% unused on `client-*.js` suggests a shared vendor chunk with heavy libs used only on admin/checkout. Candidates to audit: `@dnd-kit/*`, chart libs, rich-text editors, `xlsx` — dynamic-import these inside the admin routes that use them instead of top-level import.
-- Rebuild and re-run Lighthouse; check `unused-javascript` bytes.
-
----
-
-## Out of scope (per your instructions — already correct)
-
-Lazy-loading, `srcset`/`sizes`, WebP for pre-built assets. Not touching.
-
----
+After each section:
+- **#1**: measure homepage TTFB with `curl -o /dev/null -s -w '%{time_starttransfer}\n' https://sparklingsilver.lovable.app/`
+- **#2**: `curl -sI <thumb-url> | grep -i content-length` should show tens of KB, not hundreds. Verify on homepage + `/category/antique/long-set`.
+- **#3**: Chrome DevTools Performance → CLS metric on a category page.
+- **#4**: Compare `dist/assets/index-*.js` sizes before/after.
+- Final: fresh Lighthouse on homepage AND category page, share vs baseline (0.71 / 0.62).
 
 ## Order of execution
 
-1. Ship #1 (loader → client fetch + count query fix + cache headers). Re-measure.
-2. Diagnose #2, report Supabase plan status, then either fix URL or build variant pipeline. Re-measure.
-3. Ship #3 (dynamic-import admin-only deps). Re-measure and share final Lighthouse score.
+1. Ship #3 first (small, isolated, immediate UX win).
+2. Ship #1 (migration + trigger + query simplification).
+3. Ship #2 (biggest surface area — migration, upload flow, backfill page, srcset rewiring). Approve at pilot page before running full backfill.
+4. Ship #4 last after re-measuring — may already be acceptable.
 
-Approve and I'll start with step 1.
+## Callouts
+
+- **#2 will re-encode ~2000 images.** Since variants are derived from the current 2048×2048 hero (not from raw source), the v7 pipeline output, logo overlays, and bust framing are preserved. No visual regression risk on the displayed variant sizes.
+- If Lovable Cloud later exposes Image Transformations as a toggle, we can remove the variant system and revert to URL params — the fallback in `productThumbUrl()` makes that a one-line change.

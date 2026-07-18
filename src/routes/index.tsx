@@ -14,15 +14,17 @@ import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-imag
 
 type CategoryRow = { id: string; slug: string; name: string; sort_order?: number | null; image_url?: string | null };
 
+const HOME_SLUGS = ["antique", "cz"] as const;
+
 const homeQuery = queryOptions({
   queryKey: ["home"],
-  staleTime: 60_000,
+  staleTime: 5 * 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
-    // Parallel: featured products + visible categories. Do NOT scan the full
-    // products table just to derive per-category counts — cheap head-count
-    // queries per visible category in parallel are dramatically smaller.
-    const [featuredRes, categoriesRes] = await Promise.all([
+    // 3 parallel round-trips total: featured products, visible categories,
+    // and a single RPC returning all category counts (replaces N head-count
+    // queries).
+    const [featuredRes, categoriesRes, countsRes] = await Promise.all([
       supabase
         .from("products")
         .select("*")
@@ -32,22 +34,18 @@ const homeQuery = queryOptions({
       supabase
         .from("categories")
         .select("id,slug,name,sort_order,image_url")
-        .in("slug", ["antique", "cz"])
+        .in("slug", HOME_SLUGS as unknown as string[])
         .order("sort_order"),
+      supabase.rpc("get_category_product_counts", { _slugs: HOME_SLUGS as unknown as string[] }),
     ]);
     const categories = (categoriesRes.data ?? []) as CategoryRow[];
-    const countPairs = await Promise.all(
-      categories.map(async (c) => {
-        const { count } = await supabase
-          .from("products")
-          .select("id", { count: "exact", head: true })
-          .eq("category_id", c.id);
-        return [c.id, count ?? 0] as const;
-      }),
+    const countRows = (countsRes.data ?? []) as Array<{ slug: string; product_count: number }>;
+    const countsBySlug = new Map(countRows.map((r) => [r.slug, Number(r.product_count) || 0]));
+    const counts = new Map<string, number>(
+      categories.map((c) => [c.id, countsBySlug.get(c.slug) ?? 0]),
     );
-    const counts = new Map<string, number>(countPairs);
     let total = 0;
-    for (const [, n] of countPairs) total += n;
+    for (const n of counts.values()) total += n;
     return {
       categories,
       products: (featuredRes.data ?? []) as CatalogueCardData[],
@@ -56,6 +54,7 @@ const homeQuery = queryOptions({
     };
   },
 });
+
 
 const HOME_TITLE = "Sparkling Silver LLP — Premium Indian Jewellery";
 const HOME_DESC = "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.";

@@ -436,6 +436,7 @@ export type Database = {
           id: string
           image_path: string | null
           image_url: string | null
+          image_variants: Json | null
           images: string[] | null
           import_status: string
           in_stock: boolean | null
@@ -477,6 +478,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           image_url?: string | null
+          image_variants?: Json | null
           images?: string[] | null
           import_status?: string
           in_stock?: boolean | null
@@ -518,6 +520,7 @@ export type Database = {
           id?: string
           image_path?: string | null
           image_url?: string | null
+          image_variants?: Json | null
           images?: string[] | null
           import_status?: string
           in_stock?: boolean | null
@@ -796,7 +799,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_category_product_counts: {
+        Args: { _slugs: string[] }
+        Returns: {
+          product_count: number
+          slug: string
+        }[]
+      }
+      get_subcategory_product_counts: {
+        Args: { _category_id: string }
+        Returns: {
+          product_count: number
+          subcategory_id: string
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "customer"
