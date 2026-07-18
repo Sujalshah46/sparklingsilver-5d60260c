@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { productThumbUrl } from "@/lib/product-images";
+import { repairImageVariants } from "@/lib/image-variants.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
@@ -12,6 +14,8 @@ export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
 });
 
 type Row = { id: string; sku: string; image_url: string | null };
+// 10 years — matches original product image signed-URL expiry.
+const SIGN_EXPIRES = 60 * 60 * 24 * 365 * 10;
 
 const SIZES: Array<{ key: "thumb" | "card" | "detail"; width: number; quality: number }> = [
   { key: "thumb", width: 300, quality: 75 },
@@ -57,10 +61,14 @@ async function canvasToWebp(
   });
 }
 
-function variantPath(originalPath: string, sizeKey: string): string {
-  // original: "AR(BJ)-09.jpg" or "sub/AR(BJ)-09.jpg" → "variants/{size}/AR(BJ)-09.webp"
-  const base = originalPath.split("/").pop() ?? originalPath;
-  const stem = base.replace(/\.[^.]+$/, "");
+function variantPath(originalImageUrl: string, sizeKey: string): string {
+  // Strip query string BEFORE splitting on `/`, otherwise "?token=..." bleeds
+  // into the filename. Then swap the extension to `.webp`.
+  const beforeQuery = originalImageUrl.split(/[?#]/)[0] ?? originalImageUrl;
+  const base = beforeQuery.split("/").pop() ?? beforeQuery;
+  let decoded = base;
+  try { decoded = decodeURIComponent(base); } catch { /* keep raw */ }
+  const stem = decoded.replace(/\.[^.]+$/, "");
   return `variants/${sizeKey}/${stem}.webp`;
 }
 
@@ -72,6 +80,9 @@ function BackfillPage() {
   const [running, setRunning] = useState(false);
   const [currentSku, setCurrentSku] = useState<string>("");
   const [batchSize] = useState(5);
+  const [repairing, setRepairing] = useState(false);
+  const [repairResult, setRepairResult] = useState<{ updated: number; failed: number } | null>(null);
+  const repair = useServerFn(repairImageVariants);
   const abortRef = useRef(false);
 
   useEffect(() => {
@@ -104,8 +115,14 @@ function BackfillPage() {
         .from(BUCKET)
         .upload(path, blob, { upsert: true, contentType: "image/webp", cacheControl: "31536000" });
       if (upErr) throw new Error(`upload ${size.key}: ${upErr.message}`);
-      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(path);
-      variants[size.key] = pub.publicUrl;
+      // Bucket is private — sign with a long expiry (10 years) instead of
+      // relying on getPublicUrl (which returns a non-loading URL for
+      // private buckets).
+      const { data: signed, error: signErr } = await supabase.storage
+        .from(BUCKET)
+        .createSignedUrl(path, SIGN_EXPIRES);
+      if (signErr || !signed?.signedUrl) throw new Error(`sign ${size.key}: ${signErr?.message ?? "no url"}`);
+      variants[size.key] = signed.signedUrl;
     }
 
     const { error: updErr } = await supabase
@@ -163,7 +180,7 @@ function BackfillPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {!running ? (
             <Button onClick={runBatch} disabled={rows.length === 0}>
               {rows.length === 0 ? "All done" : `Start (${rows.length} remaining)`}
@@ -173,7 +190,33 @@ function BackfillPage() {
               Pause
             </Button>
           )}
+          <Button
+            variant="outline"
+            disabled={repairing || running}
+            onClick={async () => {
+              setRepairing(true);
+              setRepairResult(null);
+              try {
+                const r = await repair();
+                setRepairResult({ updated: r.updated, failed: r.failed });
+                toast.success(`Repaired ${r.updated} · Failed ${r.failed}`);
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Repair failed");
+              } finally {
+                setRepairing(false);
+              }
+            }}
+          >
+            {repairing ? "Repairing URLs..." : "Repair variant URLs"}
+          </Button>
         </div>
+
+        {repairResult && (
+          <p className="text-xs text-gray-600">
+            Repair pass: updated <strong>{repairResult.updated}</strong> rows,
+            failed <strong>{repairResult.failed}</strong>.
+          </p>
+        )}
 
         {failed.length > 0 && (
           <div className="rounded-lg border bg-white p-4 text-xs">
