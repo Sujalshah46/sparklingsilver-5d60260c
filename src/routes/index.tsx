@@ -10,9 +10,8 @@ import { AccessBanner } from "@/components/AccessBanner";
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
-import heroBridal from "@/assets/hero-bridal.jpg";
-import heroFestive from "@/assets/hero-festive.jpg";
-import heroDaily from "@/assets/hero-daily.jpg";
+
+
 
 const homeQuery = queryOptions({
   queryKey: ["home"],
