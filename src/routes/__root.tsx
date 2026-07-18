@@ -135,15 +135,41 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+const PUBLIC_PATH_PREFIXES = ["/auth", "/reset-password", "/api/"];
+
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
 
   useEffect(() => {
+    let cancelled = false;
+
+    const enforceAuth = async () => {
+      const pathname = window.location.pathname;
+      if (isPublicPath(pathname)) return;
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+      if (!data.session) {
+        const redirectTo = window.location.pathname + window.location.search;
+        router.navigate({ to: "/auth", search: { redirect: redirectTo }, replace: true });
+      }
+    };
+    enforceAuth();
+
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
+      if (event === "SIGNED_OUT") {
+        const pathname = window.location.pathname;
+        if (!isPublicPath(pathname)) {
+          router.navigate({ to: "/auth", replace: true });
+        }
+      }
     });
     const onRejection = (e: PromiseRejectionEvent) => {
       console.error("[unhandledrejection]", e.reason);
@@ -156,6 +182,7 @@ function RootComponent() {
     window.addEventListener("unhandledrejection", onRejection);
     window.addEventListener("error", onError);
     return () => {
+      cancelled = true;
       sub.subscription.unsubscribe();
       window.removeEventListener("unhandledrejection", onRejection);
       window.removeEventListener("error", onError);
