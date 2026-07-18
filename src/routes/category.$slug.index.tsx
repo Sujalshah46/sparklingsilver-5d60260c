@@ -46,9 +46,11 @@ const categoryQuery = (slug: string) =>
         }),
       );
 
+      const visibleSubcategories = (subcategories ?? []).filter((s) => (counts[s.id] ?? 0) > 0);
+
       return {
         category: cat,
-        subcategories: (subcategories ?? []) as Subcategory[],
+        subcategories: visibleSubcategories as Subcategory[],
         subcategoryCounts: counts,
       };
     },
