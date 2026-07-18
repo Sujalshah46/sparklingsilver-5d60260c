@@ -56,6 +56,21 @@ function ProductsAdmin() {
     }
   }
 
+  async function handleFlag(id: string, field: "is_new" | "is_bestseller", value: boolean) {
+    try {
+      await toggleFlag({ data: { id, field, value } });
+      qc.setQueryData(["admin-products"], (prev: any) =>
+        (prev ?? []).map((p: any) => (p.id === id ? { ...p, [field]: value } : p)),
+      );
+      qc.invalidateQueries({ queryKey: ["home"] });
+    } catch (e) {
+      toast.error(getErrorMessage(e));
+    }
+  }
+
+  const newCount = (products ?? []).filter((p: any) => p.is_new).length;
+  const bestCount = (products ?? []).filter((p: any) => p.is_bestseller).length;
+
   return (
     <MobileShell title="Products">
       <div className="space-y-3 p-4">
