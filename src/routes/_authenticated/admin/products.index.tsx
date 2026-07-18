@@ -143,20 +143,42 @@ function ProductsAdmin() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-2 flex justify-end gap-2">
-                    <Link
-                      to="/admin/products/$id"
-                      params={{ id: p.id }}
-                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-gold"
-                    >
-                      <Pencil className="h-3 w-3" /> Edit
-                    </Link>
-                    <button
-                      onClick={() => handleDelete(p.id, p.name)}
-                      className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] text-destructive hover:bg-destructive/5"
-                    >
-                      <Trash2 className="h-3 w-3" /> Delete
-                    </button>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={!!p.is_new}
+                          onChange={(e) => handleFlag(p.id, "is_new", e.target.checked)}
+                          className="h-3.5 w-3.5 accent-burgundy"
+                        />
+                        New Arrival
+                      </label>
+                      <label className="flex cursor-pointer items-center gap-1">
+                        <input
+                          type="checkbox"
+                          checked={!!p.is_bestseller}
+                          onChange={(e) => handleFlag(p.id, "is_bestseller", e.target.checked)}
+                          className="h-3.5 w-3.5 accent-burgundy"
+                        />
+                        Bestseller
+                      </label>
+                    </div>
+                    <div className="flex gap-2">
+                      <Link
+                        to="/admin/products/$id"
+                        params={{ id: p.id }}
+                        className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-[11px] hover:border-gold"
+                      >
+                        <Pencil className="h-3 w-3" /> Edit
+                      </Link>
+                      <button
+                        onClick={() => handleDelete(p.id, p.name)}
+                        className="inline-flex items-center gap-1 rounded-md border border-destructive/30 px-2 py-1 text-[11px] text-destructive hover:bg-destructive/5"
+                      >
+                        <Trash2 className="h-3 w-3" /> Delete
+                      </button>
+                    </div>
                   </div>
                 </li>
               );
