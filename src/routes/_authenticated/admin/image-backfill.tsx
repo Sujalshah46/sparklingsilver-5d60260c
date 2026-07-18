@@ -61,10 +61,14 @@ async function canvasToWebp(
   });
 }
 
-function variantPath(originalPath: string, sizeKey: string): string {
-  // original: "AR(BJ)-09.jpg" or "sub/AR(BJ)-09.jpg" → "variants/{size}/AR(BJ)-09.webp"
-  const base = originalPath.split("/").pop() ?? originalPath;
-  const stem = base.replace(/\.[^.]+$/, "");
+function variantPath(originalImageUrl: string, sizeKey: string): string {
+  // Strip query string BEFORE splitting on `/`, otherwise "?token=..." bleeds
+  // into the filename. Then swap the extension to `.webp`.
+  const beforeQuery = originalImageUrl.split(/[?#]/)[0] ?? originalImageUrl;
+  const base = beforeQuery.split("/").pop() ?? beforeQuery;
+  let decoded = base;
+  try { decoded = decodeURIComponent(base); } catch { /* keep raw */ }
+  const stem = decoded.replace(/\.[^.]+$/, "");
   return `variants/${sizeKey}/${stem}.webp`;
 }
 
