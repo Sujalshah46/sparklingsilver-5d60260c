@@ -7,7 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog, Star } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog, Star, Images } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
@@ -29,7 +29,7 @@ function AdminDashboard() {
       const since7 = new Date(Date.now() - 7 * 86400000).toISOString();
       const sinceToday = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
 
-      const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList] = await Promise.all([
+      const [ordersAll, ordersRecent, products, customers, enquiries, inv, lowStockList, missingVariants] = await Promise.all([
         supabase.from("orders").select("id, status, created_at"),
         supabase
           .from("orders")
@@ -45,6 +45,11 @@ function AdminDashboard() {
           .select("id, name, sku, stock_quantity, low_stock_threshold, image_url")
           .order("stock_quantity", { ascending: true })
           .limit(20),
+        supabase
+          .from("products")
+          .select("id", { count: "exact", head: true })
+          .is("image_variants", null)
+          .not("image_url", "is", null),
       ]);
 
       const rows = ordersAll.data ?? [];
@@ -69,6 +74,7 @@ function AdminDashboard() {
         newEnquiries: enquiries.count ?? 0,
         lowStock,
         outOfStock,
+        missingVariantsCount: missingVariants.count ?? 0,
         recent: ordersRecent.data ?? [],
         lowStockList: (lowStockList.data ?? []).filter(
           (p: any) => (p.stock_quantity ?? 0) <= (p.low_stock_threshold ?? 0),
@@ -137,6 +143,24 @@ function AdminDashboard() {
           </Button>
         </div>
 
+        {(stats?.missingVariantsCount ?? 0) > 0 && (
+          <Link
+            to="/admin/image-backfill"
+            className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900 transition hover:border-amber-500"
+          >
+            <Images className="mt-0.5 h-5 w-5 shrink-0" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold">
+                {stats!.missingVariantsCount} product{stats!.missingVariantsCount === 1 ? "" : "s"} need pre-resized image variants
+              </p>
+              <p className="text-[11px] leading-snug">
+                New uploads ship without WebP variants and load slowly. Run the backfill to generate 300w/600w/1200w WebPs.
+              </p>
+            </div>
+            <span className="rounded-md bg-amber-900 px-2 py-1 text-[11px] font-semibold text-white">Fix</span>
+          </Link>
+        )}
+
         {/* Stat grid */}
         <div className="grid grid-cols-2 gap-3">
           {statCards.map((s) => (
@@ -160,6 +184,7 @@ function AdminDashboard() {
             <QuickAction to="/admin/inventory" icon={Boxes} label="Inventory" badge={(stats?.lowStock ?? 0) + (stats?.outOfStock ?? 0)} />
             <QuickAction to="/admin/categories" icon={ImageIcon} label="Category images" />
             <QuickAction to="/admin/homepage-featured" icon={Star} label="Homepage New Arrival" badge={undefined} />
+            <QuickAction to="/admin/image-backfill" icon={Images} label="Image variants" badge={stats?.missingVariantsCount} />
             <QuickAction to="/admin/users" icon={UserCog} label="Buyer accounts" />
           </div>
         </div>
