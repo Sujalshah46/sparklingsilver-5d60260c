@@ -39,6 +39,7 @@ import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminImageQualityPreviewRouteImport } from './routes/_authenticated/admin/image-quality-preview'
+import { Route as AuthenticatedAdminImageBackfillRouteImport } from './routes/_authenticated/admin/image-backfill'
 import { Route as AuthenticatedAdminHomepageFeaturedRouteImport } from './routes/_authenticated/admin/homepage-featured'
 import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_authenticated/admin/categories'
 import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products.index'
@@ -205,6 +206,12 @@ const AuthenticatedAdminImageQualityPreviewRoute =
     path: '/image-quality-preview',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminImageBackfillRoute =
+  AuthenticatedAdminImageBackfillRouteImport.update({
+    id: '/image-backfill',
+    path: '/image-backfill',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminHomepageFeaturedRoute =
   AuthenticatedAdminHomepageFeaturedRouteImport.update({
     id: '/homepage-featured',
@@ -288,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
@@ -328,6 +336,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/scan': typeof AuthenticatedAdminScanRoute
@@ -370,6 +379,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
+  '/_authenticated/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/_authenticated/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/admin/categories'
     | '/admin/homepage-featured'
+    | '/admin/image-backfill'
     | '/admin/image-quality-preview'
     | '/admin/inventory'
     | '/admin/products'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/admin/categories'
     | '/admin/homepage-featured'
+    | '/admin/image-backfill'
     | '/admin/image-quality-preview'
     | '/admin/inventory'
     | '/admin/scan'
@@ -494,6 +506,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/homepage-featured'
+    | '/_authenticated/admin/image-backfill'
     | '/_authenticated/admin/image-quality-preview'
     | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/products'
@@ -744,6 +757,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminImageQualityPreviewRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/image-backfill': {
+      id: '/_authenticated/admin/image-backfill'
+      path: '/image-backfill'
+      fullPath: '/admin/image-backfill'
+      preLoaderRoute: typeof AuthenticatedAdminImageBackfillRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/homepage-featured': {
       id: '/_authenticated/admin/homepage-featured'
       path: '/homepage-featured'
@@ -856,6 +876,7 @@ const AuthenticatedAdminProductsRouteWithChildren =
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminHomepageFeaturedRoute: typeof AuthenticatedAdminHomepageFeaturedRoute
+  AuthenticatedAdminImageBackfillRoute: typeof AuthenticatedAdminImageBackfillRoute
   AuthenticatedAdminImageQualityPreviewRoute: typeof AuthenticatedAdminImageQualityPreviewRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRouteWithChildren
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
@@ -871,6 +892,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCategoriesRoute: AuthenticatedAdminCategoriesRoute,
     AuthenticatedAdminHomepageFeaturedRoute:
       AuthenticatedAdminHomepageFeaturedRoute,
+    AuthenticatedAdminImageBackfillRoute: AuthenticatedAdminImageBackfillRoute,
     AuthenticatedAdminImageQualityPreviewRoute:
       AuthenticatedAdminImageQualityPreviewRoute,
     AuthenticatedAdminInventoryRoute:

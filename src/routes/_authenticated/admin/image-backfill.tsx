@@ -146,7 +146,7 @@ function BackfillPage() {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <MobileShell active="admin">
+    <MobileShell title="Image Backfill">
       <div className="mx-auto max-w-3xl space-y-4 p-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-bold">Image Backfill</h1>
