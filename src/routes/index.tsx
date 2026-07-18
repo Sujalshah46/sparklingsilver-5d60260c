@@ -91,7 +91,7 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
-  loader: ({ context }) => context.queryClient.ensureQueryData(homeQuery),
+  loader: undefined,
   component: Home,
 });
 
