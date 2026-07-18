@@ -1,12 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { productThumbUrl } from "@/lib/product-images";
-import { repairImageVariants } from "@/lib/image-variants.functions";
+
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
   head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
