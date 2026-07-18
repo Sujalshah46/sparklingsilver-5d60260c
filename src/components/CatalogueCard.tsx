@@ -96,6 +96,8 @@ export function CatalogueCard({
             srcSet={srcSet}
             sizes={compact ? "(min-width:1280px) 180px, (min-width:768px) 220px, 45vw" : "(min-width:1280px) 260px, (min-width:768px) 300px, 48vw"}
             alt={p.name}
+            width={600}
+            height={600}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
             {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
@@ -104,6 +106,7 @@ export function CatalogueCard({
           />
 
         </div>
+
       </Link>
       <div className={`space-y-0.5 px-2 py-2 text-center ${compact ? "text-[10.5px]" : "text-[11px]"} text-[#555]`}>
         <p className="text-[12.5px] font-bold tracking-wide text-[#1A1A1A]">{p.sku}</p>
