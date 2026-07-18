@@ -509,4 +509,33 @@ export function productLqipUrl(url: string): string {
   return `${out}${sep}width=24&quality=20&resize=contain`;
 }
 
+export type ImageVariants = {
+  thumb?: string; // ~300w
+  card?: string;  // ~600w
+  detail?: string; // ~1200w
+} | null | undefined;
+
+/**
+ * Pick a pre-resized WebP variant when available. Falls back to the raw
+ * image_url (which callers can then pass to productThumbUrl for the legacy
+ * on-the-fly transform path).
+ */
+export function productVariantUrl(
+  variants: ImageVariants,
+  size: "thumb" | "card" | "detail",
+): string | undefined {
+  if (!variants || typeof variants !== "object") return undefined;
+  const v = variants as Record<string, unknown>;
+  const preferred = v[size];
+  if (typeof preferred === "string" && preferred) return preferred;
+  // Fallback chain: thumb -> card -> detail
+  const order: Array<"thumb" | "card" | "detail"> = ["thumb", "card", "detail"];
+  for (const s of order) {
+    const u = v[s];
+    if (typeof u === "string" && u) return u;
+  }
+  return undefined;
+}
+
+
 
