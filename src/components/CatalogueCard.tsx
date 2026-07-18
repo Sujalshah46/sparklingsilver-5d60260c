@@ -63,14 +63,23 @@ export function CatalogueCard({
   const rawSrc = resolveProductImage(p.image_url);
   // Responsive thumbnails: small tile for 2-col mobile, larger for wider screens.
   // Only rewrite for Supabase render URLs; local bundled assets pass through untouched.
-  const { src, srcSet } = useMemo(() => {
+  const { src, srcSet, detailPrefetchUrl } = useMemo(() => {
     const isRenderable = typeof rawSrc === "string" && rawSrc.includes("/storage/v1/");
-    if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined };
+    if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined, detailPrefetchUrl: undefined as string | undefined };
     const base = compact ? 220 : 300;
     const src = productThumbUrl(rawSrc, { width: base, quality: 55 });
     const w2x = productThumbUrl(rawSrc, { width: base * 2, quality: 55 });
-    return { src, srcSet: `${src} 1x, ${w2x} 2x` };
+    // Detail-page image, prefetched on hover/touch so tapping the SKU paints instantly.
+    const detailPrefetchUrl = productThumbUrl(rawSrc, { width: 800, quality: 70 });
+    return { src, srcSet: `${src} 1x, ${w2x} 2x`, detailPrefetchUrl };
   }, [rawSrc, compact]);
+
+  const prefetchDetail = () => {
+    if (!detailPrefetchUrl || typeof window === "undefined") return;
+    const img = new Image();
+    img.decoding = "async";
+    img.src = detailPrefetchUrl;
+  };
 
   return (
     <div className="group flex flex-col overflow-hidden border border-[#EEE] bg-white lg:transition-all lg:duration-200 lg:hover:-translate-y-0.5 lg:hover:shadow-lg lg:hover:border-teal/40">
