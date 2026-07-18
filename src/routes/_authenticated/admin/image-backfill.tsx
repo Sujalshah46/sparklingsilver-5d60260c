@@ -80,6 +80,9 @@ function BackfillPage() {
   const [running, setRunning] = useState(false);
   const [currentSku, setCurrentSku] = useState<string>("");
   const [batchSize] = useState(5);
+  const [repairing, setRepairing] = useState(false);
+  const [repairResult, setRepairResult] = useState<{ updated: number; failed: number } | null>(null);
+  const repair = useServerFn(repairImageVariants);
   const abortRef = useRef(false);
 
   useEffect(() => {
