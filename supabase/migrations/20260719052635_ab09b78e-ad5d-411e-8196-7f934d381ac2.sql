@@ -1,0 +1,1 @@
+UPDATE public.products SET image_url = regexp_replace(image_url, '\?v=v7belt$', '') WHERE image_url LIKE '%?v=v7belt';
