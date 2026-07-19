@@ -158,7 +158,7 @@ function ProductPage() {
             aria-hidden
             width={1024}
             height={1024}
-            className="absolute inset-0 h-full w-full object-cover"
+            className="absolute inset-0 h-full w-full object-contain"
             style={{ filter: "blur(6px)", transform: "scale(1.02)" }}
           />
         )}
@@ -172,8 +172,9 @@ function ProductPage() {
           decoding="async"
           fetchPriority="high"
           onLoad={() => setHiResLoaded(true)}
-          className="relative h-full w-full object-cover"
+          className="relative h-full w-full object-contain"
         />
+
       </div>
 
 
