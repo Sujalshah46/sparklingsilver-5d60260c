@@ -118,7 +118,7 @@ export function CatalogueCard({
           <img
             src={src}
             srcSet={srcSet}
-            sizes={compact ? "(min-width:1280px) 180px, (min-width:768px) 220px, 45vw" : "(min-width:1280px) 260px, (min-width:768px) 300px, 48vw"}
+            sizes={compact ? "(min-width:1280px) 200px, (min-width:768px) 240px, 33vw" : "(min-width:1536px) 380px, (min-width:1280px) 340px, (min-width:1024px) 480px, (min-width:768px) 340px, 50vw"}
             alt={p.name}
             width={600}
             height={600}
