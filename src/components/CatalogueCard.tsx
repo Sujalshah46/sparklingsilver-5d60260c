@@ -70,19 +70,30 @@ export function CatalogueCard({
     const variantCard = productVariantUrl(p.image_variants, "card");
     const variantDetail = productVariantUrl(p.image_variants, "detail");
     if (variantThumb && variantCard) {
+      // Include the "detail" variant in the srcset so high-DPR desktops
+      // (2-col grid on laptops = ~500-600 CSS px tile at dpr=2 ≈
+      // 1000-1200 device px) don't get an upscaled blurry card render.
+      const parts = [`${variantThumb} 300w`, `${variantCard} 600w`];
+      if (variantDetail) parts.push(`${variantDetail} 1200w`);
       return {
-        src: variantThumb,
-        srcSet: `${variantThumb} 1x, ${variantCard} 2x`,
+        src: variantCard,
+        srcSet: parts.join(", "),
         detailPrefetchUrl: variantDetail ?? variantCard,
       };
     }
     const isRenderable = typeof rawSrc === "string" && rawSrc.includes("/storage/v1/");
     if (!isRenderable) return { src: rawSrc, srcSet: undefined as string | undefined, detailPrefetchUrl: undefined as string | undefined };
-    const base = compact ? 220 : 300;
-    const src = productThumbUrl(rawSrc, { width: base, quality: 55 });
-    const w2x = productThumbUrl(rawSrc, { width: base * 2, quality: 55 });
-    const detailPrefetchUrl = productThumbUrl(rawSrc, { width: 800, quality: 70 });
-    return { src, srcSet: `${src} 1x, ${w2x} 2x`, detailPrefetchUrl };
+    const base = compact ? 220 : 400;
+    const w1 = productThumbUrl(rawSrc, { width: base, quality: 60 });
+    const w2 = productThumbUrl(rawSrc, { width: base * 2, quality: 60 });
+    const w3w = Math.min(base * 3, 1200);
+    const w3 = productThumbUrl(rawSrc, { width: w3w, quality: 65 });
+    const detailPrefetchUrl = productThumbUrl(rawSrc, { width: 1200, quality: 70 });
+    return {
+      src: w1,
+      srcSet: `${w1} ${base}w, ${w2} ${base * 2}w, ${w3} ${w3w}w`,
+      detailPrefetchUrl,
+    };
   }, [rawSrc, compact, p.image_variants]);
 
 
