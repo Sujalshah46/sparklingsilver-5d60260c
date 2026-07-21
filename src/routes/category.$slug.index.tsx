@@ -162,21 +162,34 @@ function SubcategoryTile({
           onError={() => setSrc(categoryPlaceholder)}
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
+        {/* Soft dark scrim on right half for text legibility (matches homepage Antique/CZ tiles) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 right-0 w-1/2"
+          style={{
+            background:
+              "linear-gradient(to left, rgba(6,20,16,0.55) 0%, rgba(6,20,16,0.35) 55%, rgba(6,20,16,0) 100%)",
+          }}
+        />
         <div className="absolute inset-y-0 right-0 flex w-1/2 flex-col items-center justify-center px-4 text-center">
           <h2
-            className="text-[22px] font-normal leading-[1.05] text-slate-900"
+            className="text-[22px] font-normal leading-[1.05] text-[#F5EFE0]"
             style={{
               fontFamily: '"Cormorant Garamond", "Playfair Display", ui-serif, Georgia, serif',
               letterSpacing: "0.02em",
-              textShadow: "0 1px 2px rgba(255,255,255,0.55)",
+              textShadow: "0 1px 3px rgba(0,0,0,0.55)",
             }}
           >
             {subcategory.name}
           </h2>
-          <span aria-hidden className="mt-2 block h-px w-6 bg-slate-400/60" />
+          <span aria-hidden className="mt-2 block h-px w-8 bg-[#F5EFE0]/60" />
           <p
-            className="mt-2 text-[10.5px] font-medium uppercase text-slate-600"
-            style={{ fontFamily: '"Inter", ui-sans-serif, system-ui', letterSpacing: "0.22em" }}
+            className="mt-2 text-[10.5px] font-medium uppercase text-[#F5EFE0]/85"
+            style={{
+              fontFamily: '"Inter", ui-sans-serif, system-ui',
+              letterSpacing: "0.22em",
+              textShadow: "0 1px 2px rgba(0,0,0,0.5)",
+            }}
           >
             {count} Designs
           </p>
