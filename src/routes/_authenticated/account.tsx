@@ -67,7 +67,7 @@ function AccountPage() {
 
         <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
-          <Row icon={Info} label="About Sparkling Silver LLP" hint="v1.0" />
+          <Row icon={Info} label="About Sparkling Silver" hint="v1.0" />
         </section>
 
         {isAdmin && (
@@ -86,7 +86,7 @@ function AccountPage() {
         </Button>
 
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
-          Sparkling Silver LLP · BIS Hallmarked · Made with love in India
+          Sparkling Silver · BIS Hallmarked · Made with love in India
         </p>
       </div>
     </MobileShell>

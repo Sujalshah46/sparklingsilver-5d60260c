@@ -5,7 +5,7 @@ export const SITE_URL: string =
   "https://sparkling-jewellers-llp.lovable.app";
 
 // WhatsApp number in E.164 without "+" (WhatsApp deep-link format).
-// Official Sparkling Silver LLP number. Used by WhatsAppFab and Contact page.
+// Official Sparkling Silver number. Used by WhatsAppFab and Contact page.
 const RAW_WHATSAPP_NUMBER = "919330615237";
 
 /**
@@ -27,7 +27,7 @@ export function validateWhatsAppNumber(raw: string): string {
 export const WHATSAPP_NUMBER = validateWhatsAppNumber(RAW_WHATSAPP_NUMBER);
 
 export const WHATSAPP_DEFAULT_MESSAGE =
-  "Hello Sparkling Silver LLP, I am interested in your jewellery products. Please assist me.";
+  "Hello Sparkling Silver, I am interested in your jewellery products. Please assist me.";
 
 export const WHATSAPP_LINK_TARGET = "_blank";
 

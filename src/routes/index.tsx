@@ -56,7 +56,7 @@ const homeQuery = queryOptions({
 });
 
 
-const HOME_TITLE = "Sparkling Silver LLP — Premium Indian Jewellery";
+const HOME_TITLE = "Sparkling Silver — Premium Indian Jewellery";
 const HOME_DESC = "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.";
 
 const CATEGORY_UNSPLASH = PREMIUM_CATEGORY_IMAGES;
@@ -82,7 +82,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
-          name: "Sparkling Silver LLP",
+          name: "Sparkling Silver",
           url: "https://sparkling-jewellers-llp.lovable.app",
           image: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg",
           telephone: "+91-99999-99999",
@@ -142,7 +142,7 @@ function Home() {
 
   return (
     <MobileShell>
-      <h1 className="sr-only">Sparkling Silver LLP — Wholesale Jewellery Catalogue</h1>
+      <h1 className="sr-only">Sparkling Silver — Wholesale Jewellery Catalogue</h1>
 
       <VideoShowcase />
       <AccessBanner />
