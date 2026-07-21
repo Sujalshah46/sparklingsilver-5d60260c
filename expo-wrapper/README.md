@@ -1,4 +1,4 @@
-# Sparkling Silver LLP — Expo Wrapper
+# Sparkling Silver — Expo Wrapper
 
 Wraps the live web app (https://sparkling-jewellers-llp.lovable.app) inside a native shell so you can open it in **Expo Go** and share an Expo link.
 

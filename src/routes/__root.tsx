@@ -84,10 +84,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#6D1F2E" },
-      { property: "og:site_name", content: "Sparkling Silver LLP" },
+      { property: "og:site_name", content: "Sparkling Silver" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "author", content: "Sparkling Silver LLP" },
+      { name: "author", content: "Sparkling Silver" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -109,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "Sparkling Silver LLP",
+          name: "Sparkling Silver",
           url: "https://sparkling-jewellers-llp.lovable.app",
           potentialAction: {
             "@type": "SearchAction",

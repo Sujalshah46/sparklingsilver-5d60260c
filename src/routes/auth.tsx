@@ -18,7 +18,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Sparkling Silver LLP" },
+      { title: "Sign in — Sparkling Silver" },
       { name: "description", content: "Sign in to your Sparkling Silver buyer account. Accounts are created by admin — contact us if you don't have one yet." },
     ],
   }),

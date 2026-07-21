@@ -6,7 +6,7 @@ const KEY = "sj.dismissed.accessBanner";
 
 export function AccessBanner() {
   const [show, setShow] = useState(false);
-  const whatsAppHref = whatsappUrl("Hello, I'd like full app access on Sparkling Silver LLP.");
+  const whatsAppHref = whatsappUrl("Hello, I'd like full app access on Sparkling Silver.");
   useEffect(() => {
     if (typeof window === "undefined") return;
     setShow(localStorage.getItem(KEY) !== "1");

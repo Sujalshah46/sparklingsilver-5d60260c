@@ -87,7 +87,7 @@ export const Route = createFileRoute("/product/$slug")({
                 sku: p.sku,
                 image: img,
                 description: rawDesc || p.name,
-                brand: { "@type": "Brand", name: "Sparkling Silver LLP" },
+                brand: { "@type": "Brand", name: "Sparkling Silver" },
               }),
             },
           ]

@@ -57,7 +57,7 @@ function SideMenu() {
       <SheetContent side="left" className="w-[78vw] max-w-[320px] p-0">
         <VisuallyHidden>
           <SheetTitle>Main menu</SheetTitle>
-          <SheetDescription>Navigate to sections of Sparkling Silver LLP.</SheetDescription>
+          <SheetDescription>Navigate to sections of Sparkling Silver.</SheetDescription>
         </VisuallyHidden>
         <div className="flex h-14 items-center justify-between border-b border-[#E5E5E5] px-4">
           <div className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">Menu</div>
@@ -88,7 +88,7 @@ function SideMenu() {
             </button>
           )}
         </nav>
-        <p className="px-4 py-3 text-[11px] text-[#999]">v1.0.0 · Sparkling Silver LLP</p>
+        <p className="px-4 py-3 text-[11px] text-[#999]">v1.0.0 · Sparkling Silver</p>
       </SheetContent>
     </Sheet>
   );
@@ -101,7 +101,7 @@ export function TopBar() {
         <div className="flex items-center gap-1">
           <SideMenu />
           <Link to="/" className="min-w-0 truncate text-[15px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A] lg:text-[17px]">
-            Sparkling Silver LLP
+            Sparkling Silver
           </Link>
         </div>
         <nav className="hidden lg:flex items-center gap-6 text-[13px] font-semibold uppercase tracking-[0.08em] text-[#333]">
