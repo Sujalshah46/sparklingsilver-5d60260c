@@ -76,13 +76,21 @@ export function VideoShowcase() {
         onTouchEnd={onTouchEnd}
       >
         {inView ? (
-          <VideoCard
-            key={index}
-            src={VIDEOS[index].src}
-            muted={muted}
-            onToggleMute={() => setMuted((m) => !m)}
-            onEnded={handleEnded}
-          />
+          <div
+            className="relative shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
+            style={{ aspectRatio: "4 / 5", height: "min(65vh, 125vw)", maxWidth: "100%" }}
+          >
+            {VIDEOS.map((v, i) => (
+              <VideoCard
+                key={i}
+                src={v.src}
+                active={i === index}
+                muted={muted}
+                onToggleMute={() => setMuted((m) => !m)}
+                onEnded={handleEnded}
+              />
+            ))}
+          </div>
         ) : (
           <div
             className="relative shrink-0 overflow-hidden rounded-md border border-slate-200 bg-black shadow-sm"
@@ -90,6 +98,7 @@ export function VideoShowcase() {
             aria-hidden
           />
         )}
+
       </div>
 
       {VIDEOS.length > 1 && (
