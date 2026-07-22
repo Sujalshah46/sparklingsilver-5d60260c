@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
-      { title: "Search Jewellery — Sparkling Silver" },
+      { title: pageTitle("Search Jewellery") },
       { name: "description", content: "Search jewellery designs by name, SKU or category." },
       { name: "robots", content: "noindex, follow" },
     ],

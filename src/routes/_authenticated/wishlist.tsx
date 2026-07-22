@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { Heart, Share2, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/wishlist")({
-  head: () => ({ meta: [{ title: "Wishlist — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Wishlist") }] }),
   component: WishlistPage,
 });
 

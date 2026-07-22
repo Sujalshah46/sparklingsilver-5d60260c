@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -14,7 +15,7 @@ import { savePushSubscription } from "@/lib/push.functions";
 import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
-  head: () => ({ meta: [{ title: "Admin — Dashboard" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Dashboard") }] }),
   component: AdminDashboard,
 });
 

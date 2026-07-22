@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +17,7 @@ import { CheckCircle2, Clock, MessageCircle } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Checkout") }] }),
   component: Checkout,
 });
 

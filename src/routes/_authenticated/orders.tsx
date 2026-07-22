@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/orders")({
-  head: () => ({ meta: [{ title: "My Orders — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My Orders") }] }),
   component: OrdersPage,
 });
 

@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import { Search, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/audit")({
-  head: () => ({ meta: [{ title: "Admin — Audit log" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Audit log") }] }),
   component: AuditLog,
 });
 

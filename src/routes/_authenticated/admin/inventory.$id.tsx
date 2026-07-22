@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,7 +14,7 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
-  head: () => ({ meta: [{ title: "Admin — Stock detail" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Stock detail") }] }),
   component: StockDetail,
 });
 

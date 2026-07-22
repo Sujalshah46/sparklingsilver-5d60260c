@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
@@ -13,7 +14,7 @@ import { adjustStock } from "@/lib/inventory.functions";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
-  head: () => ({ meta: [{ title: "Admin — Inventory" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Inventory") }] }),
   component: InventoryPage,
 });
 

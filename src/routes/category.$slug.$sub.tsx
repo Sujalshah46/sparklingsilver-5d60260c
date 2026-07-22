@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ export const Route = createFileRoute("/category/$slug/$sub")({
     const ld = loaderData as { category?: { name: string }; subcategory?: { name: string } } | undefined;
     const catName = ld?.category?.name ?? params.slug;
     const subName = ld?.subcategory?.name ?? params.sub;
-    const title = `${subName} — ${catName} — Sparkling Silver`;
+    const title = pageTitle(`${subName} — ${catName}`);
     const desc = `Browse ${subName.toLowerCase()} designs in our ${catName.toLowerCase()} collection — premium 925 sterling silver with BIS hallmark.`;
     const url = `https://sparklingsilver.in/category/${params.slug}/${params.sub}`;
     return {

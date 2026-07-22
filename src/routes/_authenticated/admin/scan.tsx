@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -16,7 +17,7 @@ import { lookupByBarcode, scanAdjustStock, scanCreateProduct, scanEditProduct } 
 import { Camera, CameraOff, Minus, Plus, ScanLine, Search, PackagePlus, Pencil, X, Repeat } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/scan")({
-  head: () => ({ meta: [{ title: "Admin — Scan Inventory" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Scan Inventory") }] }),
   component: ScanPage,
 });
 

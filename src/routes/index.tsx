@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
@@ -56,7 +57,7 @@ const homeQuery = queryOptions({
 });
 
 
-const HOME_TITLE = "Sparkling Silver — Premium Indian Jewellery";
+const HOME_TITLE = pageTitle("Premium Indian Jewellery");
 const HOME_DESC = "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.";
 
 const CATEGORY_UNSPLASH = PREMIUM_CATEGORY_IMAGES;

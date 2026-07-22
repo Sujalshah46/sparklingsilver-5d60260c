@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +9,7 @@ import { productThumbUrl } from "@/lib/product-images";
 
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
-  head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Image Backfill") }] }),
   component: BackfillPage,
 });
 

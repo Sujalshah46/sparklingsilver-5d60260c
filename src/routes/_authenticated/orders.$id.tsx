@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, Circle, ClipboardCheck, Package, Truck, Bike, PackageCheck } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
-  head: () => ({ meta: [{ title: "Order Details — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Order Details") }] }),
   component: OrderDetail,
 });
 

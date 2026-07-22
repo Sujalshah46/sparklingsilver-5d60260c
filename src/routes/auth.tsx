@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -18,7 +19,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — Sparkling Silver" },
+      { title: pageTitle("Sign in") },
       { name: "description", content: "Sign in to your Sparkling Silver buyer account. Accounts are created by admin — contact us if you don't have one yet." },
     ],
   }),

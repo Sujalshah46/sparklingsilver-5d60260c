@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,7 +12,7 @@ import { toast } from "sonner";
 import { bulkUpdateStock } from "@/lib/inventory.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/import")({
-  head: () => ({ meta: [{ title: "Admin — Import inventory" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Import inventory") }] }),
   component: ImportPage,
 });
 

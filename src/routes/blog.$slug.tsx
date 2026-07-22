@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
@@ -90,11 +91,11 @@ export const Route = createFileRoute("/blog/$slug")({
   },
   head: ({ params }) => {
     const post = POSTS[params.slug];
-    if (!post) return { meta: [{ title: "Article — Sparkling Silver" }] };
+    if (!post) return { meta: [{ title: pageTitle("Article") }] };
     const url = `https://sparklingsilver.in/blog/${post.slug}`;
     return {
       meta: [
-        { title: `${post.title} — Sparkling Silver` },
+        { title: pageTitle(post.title) },
         { name: "description", content: post.description },
         { property: "og:title", content: post.title },
         { property: "og:description", content: post.description },

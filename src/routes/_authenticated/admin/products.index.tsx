@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({
-  head: () => ({ meta: [{ title: "Admin — Products" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Products") }] }),
   component: ProductsAdmin,
 });
 

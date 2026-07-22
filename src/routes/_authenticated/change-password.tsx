@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -7,7 +8,7 @@ import { Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/_authenticated/change-password")({
-  head: () => ({ meta: [{ title: "Change Password" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Change Password") }] }),
   component: ChangePasswordPage,
 });
 

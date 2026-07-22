@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/categories")({
-  head: () => ({ meta: [{ title: "Admin — Category Images" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Category Images") }] }),
   component: AdminCategories,
 });
 

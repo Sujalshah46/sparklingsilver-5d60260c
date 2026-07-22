@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import { Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({
-  head: () => ({ meta: [{ title: "Admin — Orders" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Orders") }] }),
   component: AdminOrders,
 });
 
