@@ -12,7 +12,7 @@ export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
       { title: pageTitle("Search Jewellery") },
-      { name: "description", content: "Search jewellery designs by name, SKU or category." },
+      ...descriptionTags("Search jewellery designs by name, SKU or category.", { twitter: false }),
       { name: "robots", content: "noindex, follow" },
     ],
   }),

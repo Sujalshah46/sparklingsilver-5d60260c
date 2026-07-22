@@ -96,13 +96,11 @@ export const Route = createFileRoute("/blog/$slug")({
     return {
       meta: [
         { title: pageTitle(post.title) },
-        { name: "description", content: post.description },
+        ...descriptionTags(post.description),
         { property: "og:title", content: post.title },
-        { property: "og:description", content: post.description },
         { property: "og:url", content: url },
         { property: "og:type", content: "article" },
         { name: "twitter:title", content: post.title },
-        { name: "twitter:description", content: post.description },
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [

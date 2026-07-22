@@ -53,15 +53,16 @@ const catalogInfiniteQuery = infiniteQueryOptions({
 });
 
 const CAT_TITLE = pageTitle("Shop 925 Sterling Silver Jewellery");
-const CAT_DESC = "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.";
+const CAT_DESC = pageDescription(
+  "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.",
+);
 
 export const Route = createFileRoute("/catalogue")({
   head: () => ({
     meta: [
       { title: CAT_TITLE },
-      { name: "description", content: CAT_DESC },
+      ...descriptionTags(CAT_DESC),
       { property: "og:title", content: CAT_TITLE },
-      { property: "og:description", content: CAT_DESC },
       { property: "og:url", content: "https://sparklingsilver.in/catalogue" },
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/catalogue" }],

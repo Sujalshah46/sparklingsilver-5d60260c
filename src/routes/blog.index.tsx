@@ -3,7 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
 const TITLE = pageTitle("Silver Jewellery Guides & Buying Tips");
-const DESC = "Practical guides on silver pricing, 925 sterling purity, hallmarking and choosing the right silver jewellery for every occasion.";
+const DESC = pageDescription("Practical guides on silver pricing, 925 sterling purity, hallmarking and choosing the right silver jewellery for every occasion.");
 
 const POSTS = [
   {
@@ -27,9 +27,8 @@ export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
       { title: TITLE },
-      { name: "description", content: DESC },
+      ...descriptionTags(DESC),
       { property: "og:title", content: TITLE },
-      { property: "og:description", content: DESC },
       { property: "og:url", content: "https://sparklingsilver.in/blog" },
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/blog" }],
