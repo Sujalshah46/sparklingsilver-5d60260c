@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, articleSchema, breadcrumbSchema } from "@/lib/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
