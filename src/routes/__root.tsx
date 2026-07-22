@@ -104,20 +104,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         children: themeInitScript,
       },
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "WebSite",
-          name: "Sparkling Silver",
-          url: "https://sparklingsilver.in",
-          potentialAction: {
-            "@type": "SearchAction",
-            target: "https://sparklingsilver.in/search?q={search_term_string}",
-            "query-input": "required name=search_term_string",
-          },
-        }),
-      },
+      jsonLdScript(websiteSchema()),
+      jsonLdScript(organizationSchema()),
     ],
   }),
   shellComponent: RootShell,
