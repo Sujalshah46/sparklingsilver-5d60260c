@@ -1,4 +1,4 @@
-import { pageTitle } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/search")({
   head: () => ({
     meta: [
       { title: pageTitle("Search Jewellery") },
-      { name: "description", content: "Search jewellery designs by name, SKU or category." },
+      ...descriptionTags("Search jewellery designs by name, SKU or category.", { twitter: false }),
       { name: "robots", content: "noindex, follow" },
     ],
   }),

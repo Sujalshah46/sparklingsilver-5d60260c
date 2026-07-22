@@ -1,4 +1,4 @@
-import { pageTitle } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
@@ -57,14 +57,15 @@ export const Route = createFileRoute("/category/$slug/$sub")({
     const catName = ld?.category?.name ?? params.slug;
     const subName = ld?.subcategory?.name ?? params.sub;
     const title = pageTitle(`${subName} — ${catName}`);
-    const desc = `Browse ${subName.toLowerCase()} designs in our ${catName.toLowerCase()} collection — premium 925 sterling silver with BIS hallmark.`;
+    const desc = pageDescription(
+      `Browse ${subName.toLowerCase()} designs in our ${catName.toLowerCase()} collection — premium 925 sterling silver with BIS hallmark.`,
+    );
     const url = `https://sparklingsilver.in/category/${params.slug}/${params.sub}`;
     return {
       meta: [
         { title },
-        { name: "description", content: desc },
+        ...descriptionTags(desc),
         { property: "og:title", content: title },
-        { property: "og:description", content: desc },
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],

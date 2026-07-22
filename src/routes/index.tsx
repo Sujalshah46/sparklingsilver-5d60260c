@@ -1,4 +1,4 @@
-import { pageTitle } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
@@ -58,7 +58,9 @@ const homeQuery = queryOptions({
 
 
 const HOME_TITLE = pageTitle("Premium Indian Jewellery");
-const HOME_DESC = "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.";
+const HOME_DESC = pageDescription(
+  "Wholesale 925 sterling silver jewellery catalogue — premium silver designs across rings, earrings, pendants, bangles, anklets and more.",
+);
 
 const CATEGORY_UNSPLASH = PREMIUM_CATEGORY_IMAGES;
 
@@ -66,13 +68,11 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: HOME_TITLE },
-      { name: "description", content: HOME_DESC },
+      ...descriptionTags(HOME_DESC),
       { property: "og:title", content: HOME_TITLE },
-      { property: "og:description", content: HOME_DESC },
       { property: "og:url", content: "https://sparklingsilver.in/" },
       { property: "og:image", content: "https://sparklingsilver.in/og-home.jpg" },
       { name: "twitter:title", content: HOME_TITLE },
-      { name: "twitter:description", content: HOME_DESC },
     ],
     links: [
       { rel: "canonical", href: "https://sparklingsilver.in/" },

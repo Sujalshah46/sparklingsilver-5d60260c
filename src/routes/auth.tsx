@@ -1,4 +1,4 @@
-import { pageTitle } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
       { title: pageTitle("Sign in") },
-      { name: "description", content: "Sign in to your Sparkling Silver buyer account. Accounts are created by admin — contact us if you don't have one yet." },
+      ...descriptionTags("Sign in to your Sparkling Silver buyer account. Accounts are created by admin — contact us if you don't have one yet."),
     ],
   }),
   validateSearch: zodValidator(searchSchema),

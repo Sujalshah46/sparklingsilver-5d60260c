@@ -1,4 +1,4 @@
-import { pageTitle } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
@@ -20,16 +20,17 @@ const schema = z.object({
 });
 
 const CONTACT_TITLE = pageTitle("Contact — Visit, Call, WhatsApp");
-const CONTACT_DESC = "Visit our Singur, Hooghly factory or reach us on +91 93306 15237 (Factory) / +91 85858 31729 (Accounts). Email arikafactory@gmail.com.";
+const CONTACT_DESC = pageDescription(
+  "Visit our Singur, Hooghly factory or reach us on +91 93306 15237 (Factory) / +91 85858 31729 (Accounts). Email arikafactory@gmail.com.",
+);
 
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
     meta: [
       { title: CONTACT_TITLE },
-      { name: "description", content: CONTACT_DESC },
+      ...descriptionTags(CONTACT_DESC),
       { property: "og:title", content: CONTACT_TITLE },
-      { property: "og:description", content: CONTACT_DESC },
       { property: "og:url", content: "https://sparklingsilver.in/contact" },
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/contact" }],
