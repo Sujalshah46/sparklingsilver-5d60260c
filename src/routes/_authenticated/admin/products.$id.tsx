@@ -14,7 +14,7 @@ import { createProduct, updateProduct } from "@/lib/products.functions";
 import { getErrorMessage } from "@/lib/errors";
 
 export const Route = createFileRoute("/_authenticated/admin/products/$id")({
-  head: () => ({ meta: [{ title: "Admin — Product" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Product") }] }),
   component: ProductForm,
 });
 

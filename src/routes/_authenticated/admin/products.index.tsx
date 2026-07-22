@@ -16,7 +16,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/products/")({
-  head: () => ({ meta: [{ title: "Admin — Products" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Products") }] }),
   component: ProductsAdmin,
 });
 

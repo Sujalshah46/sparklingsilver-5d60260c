@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/orders")({
-  head: () => ({ meta: [{ title: "My Orders — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My Orders") }] }),
   component: OrdersPage,
 });
 

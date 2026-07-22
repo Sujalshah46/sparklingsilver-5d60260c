@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/account-edit")({
-  head: () => ({ meta: [{ title: "Personal Details — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Personal Details") }] }),
   component: AccountEdit,
 });
 

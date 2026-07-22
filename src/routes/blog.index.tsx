@@ -2,7 +2,7 @@ import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
-const TITLE = "Silver Jewellery Guides & Buying Tips — Sparkling Silver";
+const TITLE = pageTitle("Silver Jewellery Guides & Buying Tips");
 const DESC = "Practical guides on silver pricing, 925 sterling purity, hallmarking and choosing the right silver jewellery for every occasion.";
 
 const POSTS = [

@@ -15,7 +15,7 @@ import { savePushSubscription } from "@/lib/push.functions";
 import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
-  head: () => ({ meta: [{ title: "Admin — Dashboard" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Dashboard") }] }),
   component: AdminDashboard,
 });
 

@@ -14,7 +14,7 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
-  head: () => ({ meta: [{ title: "Admin — Stock detail" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Stock detail") }] }),
   component: StockDetail,
 });
 

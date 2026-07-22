@@ -8,7 +8,7 @@ import { Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/_authenticated/change-password")({
-  head: () => ({ meta: [{ title: "Change Password" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Change Password") }] }),
   component: ChangePasswordPage,
 });
 

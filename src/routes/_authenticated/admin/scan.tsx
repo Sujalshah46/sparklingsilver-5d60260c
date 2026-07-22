@@ -17,7 +17,7 @@ import { lookupByBarcode, scanAdjustStock, scanCreateProduct, scanEditProduct } 
 import { Camera, CameraOff, Minus, Plus, ScanLine, Search, PackagePlus, Pencil, X, Repeat } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/scan")({
-  head: () => ({ meta: [{ title: "Admin — Scan Inventory" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Scan Inventory") }] }),
   component: ScanPage,
 });
 

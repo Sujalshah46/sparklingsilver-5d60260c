@@ -14,7 +14,7 @@ import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 
 export const Route = createFileRoute("/_authenticated/account")({
-  head: () => ({ meta: [{ title: "My Account — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My Account") }] }),
   component: AccountPage,
 });
 

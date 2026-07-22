@@ -52,7 +52,7 @@ const catalogInfiniteQuery = infiniteQueryOptions({
   },
 });
 
-const CAT_TITLE = "Shop 925 Sterling Silver Jewellery — Sparkling Silver";
+const CAT_TITLE = pageTitle("Shop 925 Sterling Silver Jewellery");
 const CAT_DESC = "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.";
 
 export const Route = createFileRoute("/catalogue")({

@@ -19,7 +19,7 @@ import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderSta
 
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
-  head: () => ({ meta: [{ title: "Order — Admin" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Order") }] }),
   component: AdminOrderDetail,
 });
 

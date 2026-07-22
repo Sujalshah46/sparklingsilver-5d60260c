@@ -17,7 +17,7 @@ import { CheckCircle2, Clock, MessageCircle } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/checkout")({
-  head: () => ({ meta: [{ title: "Checkout — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Checkout") }] }),
   component: Checkout,
 });
 

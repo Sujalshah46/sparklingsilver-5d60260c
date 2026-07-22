@@ -15,7 +15,7 @@ import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/homepage-featured")({
-  head: () => ({ meta: [{ title: "Admin — Homepage New Arrival" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Homepage New Arrival") }] }),
   component: HomepageFeaturedAdmin,
 });
 

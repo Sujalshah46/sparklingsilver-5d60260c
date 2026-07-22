@@ -9,7 +9,7 @@ import { productThumbUrl } from "@/lib/product-images";
 
 
 export const Route = createFileRoute("/_authenticated/admin/image-backfill")({
-  head: () => ({ meta: [{ title: "Admin — Image Backfill" }] }),
+  head: () => ({ meta: [{ title: pageTitle("Admin — Image Backfill") }] }),
   component: BackfillPage,
 });
 

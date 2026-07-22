@@ -12,7 +12,7 @@ import { Plus, MapPin, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/addresses")({
-  head: () => ({ meta: [{ title: "My Addresses — Sparkling Silver" }] }),
+  head: () => ({ meta: [{ title: pageTitle("My Addresses") }] }),
   component: AddressesPage,
 });
 
