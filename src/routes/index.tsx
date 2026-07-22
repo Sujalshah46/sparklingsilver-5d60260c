@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, jewelryStoreSchema } from "@/lib/seo";
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
@@ -78,17 +78,14 @@ export const Route = createFileRoute("/")({
       { rel: "canonical", href: "https://sparklingsilver.in/" },
     ],
     scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "JewelryStore",
-          name: "Sparkling Silver",
+      jsonLdScript(
+        jewelryStoreSchema({
           url: "https://sparklingsilver.in",
           image: "https://sparklingsilver.in/og-home.jpg",
-          telephone: "+91-99999-99999",
+          telephone: "+91-93306-15237",
+          email: "sparklingsilverjewellery@gmail.com",
         }),
-      },
+      ),
     ],
   }),
   loader: undefined,

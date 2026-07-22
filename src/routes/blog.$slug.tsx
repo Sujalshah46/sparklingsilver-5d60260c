@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, articleSchema, breadcrumbSchema } from "@/lib/seo";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { MobileShell } from "@/components/MobileShell";
 
@@ -104,19 +104,19 @@ export const Route = createFileRoute("/blog/$slug")({
       ],
       links: [{ rel: "canonical", href: url }],
       scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "Article",
-            headline: post.title,
+        jsonLdScript([
+          articleSchema({
+            title: post.title,
             description: post.description,
+            url,
             datePublished: post.datePublished,
-            author: { "@type": "Organization", name: "Sparkling Silver" },
-            publisher: { "@type": "Organization", name: "Sparkling Silver" },
-            mainEntityOfPage: url,
           }),
-        },
+          breadcrumbSchema([
+            { name: "Home", url: "https://sparklingsilver.in/" },
+            { name: "Guides", url: "https://sparklingsilver.in/blog" },
+            { name: post.title, url },
+          ]),
+        ]),
       ],
     };
   },

@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, jewelryStoreSchema } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
@@ -35,25 +35,19 @@ export const Route = createFileRoute("/contact")({
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/contact" }],
     scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "JewelryStore",
-          name: "Sparkling Silver",
+      jsonLdScript(
+        jewelryStoreSchema({
           url: "https://sparklingsilver.in/contact",
           telephone: "+91-93306-15237",
           email: "sparklingsilverjewellery@gmail.com",
           address: {
-            "@type": "PostalAddress",
             addressLocality: "Kolkata",
             postalCode: "712409",
             addressRegion: "WB",
             addressCountry: "IN",
           },
-
         }),
-      },
+      ),
     ],
   }),
   component: ContactPage,

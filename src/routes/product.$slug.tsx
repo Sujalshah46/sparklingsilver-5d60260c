@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, productSchema, breadcrumbSchema } from "@/lib/seo";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
@@ -78,18 +78,21 @@ export const Route = createFileRoute("/product/$slug")({
       ],
       scripts: p
         ? [
-            {
-              type: "application/ld+json",
-              children: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Product",
+            jsonLdScript([
+              productSchema({
                 name: p.name,
                 sku: p.sku,
                 image: img,
                 description: rawDesc || p.name,
-                brand: { "@type": "Brand", name: "Sparkling Silver" },
+                url,
+                availability: p.in_stock === false ? "OutOfStock" : "InStock",
               }),
-            },
+              breadcrumbSchema([
+                { name: "Home", url: "https://sparklingsilver.in/" },
+                { name: "Catalogue", url: "https://sparklingsilver.in/catalogue" },
+                { name: p.name, url },
+              ]),
+            ]),
           ]
         : [],
     };

@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, collectionPageSchema, breadcrumbSchema } from "@/lib/seo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
@@ -69,6 +69,17 @@ export const Route = createFileRoute("/category/$slug/$sub")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: [
+        jsonLdScript([
+          collectionPageSchema({ name: `${subName} — ${catName}`, description: desc, url }),
+          breadcrumbSchema([
+            { name: "Home", url: "https://sparklingsilver.in/" },
+            { name: "Catalogue", url: "https://sparklingsilver.in/catalogue" },
+            { name: catName, url: `https://sparklingsilver.in/category/${params.slug}` },
+            { name: subName, url },
+          ]),
+        ]),
+      ],
     };
   },
   loader: async ({ context, params }) => {
