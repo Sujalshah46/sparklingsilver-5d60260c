@@ -106,3 +106,185 @@ export function descriptionTags(
   if (opts.twitter !== false) tags.push({ name: "twitter:description", content });
   return tags;
 }
+
+/* ------------------------------------------------------------------ */
+/*  JSON-LD structured data                                            */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Recursively scrub every string in a JSON-LD payload through
+ * `stripLegacyBrandSuffix` so an "LLP" that snuck in via a database
+ * field, hardcoded value, or fixture never reaches a `<script>` tag.
+ * Only strings are transformed — numbers, booleans and nested
+ * objects/arrays are traversed but otherwise untouched.
+ */
+function scrubJsonLd<T>(value: T): T {
+  if (typeof value === "string") return stripLegacyBrandSuffix(value) as unknown as T;
+  if (Array.isArray(value)) return value.map(scrubJsonLd) as unknown as T;
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) out[k] = scrubJsonLd(v);
+    return out as unknown as T;
+  }
+  return value;
+}
+
+type LdNode = Record<string, unknown>;
+
+/**
+ * Serialise one or more JSON-LD nodes into the `{ type, children }`
+ * shape TanStack's `head().scripts` expects. Pass an array to stack
+ * multiple schemas (e.g. Product + BreadcrumbList) into one route.
+ *
+ *   head: () => ({ scripts: [jsonLdScript(productSchema(...))] })
+ *   head: () => ({ scripts: [jsonLdScript([articleSchema(...), breadcrumbSchema(...)])] })
+ */
+export function jsonLdScript(node: LdNode | LdNode[]): { type: "application/ld+json"; children: string } {
+  const payload = Array.isArray(node) ? node.map(scrubJsonLd) : scrubJsonLd(node);
+  return { type: "application/ld+json", children: JSON.stringify(payload) };
+}
+
+/** Sparkling Silver Organization node — safe to embed anywhere as a publisher/author. */
+export function organizationSchema(): LdNode {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: BRAND,
+    url: SITE_ORIGIN,
+    logo: `${SITE_ORIGIN}/favicon.ico`,
+  };
+}
+
+/** WebSite node with SearchAction. Root-level use only (one per site). */
+export function websiteSchema(): LdNode {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: BRAND,
+    url: SITE_ORIGIN,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_ORIGIN}/search?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  };
+}
+
+/** JewelryStore node — for the homepage and Contact page. */
+export function jewelryStoreSchema(opts: {
+  url?: string;
+  image?: string;
+  telephone?: string;
+  email?: string;
+  address?: {
+    streetAddress?: string;
+    addressLocality?: string;
+    postalCode?: string;
+    addressRegion?: string;
+    addressCountry?: string;
+  };
+}): LdNode {
+  const node: LdNode = {
+    "@context": "https://schema.org",
+    "@type": "JewelryStore",
+    name: BRAND,
+    url: opts.url ?? SITE_ORIGIN,
+  };
+  if (opts.image) node.image = opts.image;
+  if (opts.telephone) node.telephone = opts.telephone;
+  if (opts.email) node.email = opts.email;
+  if (opts.address) node.address = { "@type": "PostalAddress", ...opts.address };
+  return node;
+}
+
+/** Product node for individual product pages. */
+export function productSchema(opts: {
+  name: string;
+  sku?: string;
+  image?: string;
+  description?: string;
+  url: string;
+  price?: number | string;
+  priceCurrency?: string;
+  availability?: "InStock" | "OutOfStock" | "PreOrder";
+}): LdNode {
+  const node: LdNode = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: opts.name,
+    url: opts.url,
+    brand: { "@type": "Brand", name: BRAND },
+  };
+  if (opts.sku) node.sku = opts.sku;
+  if (opts.image) node.image = opts.image;
+  if (opts.description) node.description = opts.description;
+  if (opts.price !== undefined) {
+    node.offers = {
+      "@type": "Offer",
+      price: opts.price,
+      priceCurrency: opts.priceCurrency ?? "INR",
+      availability: `https://schema.org/${opts.availability ?? "InStock"}`,
+      url: opts.url,
+    };
+  }
+  return node;
+}
+
+/** Article node for blog posts. Author/publisher default to the brand Organization. */
+export function articleSchema(opts: {
+  title: string;
+  description?: string;
+  url: string;
+  datePublished?: string;
+  dateModified?: string;
+  image?: string;
+}): LdNode {
+  const node: LdNode = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: opts.title,
+    mainEntityOfPage: opts.url,
+    author: { "@type": "Organization", name: BRAND },
+    publisher: {
+      "@type": "Organization",
+      name: BRAND,
+      logo: { "@type": "ImageObject", url: `${SITE_ORIGIN}/favicon.ico` },
+    },
+  };
+  if (opts.description) node.description = opts.description;
+  if (opts.datePublished) node.datePublished = opts.datePublished;
+  if (opts.dateModified) node.dateModified = opts.dateModified;
+  if (opts.image) node.image = opts.image;
+  return node;
+}
+
+/** CollectionPage node for category / subcategory listings. */
+export function collectionPageSchema(opts: {
+  name: string;
+  description?: string;
+  url: string;
+}): LdNode {
+  const node: LdNode = {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: opts.name,
+    url: opts.url,
+    isPartOf: { "@type": "WebSite", name: BRAND, url: SITE_ORIGIN },
+  };
+  if (opts.description) node.description = opts.description;
+  return node;
+}
+
+/** BreadcrumbList node — pass ordered {name, url} items from home downward. */
+export function breadcrumbSchema(items: Array<{ name: string; url: string }>): LdNode {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((it, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: it.name,
+      item: it.url,
+    })),
+  };
+}
