@@ -1,3 +1,4 @@
+import { pageTitle } from "@/lib/seo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
