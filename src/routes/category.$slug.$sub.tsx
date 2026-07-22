@@ -69,6 +69,17 @@ export const Route = createFileRoute("/category/$slug/$sub")({
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
+      scripts: [
+        jsonLdScript([
+          collectionPageSchema({ name: `${subName} — ${catName}`, description: desc, url }),
+          breadcrumbSchema([
+            { name: "Home", url: "https://sparklingsilver.in/" },
+            { name: "Catalogue", url: "https://sparklingsilver.in/catalogue" },
+            { name: catName, url: `https://sparklingsilver.in/category/${params.slug}` },
+            { name: subName, url },
+          ]),
+        ]),
+      ],
     };
   },
   loader: async ({ context, params }) => {
