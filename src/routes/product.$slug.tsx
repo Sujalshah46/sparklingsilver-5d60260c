@@ -44,9 +44,10 @@ export const Route = createFileRoute("/product/$slug")({
     const p = (loaderData as { product?: { name: string; sku: string; description: string | null; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = pageTitle(p ? p.name : "Jewellery");
     const rawDesc = (p?.description ?? "").trim();
-    const desc = rawDesc
-      ? rawDesc.slice(0, 158)
-      : `${p?.name ?? "Premium 925 sterling silver jewellery"} at Sparkling Silver — BIS hallmarked wholesale designs.`;
+    const desc = pageDescription(
+      rawDesc ||
+        `${p?.name ?? "Premium 925 sterling silver jewellery"} at Sparkling Silver — BIS hallmarked wholesale designs.`,
+    );
     const url = `https://sparklingsilver.in/product/${params.slug}`;
     const img = p?.image_url
       ? (p.image_url.startsWith("http") ? p.image_url : `https://sparklingsilver.in${p.image_url}`)
@@ -54,14 +55,12 @@ export const Route = createFileRoute("/product/$slug")({
     return {
       meta: [
         { title },
-        { name: "description", content: desc },
+        ...descriptionTags(desc),
         { property: "og:title", content: title },
-        { property: "og:description", content: desc },
         { property: "og:type", content: "product" },
         { property: "og:url", content: url },
         { property: "og:image", content: img },
         { name: "twitter:title", content: title },
-        { name: "twitter:description", content: desc },
         { name: "twitter:image", content: img },
       ],
       links: [
