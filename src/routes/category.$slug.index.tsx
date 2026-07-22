@@ -59,14 +59,15 @@ export const Route = createFileRoute("/category/$slug/")({
     const ld = loaderData as { category?: { name: string } } | undefined;
     const name = ld?.category?.name ?? params.slug;
     const title = pageTitle(name);
-    const desc = `Browse our ${name.toLowerCase()} collection — premium 925 sterling silver designs with BIS hallmark.`;
+    const desc = pageDescription(
+      `Browse our ${name.toLowerCase()} collection — premium 925 sterling silver designs with BIS hallmark.`,
+    );
     const url = `https://sparklingsilver.in/category/${params.slug}`;
     return {
       meta: [
         { title },
-        { name: "description", content: desc },
+        ...descriptionTags(desc),
         { property: "og:title", content: title },
-        { property: "og:description", content: desc },
         { property: "og:url", content: url },
       ],
       links: [{ rel: "canonical", href: url }],
