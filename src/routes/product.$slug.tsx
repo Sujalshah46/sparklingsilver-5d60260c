@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, productSchema, breadcrumbSchema } from "@/lib/seo";
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { useSuspenseQuery, useMutation, useQueryClient, queryOptions } from "@tanstack/react-query";
