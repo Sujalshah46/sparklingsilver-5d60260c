@@ -2,7 +2,7 @@
 // VITE_SITE_URL can override at build time; default is the production Lovable URL.
 export const SITE_URL: string =
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_SITE_URL) ||
-  "https://sparkling-jewellers-llp.lovable.app";
+  "https://sparklingsilver.in";
 
 // WhatsApp number in E.164 without "+" (WhatsApp deep-link format).
 // Official Sparkling Silver number. Used by WhatsAppFab and Contact page.

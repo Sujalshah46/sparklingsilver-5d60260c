@@ -68,13 +68,13 @@ export const Route = createFileRoute("/")({
       { name: "description", content: HOME_DESC },
       { property: "og:title", content: HOME_TITLE },
       { property: "og:description", content: HOME_DESC },
-      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/" },
-      { property: "og:image", content: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg" },
+      { property: "og:url", content: "https://sparklingsilver.in/" },
+      { property: "og:image", content: "https://sparklingsilver.in/og-home.jpg" },
       { name: "twitter:title", content: HOME_TITLE },
       { name: "twitter:description", content: HOME_DESC },
     ],
     links: [
-      { rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/" },
+      { rel: "canonical", href: "https://sparklingsilver.in/" },
     ],
     scripts: [
       {
@@ -83,8 +83,8 @@ export const Route = createFileRoute("/")({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
           name: "Sparkling Silver",
-          url: "https://sparkling-jewellers-llp.lovable.app",
-          image: "https://sparkling-jewellers-llp.lovable.app/og-home.jpg",
+          url: "https://sparklingsilver.in",
+          image: "https://sparklingsilver.in/og-home.jpg",
           telephone: "+91-99999-99999",
         }),
       },

@@ -29,9 +29,9 @@ export const Route = createFileRoute("/blog/")({
       { name: "description", content: DESC },
       { property: "og:title", content: TITLE },
       { property: "og:description", content: DESC },
-      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/blog" },
+      { property: "og:url", content: "https://sparklingsilver.in/blog" },
     ],
-    links: [{ rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/blog" }],
+    links: [{ rel: "canonical", href: "https://sparklingsilver.in/blog" }],
   }),
   component: BlogIndex,
 });

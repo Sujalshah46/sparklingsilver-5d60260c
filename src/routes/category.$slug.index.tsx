@@ -59,7 +59,7 @@ export const Route = createFileRoute("/category/$slug/")({
     const name = ld?.category?.name ?? params.slug;
     const title = `${name} — Sparkling Silver`;
     const desc = `Browse our ${name.toLowerCase()} collection — premium 925 sterling silver designs with BIS hallmark.`;
-    const url = `https://sparkling-jewellers-llp.lovable.app/category/${params.slug}`;
+    const url = `https://sparklingsilver.in/category/${params.slug}`;
     return {
       meta: [
         { title },

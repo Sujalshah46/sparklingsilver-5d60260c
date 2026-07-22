@@ -1,6 +1,6 @@
 # Sparkling Silver — Expo Wrapper
 
-Wraps the live web app (https://sparkling-jewellers-llp.lovable.app) inside a native shell so you can open it in **Expo Go** and share an Expo link.
+Wraps the live web app (https://sparklingsilver.in) inside a native shell so you can open it in **Expo Go** and share an Expo link.
 
 ## Run locally (gives you the Expo Go QR / link)
 

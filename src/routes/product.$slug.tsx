@@ -46,10 +46,10 @@ export const Route = createFileRoute("/product/$slug")({
     const desc = rawDesc
       ? rawDesc.slice(0, 158)
       : `${p?.name ?? "Premium 925 sterling silver jewellery"} at Sparkling Silver — BIS hallmarked wholesale designs.`;
-    const url = `https://sparkling-jewellers-llp.lovable.app/product/${params.slug}`;
+    const url = `https://sparklingsilver.in/product/${params.slug}`;
     const img = p?.image_url
-      ? (p.image_url.startsWith("http") ? p.image_url : `https://sparkling-jewellers-llp.lovable.app${p.image_url}`)
-      : "https://sparkling-jewellers-llp.lovable.app/og-home.jpg";
+      ? (p.image_url.startsWith("http") ? p.image_url : `https://sparklingsilver.in${p.image_url}`)
+      : "https://sparklingsilver.in/og-home.jpg";
     return {
       meta: [
         { title },

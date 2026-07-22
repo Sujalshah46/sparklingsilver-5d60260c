@@ -9,4 +9,4 @@ Disallow: /orders
 Disallow: /wishlist
 Disallow: /notifications
 
-Sitemap: https://sparkling-jewellers-llp.lovable.app/sitemap.xml
+Sitemap: https://sparklingsilver.in/sitemap.xml

@@ -10,7 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
 import { usePreventScreenCapture } from 'expo-screen-capture';
 
-const SITE_URL = 'https://sparkling-jewellers-llp.lovable.app';
+const SITE_URL = 'https://sparklingsilver.in';
 
 export default function App() {
   usePreventScreenCapture();

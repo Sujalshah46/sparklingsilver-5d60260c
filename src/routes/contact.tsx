@@ -29,9 +29,9 @@ export const Route = createFileRoute("/contact")({
       { name: "description", content: CONTACT_DESC },
       { property: "og:title", content: CONTACT_TITLE },
       { property: "og:description", content: CONTACT_DESC },
-      { property: "og:url", content: "https://sparkling-jewellers-llp.lovable.app/contact" },
+      { property: "og:url", content: "https://sparklingsilver.in/contact" },
     ],
-    links: [{ rel: "canonical", href: "https://sparkling-jewellers-llp.lovable.app/contact" }],
+    links: [{ rel: "canonical", href: "https://sparklingsilver.in/contact" }],
     scripts: [
       {
         type: "application/ld+json",
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/contact")({
           "@context": "https://schema.org",
           "@type": "JewelryStore",
           name: "Sparkling Silver",
-          url: "https://sparkling-jewellers-llp.lovable.app/contact",
+          url: "https://sparklingsilver.in/contact",
           telephone: "+91-93306-15237",
           email: "sparklingsilverjewellery@gmail.com",
           address: {
