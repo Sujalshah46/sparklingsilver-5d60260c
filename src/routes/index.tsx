@@ -78,17 +78,14 @@ export const Route = createFileRoute("/")({
       { rel: "canonical", href: "https://sparklingsilver.in/" },
     ],
     scripts: [
-      {
-        type: "application/ld+json",
-        children: JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "JewelryStore",
-          name: "Sparkling Silver",
+      jsonLdScript(
+        jewelryStoreSchema({
           url: "https://sparklingsilver.in",
           image: "https://sparklingsilver.in/og-home.jpg",
-          telephone: "+91-99999-99999",
+          telephone: "+91-93306-15237",
+          email: "sparklingsilverjewellery@gmail.com",
         }),
-      },
+      ),
     ],
   }),
   loader: undefined,
