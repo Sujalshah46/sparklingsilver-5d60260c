@@ -1,4 +1,4 @@
-import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
+import { pageTitle, pageDescription, descriptionTags, jsonLdScript, jewelryStoreSchema } from "@/lib/seo";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
