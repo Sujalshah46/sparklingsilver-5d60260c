@@ -78,18 +78,21 @@ export const Route = createFileRoute("/product/$slug")({
       ],
       scripts: p
         ? [
-            {
-              type: "application/ld+json",
-              children: JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Product",
+            jsonLdScript([
+              productSchema({
                 name: p.name,
                 sku: p.sku,
                 image: img,
                 description: rawDesc || p.name,
-                brand: { "@type": "Brand", name: "Sparkling Silver" },
+                url,
+                availability: p.in_stock === false ? "OutOfStock" : "InStock",
               }),
-            },
+              breadcrumbSchema([
+                { name: "Home", url: "https://sparklingsilver.in/" },
+                { name: "Catalogue", url: "https://sparklingsilver.in/catalogue" },
+                { name: p.name, url },
+              ]),
+            ]),
           ]
         : [],
     };
