@@ -44,8 +44,13 @@ function CartPage() {
 
   const updateRemark = useMutation({
     mutationFn: async ({ id, remark }: { id: string; remark: string }) => {
-      return supabase.from("cart_items").update({ remark: remark.trim() ? remark : null }).eq("id", id);
+      const trimmed = remark.trim();
+      if (trimmed.length > REMARK_MAX_LENGTH) {
+        throw new Error(`Remark must be ${REMARK_MAX_LENGTH} characters or fewer`);
+      }
+      return supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
     },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); },
   });
 
