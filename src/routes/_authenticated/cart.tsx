@@ -27,7 +27,7 @@ function CartPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, product:products(*)")
+        .select("id, quantity, size, remark, product:products(*)")
         .eq("user_id", user!.id);
       return data ?? [];
     },
@@ -39,6 +39,13 @@ function CartPage() {
       return supabase.from("cart_items").update({ quantity }).eq("id", id);
     },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
+  });
+
+  const updateRemark = useMutation({
+    mutationFn: async ({ id, remark }: { id: string; remark: string }) => {
+      return supabase.from("cart_items").update({ remark: remark.trim() ? remark : null }).eq("id", id);
+    },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); },
   });
 
   const remove = useMutation({
