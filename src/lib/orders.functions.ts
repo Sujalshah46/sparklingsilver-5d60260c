@@ -27,13 +27,13 @@ export const placeOrder = createServerFn({ method: "POST" })
 
     const { data: items, error: cartErr } = await supabase
       .from("cart_items")
-      .select("id, quantity, size, product:products(id, name, sku, price, image_url, in_stock, gross_weight, net_weight)")
+      .select("id, quantity, size, remark, product:products(id, name, sku, price, image_url, in_stock, gross_weight, net_weight)")
       .eq("user_id", userId);
     if (cartErr) throw new Error(cartErr.message);
     if (!items || items.length === 0) throw new Error("Cart is empty");
 
     type CartRow = {
-      id: string; quantity: number; size: string | null;
+      id: string; quantity: number; size: string | null; remark: string | null;
       product: { id: string; name: string; sku: string | null; price: number | string; image_url: string | null; in_stock: boolean | null; gross_weight: number | string | null; net_weight: number | string | null } | null;
     };
     const rows = items as unknown as CartRow[];
