@@ -35,17 +35,19 @@ function Checkout() {
     customer_notes: "",
   });
 
-  const { data: items } = useQuery({
+  const { data: items, isLoading: cartLoading } = useQuery({
     queryKey: ["cart", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cart_items")
         .select("id, quantity, size, product:products(*)")
         .eq("user_id", user!.id);
+      if (error) throw new Error(error.message);
       return data ?? [];
     },
   });
+
 
   const totalPieces = (items ?? []).reduce((n, it) => n + it.quantity, 0);
   const totalGrossWt = (items ?? []).reduce(
