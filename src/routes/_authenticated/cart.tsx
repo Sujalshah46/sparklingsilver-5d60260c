@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { resolveProductImage } from "@/lib/product-images";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
