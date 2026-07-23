@@ -146,7 +146,7 @@ function Row({ label, value }: { label: string; value: string }) {
   );
 }
 
-function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
+export function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
   const [value, setValue] = useState(initial);
   const focusedRef = useRef(false);
   useEffect(() => {
