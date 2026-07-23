@@ -1,0 +1,2 @@
+ALTER TABLE public.cart_items ADD CONSTRAINT cart_items_remark_length CHECK (remark IS NULL OR char_length(remark) <= 500);
+ALTER TABLE public.order_items ADD CONSTRAINT order_items_remark_length CHECK (remark IS NULL OR char_length(remark) <= 500);

@@ -13,6 +13,8 @@ import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 
+const REMARK_MAX_LENGTH = 500;
+
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: pageTitle("Cart") }] }),
   component: CartPage,
@@ -44,8 +46,13 @@ function CartPage() {
 
   const updateRemark = useMutation({
     mutationFn: async ({ id, remark }: { id: string; remark: string }) => {
-      return supabase.from("cart_items").update({ remark: remark.trim() ? remark : null }).eq("id", id);
+      const trimmed = remark.trim();
+      if (trimmed.length > REMARK_MAX_LENGTH) {
+        throw new Error(`Remark must be ${REMARK_MAX_LENGTH} characters or fewer`);
+      }
+      return supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
     },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); },
   });
 
@@ -133,18 +140,25 @@ function Row({ label, value }: { label: string; value: string }) {
 function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
   const [value, setValue] = useState(initial);
   useEffect(() => { setValue(initial); }, [initial]);
+  const over = value.length > REMARK_MAX_LENGTH;
   return (
     <div className="mt-3 border-t border-border pt-3">
-      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-        Remark (optional)
-      </label>
+      <div className="mb-1 flex items-center justify-between">
+        <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          Remark (optional)
+        </label>
+        <span className={`text-[10px] ${over ? "text-destructive" : "text-muted-foreground"}`}>
+          {value.length}/{REMARK_MAX_LENGTH}
+        </span>
+      </div>
       <Textarea
         value={value}
-        onChange={(e) => setValue(e.target.value)}
-        onBlur={() => { if (value !== initial) onSave(value); }}
+        onChange={(e) => setValue(e.target.value.slice(0, REMARK_MAX_LENGTH))}
+        onBlur={() => { if (!over && value !== initial) onSave(value); }}
         placeholder="Add a note for this product (size, design tweak, etc.)"
         rows={2}
-        maxLength={500}
+        maxLength={REMARK_MAX_LENGTH}
+        aria-invalid={over}
         className="min-h-[56px] resize-y text-sm"
       />
     </div>
