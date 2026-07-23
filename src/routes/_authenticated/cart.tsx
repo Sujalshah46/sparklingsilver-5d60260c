@@ -129,3 +129,24 @@ function Row({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between text-muted-foreground"><span>{label}</span><span className="text-foreground">{value}</span></div>
   );
 }
+
+function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
+  const [value, setValue] = useState(initial);
+  useEffect(() => { setValue(initial); }, [initial]);
+  return (
+    <div className="mt-3 border-t border-border pt-3">
+      <label className="mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Remark (optional)
+      </label>
+      <Textarea
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={() => { if (value !== initial) onSave(value); }}
+        placeholder="Add a note for this product (size, design tweak, etc.)"
+        rows={2}
+        maxLength={500}
+        className="min-h-[56px] resize-y text-sm"
+      />
+    </div>
+  );
+}
