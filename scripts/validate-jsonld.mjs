@@ -123,6 +123,9 @@ function walk(dir) {
     else if (TEXT_EXT.has(extname(entry))) {
       // Skip this validator itself — it intentionally contains "LLP" fixtures.
       if (p.endsWith(join("scripts", "validate-jsonld.mjs"))) continue;
+      // seo.ts intentionally references "LLP" in comments/regexes that strip it;
+      // its runtime output is verified above via jsonLdScript samples.
+      if (p.endsWith(join("src", "lib", "seo.ts"))) continue;
       const content = readFileSync(p, "utf8");
       const lines = content.split("\n");
       lines.forEach((line, i) => {
