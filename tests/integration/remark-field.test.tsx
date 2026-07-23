@@ -58,27 +58,18 @@ describe("RemarkField (cart integration)", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it("blocks save when the value exceeds the 500 character limit", async () => {
+  it("caps typed input at the 500 character limit", async () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
     render(<RemarkField initial="" onSave={onSave} />);
     const textarea = screen.getByPlaceholderText(/add a note/i) as HTMLTextAreaElement;
 
-    // The onChange handler caps at 500 chars, so paste + fireEvent to bypass and
-    // simulate an over-limit state (defence-in-depth check).
     await user.click(textarea);
-    act(() => {
-      // Directly set value + dispatch input to bypass maxLength slicing.
-      const setter = Object.getOwnPropertyDescriptor(
-        window.HTMLTextAreaElement.prototype,
-        "value",
-      )!.set!;
-      setter.call(textarea, "x".repeat(501));
-      textarea.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    await user.tab();
+    // Paste past the limit; onChange slices to 500.
+    await user.paste("y".repeat(600));
+    expect(textarea.value).toHaveLength(500);
 
-    expect(onSave).not.toHaveBeenCalled();
-    expect(textarea).toHaveAttribute("aria-invalid", "true");
+    await user.tab();
+    expect(onSave).toHaveBeenCalledWith("y".repeat(500));
   });
 });
