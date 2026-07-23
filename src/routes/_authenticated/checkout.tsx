@@ -125,7 +125,15 @@ function Checkout() {
     );
   }
 
-  if (!items || items.length === 0) {
+  if (cartLoading || !items) {
+    return (
+      <MobileShell title="Checkout">
+        <p className="py-20 text-center text-muted-foreground">Loading…</p>
+      </MobileShell>
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <MobileShell title="Checkout">
         <div className="py-20 text-center">
@@ -137,6 +145,7 @@ function Checkout() {
       </MobileShell>
     );
   }
+
 
   const valid =
     form.customer_name.trim() &&
