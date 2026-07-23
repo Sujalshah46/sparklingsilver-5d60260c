@@ -28,19 +28,23 @@ function CartPage() {
     queryKey: ["cart", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cart_items")
         .select("id, quantity, size, remark, product:products(*)")
         .eq("user_id", user!.id);
+      if (error) throw new Error(error.message);
       return data ?? [];
     },
   });
 
   const updateQty = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      if (quantity < 1) return supabase.from("cart_items").delete().eq("id", id);
-      return supabase.from("cart_items").update({ quantity }).eq("id", id);
+      const res = quantity < 1
+        ? await supabase.from("cart_items").delete().eq("id", id)
+        : await supabase.from("cart_items").update({ quantity }).eq("id", id);
+      if (res.error) throw new Error(res.error.message);
     },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
   });
 
@@ -50,14 +54,19 @@ function CartPage() {
       if (trimmed.length > REMARK_MAX_LENGTH) {
         throw new Error(`Remark must be ${REMARK_MAX_LENGTH} characters or fewer`);
       }
-      return supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
+      const { error } = await supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
+      if (error) throw new Error(error.message);
     },
     onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); },
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => { await supabase.from("cart_items").delete().eq("id", id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("cart_items").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
   });
 
