@@ -41,6 +41,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       if (!it.product) throw new Error("A product in your cart is unavailable");
       if (it.product.in_stock === false) throw new Error(`${it.product.name} is out of stock`);
       if (!Number.isInteger(it.quantity) || it.quantity < 1) throw new Error("Invalid quantity");
+      if (it.remark && it.remark.length > 500) throw new Error(`Remark for ${it.product.name} exceeds 500 characters`);
     }
 
     const subtotal = rows.reduce((s, it) => s + Number(it.product!.price) * it.quantity, 0);
