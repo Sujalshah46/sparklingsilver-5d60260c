@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,19 +28,23 @@ function CartPage() {
     queryKey: ["cart", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cart_items")
         .select("id, quantity, size, remark, product:products(*)")
         .eq("user_id", user!.id);
+      if (error) throw new Error(error.message);
       return data ?? [];
     },
   });
 
   const updateQty = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
-      if (quantity < 1) return supabase.from("cart_items").delete().eq("id", id);
-      return supabase.from("cart_items").update({ quantity }).eq("id", id);
+      const res = quantity < 1
+        ? await supabase.from("cart_items").delete().eq("id", id)
+        : await supabase.from("cart_items").update({ quantity }).eq("id", id);
+      if (res.error) throw new Error(res.error.message);
     },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
   });
 
@@ -50,14 +54,19 @@ function CartPage() {
       if (trimmed.length > REMARK_MAX_LENGTH) {
         throw new Error(`Remark must be ${REMARK_MAX_LENGTH} characters or fewer`);
       }
-      return supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
+      const { error } = await supabase.from("cart_items").update({ remark: trimmed ? trimmed : null }).eq("id", id);
+      if (error) throw new Error(error.message);
     },
     onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); },
   });
 
   const remove = useMutation({
-    mutationFn: async (id: string) => { await supabase.from("cart_items").delete().eq("id", id); },
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("cart_items").delete().eq("id", id);
+      if (error) throw new Error(error.message);
+    },
+    onError: (err: Error) => { toast.error(err.message); },
     onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
   });
 
@@ -139,7 +148,12 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
   const [value, setValue] = useState(initial);
-  useEffect(() => { setValue(initial); }, [initial]);
+  const focusedRef = useRef(false);
+  useEffect(() => {
+    // Only sync from server when the user isn't actively editing, otherwise
+    // a background refetch would wipe their in-progress typing.
+    if (!focusedRef.current) setValue(initial);
+  }, [initial]);
   const over = value.length > REMARK_MAX_LENGTH;
   return (
     <div className="mt-3 border-t border-border pt-3">
@@ -153,8 +167,12 @@ function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: st
       </div>
       <Textarea
         value={value}
+        onFocus={() => { focusedRef.current = true; }}
         onChange={(e) => setValue(e.target.value.slice(0, REMARK_MAX_LENGTH))}
-        onBlur={() => { if (!over && value !== initial) onSave(value); }}
+        onBlur={() => {
+          focusedRef.current = false;
+          if (!over && value.trim() !== initial.trim()) onSave(value);
+        }}
         placeholder="Add a note for this product (size, design tweak, etc.)"
         rows={2}
         maxLength={REMARK_MAX_LENGTH}
