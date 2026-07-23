@@ -65,6 +65,7 @@ export type Database = {
           id: string
           product_id: string
           quantity: number
+          remark: string | null
           size: string | null
           user_id: string
         }
@@ -73,6 +74,7 @@ export type Database = {
           id?: string
           product_id: string
           quantity?: number
+          remark?: string | null
           size?: string | null
           user_id: string
         }
@@ -81,6 +83,7 @@ export type Database = {
           id?: string
           product_id?: string
           quantity?: number
+          remark?: string | null
           size?: string | null
           user_id?: string
         }
@@ -263,6 +266,7 @@ export type Database = {
           product_name: string
           product_sku: string | null
           quantity: number
+          remark: string | null
           size: string | null
           unit_price: number
         }
@@ -276,6 +280,7 @@ export type Database = {
           product_name: string
           product_sku?: string | null
           quantity: number
+          remark?: string | null
           size?: string | null
           unit_price: number
         }
@@ -289,6 +294,7 @@ export type Database = {
           product_name?: string
           product_sku?: string | null
           quantity?: number
+          remark?: string | null
           size?: string | null
           unit_price?: number
         }
