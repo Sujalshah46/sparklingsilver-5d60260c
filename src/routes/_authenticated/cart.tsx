@@ -13,6 +13,8 @@ import { Trash2, Minus, Plus, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 
 
+const REMARK_MAX_LENGTH = 500;
+
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: pageTitle("Cart") }] }),
   component: CartPage,
