@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { RemarkField } from "@/routes/_authenticated/cart";
+import { RemarkField } from "../../src/routes/_authenticated/cart";
 
 describe("RemarkField (cart integration)", () => {
   it("does not clobber in-progress typing when a background refetch updates `initial`", async () => {
