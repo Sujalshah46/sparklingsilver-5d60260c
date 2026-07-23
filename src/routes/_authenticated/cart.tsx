@@ -148,7 +148,12 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: string) => void }) {
   const [value, setValue] = useState(initial);
-  useEffect(() => { setValue(initial); }, [initial]);
+  const focusedRef = useRef(false);
+  useEffect(() => {
+    // Only sync from server when the user isn't actively editing, otherwise
+    // a background refetch would wipe their in-progress typing.
+    if (!focusedRef.current) setValue(initial);
+  }, [initial]);
   const over = value.length > REMARK_MAX_LENGTH;
   return (
     <div className="mt-3 border-t border-border pt-3">
@@ -162,8 +167,12 @@ function RemarkField({ initial, onSave }: { initial: string; onSave: (remark: st
       </div>
       <Textarea
         value={value}
+        onFocus={() => { focusedRef.current = true; }}
         onChange={(e) => setValue(e.target.value.slice(0, REMARK_MAX_LENGTH))}
-        onBlur={() => { if (!over && value !== initial) onSave(value); }}
+        onBlur={() => {
+          focusedRef.current = false;
+          if (!over && value.trim() !== initial.trim()) onSave(value);
+        }}
         placeholder="Add a note for this product (size, design tweak, etc.)"
         rows={2}
         maxLength={REMARK_MAX_LENGTH}
