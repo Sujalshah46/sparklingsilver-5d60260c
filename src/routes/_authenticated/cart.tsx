@@ -171,8 +171,10 @@ export function RemarkField({ initial, onSave }: { initial: string; onSave: (rem
         onChange={(e) => setValue(e.target.value.slice(0, REMARK_MAX_LENGTH))}
         onBlur={() => {
           focusedRef.current = false;
-          if (!over && value.trim() !== initial.trim()) onSave(value);
+          const next = value.trim();
+          if (!over && next !== initial.trim()) onSave(next);
         }}
+
         placeholder="Add a note for this product (size, design tweak, etc.)"
         rows={2}
         maxLength={REMARK_MAX_LENGTH}
