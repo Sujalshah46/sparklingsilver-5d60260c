@@ -35,17 +35,19 @@ function Checkout() {
     customer_notes: "",
   });
 
-  const { data: items } = useQuery({
+  const { data: items, isLoading: cartLoading } = useQuery({
     queryKey: ["cart", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("cart_items")
         .select("id, quantity, size, product:products(*)")
         .eq("user_id", user!.id);
+      if (error) throw new Error(error.message);
       return data ?? [];
     },
   });
+
 
   const totalPieces = (items ?? []).reduce((n, it) => n + it.quantity, 0);
   const totalGrossWt = (items ?? []).reduce(
@@ -123,7 +125,15 @@ function Checkout() {
     );
   }
 
-  if (!items || items.length === 0) {
+  if (cartLoading || !items) {
+    return (
+      <MobileShell title="Checkout">
+        <p className="py-20 text-center text-muted-foreground">Loading…</p>
+      </MobileShell>
+    );
+  }
+
+  if (items.length === 0) {
     return (
       <MobileShell title="Checkout">
         <div className="py-20 text-center">
@@ -135,6 +145,7 @@ function Checkout() {
       </MobileShell>
     );
   }
+
 
   const valid =
     form.customer_name.trim() &&
