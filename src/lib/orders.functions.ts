@@ -88,6 +88,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         gross_weight: it.product!.gross_weight != null ? Number(it.product!.gross_weight) : null,
         net_weight: it.product!.net_weight != null ? Number(it.product!.net_weight) : null,
         size: it.size,
+        remark: it.remark ?? null,
       })),
     );
     if (itemsErr) {
