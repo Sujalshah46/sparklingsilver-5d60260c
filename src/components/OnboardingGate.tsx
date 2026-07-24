@@ -65,18 +65,16 @@ export function OnboardingGate() {
     const pathname = window.location.pathname;
     if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) return;
 
-    const devPreview = import.meta.env.DEV && new URLSearchParams(window.location.search).get("_previewOnboarding") === "1";
-
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
-    if (role && !devPreview) return;
+    if (role) return;
 
     const { data: p } = await supabase
       .from("profiles")
       .select("business_name, contact_person, mobile, email, delivery_address, gstin, additional_remarks, profile_completed")
       .eq("id", user.id)
       .maybeSingle();
-    if (!devPreview && (!p || p.profile_completed)) return;
+    if (!p || p.profile_completed) return;
 
     setUserId(user.id);
     setBusinessName(p?.business_name ?? "");
