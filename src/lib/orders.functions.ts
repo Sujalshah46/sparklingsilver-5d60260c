@@ -4,14 +4,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
 const placeOrderInput = z.object({
-  customer_name: z.string().trim().min(1).max(100),
-  customer_phone: z.string().trim().min(8).max(20),
-  customer_email: z.string().trim().email().max(200),
-  customer_address: z.string().trim().min(1).max(500),
-  customer_city: z.string().trim().min(1).max(80),
-  customer_pincode: z.string().trim().min(4).max(10),
+  customer_address: z.string().trim().min(1).max(1000),
   customer_notes: z.string().trim().max(1000).optional().nullable(),
 });
+
 
 /**
  * Manual order placement — no payment.
