@@ -76,7 +76,7 @@ export function OnboardingGate() {
       .select("business_name, contact_person, mobile, email, delivery_address, gstin, additional_remarks, profile_completed")
       .eq("id", user.id)
       .maybeSingle();
-    if (!p || p.profile_completed) return;
+    if (!devPreview && (!p || p.profile_completed)) return;
 
     setUserId(user.id);
     setBusinessName(p.business_name ?? "");
