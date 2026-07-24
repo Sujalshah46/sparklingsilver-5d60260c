@@ -244,6 +244,62 @@ function InventoryPage() {
           </ul>
         )}
       </div>
+
+      <Dialog open={bulkOpen} onOpenChange={setBulkOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Bulk update {selected.size} product{selected.size === 1 ? "" : "s"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              Leave a field blank to keep existing values. Filled fields apply to every selected product.
+            </p>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-qty" className="text-xs">Set stock quantity</Label>
+              <Input id="bulk-qty" type="number" min={0} inputMode="numeric" placeholder="e.g. 5"
+                value={bulkQty} onChange={(e) => setBulkQty(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-thr" className="text-xs">Set low-stock threshold</Label>
+              <Input id="bulk-thr" type="number" min={0} inputMode="numeric" placeholder="e.g. 2"
+                value={bulkThr} onChange={(e) => setBulkThr(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-reason" className="text-xs">Reason (optional)</Label>
+              <Input id="bulk-reason" placeholder="Stock reset" maxLength={200}
+                value={bulkReason} onChange={(e) => setBulkReason(e.target.value)} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBulkOpen(false)}>Cancel</Button>
+            <Button
+              onClick={async () => {
+                const qty = bulkQty.trim() === "" ? null : Number(bulkQty);
+                const thr = bulkThr.trim() === "" ? null : Number(bulkThr);
+                if (qty === null && thr === null) { toast.error("Enter quantity or threshold"); return; }
+                if (qty !== null && (!Number.isFinite(qty) || qty < 0)) { toast.error("Invalid quantity"); return; }
+                if (thr !== null && (!Number.isFinite(thr) || thr < 0)) { toast.error("Invalid threshold"); return; }
+                try {
+                  const res = await bulkApply({ data: {
+                    product_ids: Array.from(selected),
+                    quantity: qty,
+                    low_stock_threshold: thr,
+                    reason: bulkReason.trim() || null,
+                  }});
+                  toast.success(`Updated ${res.updated}${res.failed ? `, ${res.failed} failed` : ""}`);
+                  setBulkOpen(false);
+                  setSelected(new Set());
+                  qc.invalidateQueries({ queryKey: ["admin-inventory"] });
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Bulk update failed");
+                }
+              }}
+            >
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </MobileShell>
   );
 }
