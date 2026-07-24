@@ -137,6 +137,47 @@ function InventoryPage() {
           ))}
         </div>
 
+        {filtered.length > 0 && (() => {
+          const filteredIds = filtered.map((p) => p.id);
+          const selectedInView = filteredIds.filter((id) => selected.has(id)).length;
+          const allSelected = selectedInView === filteredIds.length;
+          return (
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-lg border border-border bg-background/95 p-2 backdrop-blur">
+              <label className="flex items-center gap-2 text-xs">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={(v) => {
+                    setSelected((s) => {
+                      const n = new Set(s);
+                      if (v) filteredIds.forEach((id) => n.add(id));
+                      else filteredIds.forEach((id) => n.delete(id));
+                      return n;
+                    });
+                  }}
+                />
+                <span className="font-medium">
+                  {selected.size > 0 ? `${selected.size} selected` : "Select all"}
+                </span>
+              </label>
+              <div className="flex gap-1">
+                {selected.size > 0 && (
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setSelected(new Set())}>
+                    Clear
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  disabled={selected.size === 0}
+                  onClick={() => { setBulkQty(""); setBulkThr(""); setBulkReason(""); setBulkOpen(true); }}
+                >
+                  Bulk update
+                </Button>
+              </div>
+            </div>
+          );
+        })()}
+
         {filtered.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">No products.</p>
         ) : (
@@ -146,9 +187,11 @@ function InventoryPage() {
               const thr = p.low_stock_threshold ?? 0;
               const out = qty === 0;
               const low = !out && qty <= thr;
+              const isSel = selected.has(p.id);
               return (
-                <li key={p.id} className="rounded-xl border border-border bg-card p-3">
+                <li key={p.id} className={`rounded-xl border bg-card p-3 ${isSel ? "border-burgundy ring-1 ring-burgundy/30" : "border-border"}`}>
                   <div className="flex items-center gap-3">
+                    <Checkbox checked={isSel} onCheckedChange={() => toggleOne(p.id)} className="shrink-0" />
                     <img
                       src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 112, quality: 55 })}
                       alt={p.name}
