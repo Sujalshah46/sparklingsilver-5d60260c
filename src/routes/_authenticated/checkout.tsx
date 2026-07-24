@@ -1,6 +1,6 @@
 import { pageTitle } from "@/lib/seo";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,9 +9,9 @@ import { useAuth } from "@/hooks/use-auth";
 
 import { placeOrder as placeOrderFn } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, MessageCircle } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
@@ -25,15 +25,9 @@ function Checkout() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [placed, setPlaced] = useState<{ id: string; order_no: string } | null>(null);
-  const [form, setForm] = useState({
-    customer_name: "",
-    customer_phone: "",
-    customer_email: user?.email ?? "",
-    customer_address: "",
-    customer_city: "",
-    customer_pincode: "",
-    customer_notes: "",
-  });
+  const [useDefault, setUseDefault] = useState(true);
+  const [address, setAddress] = useState("");
+  const [notes, setNotes] = useState("");
 
   const { data: items, isLoading: cartLoading } = useQuery({
     queryKey: ["cart", user?.id],
@@ -48,6 +42,25 @@ function Checkout() {
     },
   });
 
+  const { data: profile } = useQuery({
+    queryKey: ["profile-address", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("delivery_address")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      return data;
+    },
+  });
+
+  const defaultAddress = (profile?.delivery_address ?? "").trim();
+
+  useEffect(() => {
+    if (useDefault) setAddress(defaultAddress);
+  }, [useDefault, defaultAddress]);
 
   const totalPieces = (items ?? []).reduce((n, it) => n + it.quantity, 0);
   const totalGrossWt = (items ?? []).reduce(
@@ -57,7 +70,13 @@ function Checkout() {
 
   const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
-    mutationFn: async () => placeOrderRpc({ data: form }),
+    mutationFn: async () =>
+      placeOrderRpc({
+        data: {
+          customer_address: address.trim(),
+          customer_notes: notes.trim() || null,
+        },
+      }),
     onSuccess: (order) => {
       setPlaced({ id: order.id, order_no: order.order_no });
       qc.invalidateQueries({ queryKey: ["cart"] });
@@ -146,14 +165,7 @@ function Checkout() {
     );
   }
 
-
-  const valid =
-    form.customer_name.trim() &&
-    form.customer_phone.trim().length >= 8 &&
-    /.+@.+\..+/.test(form.customer_email) &&
-    form.customer_address.trim() &&
-    form.customer_city.trim() &&
-    form.customer_pincode.trim().length >= 4;
+  const valid = address.trim().length > 0;
 
   return (
     <MobileShell title="Place Order">
@@ -161,7 +173,7 @@ function Checkout() {
         className="space-y-5 p-4"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!valid) return toast.error("Please fill all required fields");
+          if (!valid) return toast.error("Please enter a delivery address");
           placeOrder.mutate();
         }}
       >
@@ -171,51 +183,46 @@ function Checkout() {
 
         <div className="space-y-3">
           <div>
-            <Label htmlFor="name">Full name *</Label>
-            <Input id="name" required maxLength={100}
-              value={form.customer_name}
-              onChange={(e) => setForm({ ...form, customer_name: e.target.value })} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="phone">WhatsApp / Phone *</Label>
-              <Input id="phone" inputMode="tel" required maxLength={20}
-                value={form.customer_phone}
-                onChange={(e) => setForm({ ...form, customer_phone: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor="email">Email *</Label>
-              <Input id="email" type="email" required maxLength={200}
-                value={form.customer_email}
-                onChange={(e) => setForm({ ...form, customer_email: e.target.value })} />
-            </div>
-          </div>
-          <div>
             <Label htmlFor="addr">Delivery address *</Label>
-            <Textarea id="addr" required maxLength={500} rows={2}
-              value={form.customer_address}
-              onChange={(e) => setForm({ ...form, customer_address: e.target.value })} />
+            <Textarea
+              id="addr"
+              required
+              maxLength={1000}
+              rows={4}
+              readOnly={useDefault}
+              placeholder={useDefault ? "" : "Enter a new delivery address"}
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className={useDefault ? "bg-muted/50" : undefined}
+            />
+            <label className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Checkbox
+                checked={useDefault}
+                onCheckedChange={(v) => {
+                  const on = v === true;
+                  setUseDefault(on);
+                  if (on) setAddress(defaultAddress);
+                  else setAddress("");
+                }}
+                disabled={!defaultAddress}
+              />
+              <span>
+                Use my default delivery address
+                {!defaultAddress && " (not set in profile)"}
+              </span>
+            </label>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="city">City *</Label>
-              <Input id="city" required maxLength={80}
-                value={form.customer_city}
-                onChange={(e) => setForm({ ...form, customer_city: e.target.value })} />
-            </div>
-            <div>
-              <Label htmlFor="pin">Pincode *</Label>
-              <Input id="pin" inputMode="numeric" required maxLength={10}
-                value={form.customer_pincode}
-                onChange={(e) => setForm({ ...form, customer_pincode: e.target.value })} />
-            </div>
-          </div>
+
           <div>
             <Label htmlFor="notes">Notes (optional)</Label>
-            <Textarea id="notes" maxLength={1000} rows={2}
+            <Textarea
+              id="notes"
+              maxLength={1000}
+              rows={2}
               placeholder="Anything we should know about your order"
-              value={form.customer_notes}
-              onChange={(e) => setForm({ ...form, customer_notes: e.target.value })} />
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
           </div>
         </div>
 
