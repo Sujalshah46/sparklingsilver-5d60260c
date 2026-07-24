@@ -21,9 +21,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2 } from "lucide-react";
+import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
+import { supabase } from "@/integrations/supabase/client";
+import { openWhatsAppUrl } from "@/lib/site";
 
 export const Route = createFileRoute("/_authenticated/admin/users")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Users") }] }),
@@ -252,6 +254,7 @@ function Field({ label, value, onChange, type = "text", required = false }: { la
 function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string; email: string; password: string; user_id: string } | null; onOpenChange: (b: boolean) => void }) {
   const send = useServerFn(adminSendCredentials);
   const [sending, setSending] = useState(false);
+  const [waSending, setWaSending] = useState(false);
   if (!creds) return null;
 
   const copy = (v: string, label: string) => {
@@ -269,6 +272,41 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
     finally { setSending(false); }
   };
 
+  const onSendWhatsApp = async () => {
+    setWaSending(true);
+    try {
+      const { data: p, error } = await supabase
+        .from("profiles")
+        .select("mobile, business_name, contact_person")
+        .eq("id", creds.user_id)
+        .maybeSingle();
+      if (error) throw error;
+      const raw = (p?.mobile ?? "").replace(/\D/g, "");
+      if (!raw) {
+        toast.error("This user has no mobile number in their profile");
+        return;
+      }
+      const phone = raw.length === 10 ? `91${raw}` : raw;
+      const greetName = (p?.contact_person || p?.business_name || "").trim();
+      const lines = [
+        greetName ? `Hello ${greetName},` : "Hello,",
+        "",
+        "Your Sparkling Silver account credentials:",
+        creds.username ? `Username: ${creds.username}` : null,
+        `Email: ${creds.email}`,
+        `Password: ${creds.password}`,
+        "",
+        "Please log in and change your password after first sign-in.",
+      ].filter(Boolean) as string[];
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+      openWhatsAppUrl(url);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+    } finally {
+      setWaSending(false);
+    }
+  };
+
   return (
     <Dialog open={!!creds} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -283,11 +321,18 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
           <Row label="Email" value={creds.email} onCopy={() => copy(creds.email, "Email")} />
           <Row label="Password" value={creds.password} onCopy={() => copy(creds.password, "Password")} mono />
         </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
-          <Button onClick={onSend} disabled={sending}>
+        <DialogFooter className="flex-col gap-2 sm:flex-col sm:gap-2">
+          <Button onClick={onSend} disabled={sending} className="w-full">
             <Send className="mr-1 h-4 w-4" /> {sending ? "Sending…" : "Send credentials (Email)"}
           </Button>
+          <Button
+            onClick={onSendWhatsApp}
+            disabled={waSending}
+            className="w-full bg-green-600 text-white hover:bg-green-700"
+          >
+            <MessageCircle className="mr-1 h-4 w-4" /> {waSending ? "Opening…" : "Send credentials (WhatsApp)"}
+          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
