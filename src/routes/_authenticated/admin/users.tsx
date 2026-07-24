@@ -36,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 type UserRow = {
   id: string; username: string | null; business_name: string | null; contact_person: string | null;
   email: string | null; mobile: string | null; status: string; must_change_password: boolean; created_at: string;
+  is_admin?: boolean;
 };
 
 function AdminUsersPage() {
