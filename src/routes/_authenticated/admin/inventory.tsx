@@ -28,6 +28,20 @@ function InventoryPage() {
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const adjust = useServerFn(adjustStock);
+  const bulkApply = useServerFn(bulkApplyInventory);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkQty, setBulkQty] = useState<string>("");
+  const [bulkThr, setBulkThr] = useState<string>("");
+  const [bulkReason, setBulkReason] = useState<string>("");
+
+  const toggleOne = (id: string) => {
+    setSelected((s) => {
+      const n = new Set(s);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
 
   const { data: products } = useQuery({
     queryKey: ["admin-inventory"],
