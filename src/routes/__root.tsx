@@ -130,9 +130,31 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 const PUBLIC_PATH_PREFIXES = ["/auth", "/reset-password", "/api/"];
+const ONBOARDING_EXEMPT = ["/auth", "/reset-password", "/api/", "/complete-profile", "/change-password"];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+}
+function isOnboardingExempt(pathname: string) {
+  return ONBOARDING_EXEMPT.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+}
+
+async function enforceOnboarding(router: ReturnType<typeof useRouter>, userId: string) {
+  const pathname = window.location.pathname;
+  if (isOnboardingExempt(pathname)) return;
+  const { data: role } = await supabase
+    .from("user_roles").select("role").eq("user_id", userId).eq("role", "admin").maybeSingle();
+  if (role) return;
+  const { data: profile } = await supabase
+    .from("profiles").select("profile_completed, must_change_password").eq("id", userId).maybeSingle();
+  if (profile?.must_change_password) {
+    router.navigate({ to: "/change-password", replace: true });
+    return;
+  }
+  if (!profile?.profile_completed) {
+    const redirectTo = window.location.pathname + window.location.search;
+    router.navigate({ to: "/complete-profile", search: { redirect: redirectTo }, replace: true });
+  }
 }
 
 function RootComponent() {
@@ -144,17 +166,19 @@ function RootComponent() {
 
     const enforceAuth = async () => {
       const pathname = window.location.pathname;
-      if (isPublicPath(pathname)) return;
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
+        if (isPublicPath(pathname)) return;
         const redirectTo = window.location.pathname + window.location.search;
         router.navigate({ to: "/auth", search: { redirect: redirectTo }, replace: true });
+        return;
       }
+      await enforceOnboarding(router, data.session.user.id);
     };
     enforceAuth();
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
@@ -163,6 +187,10 @@ function RootComponent() {
         if (!isPublicPath(pathname)) {
           router.navigate({ to: "/auth", replace: true });
         }
+        return;
+      }
+      if (session?.user) {
+        enforceOnboarding(router, session.user.id);
       }
     });
     const onRejection = (e: PromiseRejectionEvent) => {
