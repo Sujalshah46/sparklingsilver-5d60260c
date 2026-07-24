@@ -11,6 +11,7 @@ import {
   adminSetUserStatus,
   adminSendCredentials,
   adminResolveResetRequest,
+  adminDeleteUser,
 } from "@/lib/users.functions";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
