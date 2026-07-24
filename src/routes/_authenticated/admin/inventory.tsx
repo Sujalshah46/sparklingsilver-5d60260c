@@ -8,9 +8,12 @@ import { MobileShell } from "@/components/MobileShell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Minus, Plus, Search, AlertTriangle, PackageX } from "lucide-react";
 import { toast } from "sonner";
-import { adjustStock } from "@/lib/inventory.functions";
+import { adjustStock, bulkApplyInventory } from "@/lib/inventory.functions";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory")({
