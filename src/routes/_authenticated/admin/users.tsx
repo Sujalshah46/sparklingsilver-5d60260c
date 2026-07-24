@@ -438,7 +438,17 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
               </div>
               {waPreview && (
                 <div className="rounded-md border bg-muted/40 p-3">
-                  <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Message preview</p>
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Message preview</p>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => copy(waPreview.message, "WhatsApp message")}
+                      className="h-7 gap-1 text-xs"
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Copy message
+                    </Button>
+                  </div>
                   <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed">
                     {waPreview.message}
                   </pre>
