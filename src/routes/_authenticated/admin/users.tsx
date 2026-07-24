@@ -255,20 +255,37 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
   const send = useServerFn(adminSendCredentials);
   const [sending, setSending] = useState(false);
   const [waSending, setWaSending] = useState(false);
+  const [confirmChannel, setConfirmChannel] = useState<null | "email" | "whatsapp">(null);
   if (!creds) return null;
 
   const copy = (v: string, label: string) => {
     navigator.clipboard.writeText(v);
     toast.success(`${label} copied`);
   };
+
+  const logAudit = async (channel: "email" | "whatsapp", ok: boolean, extra?: Record<string, unknown>) => {
+    const { data: u } = await supabase.auth.getUser();
+    const actor = u.user?.id;
+    if (!actor) return;
+    await supabase.from("user_activity_log").insert({
+      user_id: creds.user_id,
+      actor_id: actor,
+      action: ok ? `credentials_sent_${channel}` : `credentials_send_failed_${channel}`,
+      meta: { channel, email: creds.email, username: creds.username || null, ...(extra ?? {}) },
+    });
+  };
+
   const onSend = async () => {
     setSending(true);
     try {
       const r = await send({ data: { user_id: creds.user_id, password: creds.password } });
-      if (r.skipped) toast.warning("Email connector not configured — share manually");
-      else if (r.ok) toast.success("Credentials emailed");
-      else toast.error(r.error ?? "Send failed");
-    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+      if (r.skipped) { toast.warning("Email connector not configured — share manually"); await logAudit("email", false, { reason: "connector_not_configured" }); }
+      else if (r.ok) { toast.success("Credentials emailed"); await logAudit("email", true); }
+      else { toast.error(r.error ?? "Send failed"); await logAudit("email", false, { error: r.error ?? null }); }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed");
+      await logAudit("email", false, { error: e instanceof Error ? e.message : String(e) });
+    }
     finally { setSending(false); }
   };
 
@@ -284,6 +301,7 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
       const raw = (p?.mobile ?? "").replace(/\D/g, "");
       if (!raw) {
         toast.error("This user has no mobile number in their profile");
+        await logAudit("whatsapp", false, { reason: "no_mobile" });
         return;
       }
       const phone = raw.length === 10 ? `91${raw}` : raw;
@@ -300,11 +318,20 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
       ].filter(Boolean) as string[];
       const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
       openWhatsAppUrl(url);
+      await logAudit("whatsapp", true, { phone_last4: phone.slice(-4) });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
+      await logAudit("whatsapp", false, { error: e instanceof Error ? e.message : String(e) });
     } finally {
       setWaSending(false);
     }
+  };
+
+  const confirmSend = async () => {
+    const channel = confirmChannel;
+    setConfirmChannel(null);
+    if (channel === "email") await onSend();
+    else if (channel === "whatsapp") await onSendWhatsApp();
   };
 
   return (
@@ -322,12 +349,12 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
           <Row label="Password" value={creds.password} onCopy={() => copy(creds.password, "Password")} mono />
         </div>
         <DialogFooter className="flex-col gap-2 sm:flex-col sm:gap-2">
-          <Button onClick={onSend} disabled={sending} className="w-full">
+          <Button onClick={() => setConfirmChannel("email")} disabled={sending || waSending} className="w-full">
             <Send className="mr-1 h-4 w-4" /> {sending ? "Sending…" : "Send credentials (Email)"}
           </Button>
           <Button
-            onClick={onSendWhatsApp}
-            disabled={waSending}
+            onClick={() => setConfirmChannel("whatsapp")}
+            disabled={sending || waSending}
             className="w-full bg-green-600 text-white hover:bg-green-700"
           >
             <MessageCircle className="mr-1 h-4 w-4" /> {waSending ? "Opening…" : "Send credentials (WhatsApp)"}
@@ -335,9 +362,34 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
           <Button variant="outline" onClick={() => onOpenChange(false)} className="w-full">Close</Button>
         </DialogFooter>
       </DialogContent>
+
+      <Dialog open={confirmChannel !== null} onOpenChange={(o) => !o && setConfirmChannel(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirmChannel === "whatsapp" ? "Send credentials via WhatsApp?" : "Send credentials via Email?"}
+            </DialogTitle>
+            <DialogDescription>
+              {confirmChannel === "whatsapp"
+                ? `This will open WhatsApp with the username, email, and password addressed to ${creds.email}. The action will be logged in the audit trail.`
+                : `This will email the username and password to ${creds.email}. The action will be logged in the audit trail.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmChannel(null)}>Cancel</Button>
+            <Button
+              onClick={confirmSend}
+              className={confirmChannel === "whatsapp" ? "bg-green-600 text-white hover:bg-green-700" : ""}
+            >
+              Yes, send
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
+
 
 function Row({ label, value, onCopy, mono = false }: { label: string; value: string; onCopy: () => void; mono?: boolean }) {
   return (
