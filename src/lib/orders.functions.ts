@@ -4,14 +4,10 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 
 const placeOrderInput = z.object({
-  customer_name: z.string().trim().min(1).max(100),
-  customer_phone: z.string().trim().min(8).max(20),
-  customer_email: z.string().trim().email().max(200),
-  customer_address: z.string().trim().min(1).max(500),
-  customer_city: z.string().trim().min(1).max(80),
-  customer_pincode: z.string().trim().min(4).max(10),
+  customer_address: z.string().trim().min(1).max(1000),
   customer_notes: z.string().trim().max(1000).optional().nullable(),
 });
+
 
 /**
  * Manual order placement — no payment.
@@ -44,17 +40,30 @@ export const placeOrder = createServerFn({ method: "POST" })
       if (it.remark && it.remark.length > 500) throw new Error(`Remark for ${it.product.name} exceeds 500 characters`);
     }
 
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("business_name, contact_person, mobile, email")
+      .eq("id", userId)
+      .maybeSingle();
+
+    const customerName = (profile?.business_name || profile?.contact_person || "").trim();
+    const customerPhone = (profile?.mobile || "").trim();
+    const customerEmail = (profile?.email || "").trim();
+    if (!customerName || !customerPhone || !customerEmail) {
+      throw new Error("Please complete your profile before placing an order");
+    }
+
     const subtotal = rows.reduce((s, it) => s + Number(it.product!.price) * it.quantity, 0);
     const gst = Math.round(subtotal * 0.03 * 100) / 100;
     const total = Math.round((subtotal + gst) * 100) / 100;
 
     const shipping = {
-      recipient_name: data.customer_name,
-      mobile: data.customer_phone,
+      recipient_name: customerName,
+      mobile: customerPhone,
       line1: data.customer_address,
-      city: data.customer_city,
+      city: "",
       state: "",
-      pincode: data.customer_pincode,
+      pincode: "",
     };
 
     const { data: order, error: orderErr } = await supabase
@@ -65,14 +74,13 @@ export const placeOrder = createServerFn({ method: "POST" })
         status: "pending",
         payment_method: null,
         shipping_address: shipping as never,
-        customer_name: data.customer_name,
-        customer_phone: data.customer_phone,
-        customer_email: data.customer_email,
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_email: customerEmail,
         customer_address: data.customer_address,
-        customer_city: data.customer_city,
-        customer_pincode: data.customer_pincode,
         customer_notes: data.customer_notes ?? null,
       })
+
       .select()
       .single();
     if (orderErr || !order) throw new Error(orderErr?.message ?? "Could not create order");
@@ -109,7 +117,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       const { notifyAdmins } = await import("./push.server");
       notifyAdmins({
         title: "New order received",
-        body: `${data.customer_name} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
+        body: `${customerName} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
         url: `/admin/orders/${order.id}`,
         tag: `order-${order.id}`,
       }).catch(() => {});
