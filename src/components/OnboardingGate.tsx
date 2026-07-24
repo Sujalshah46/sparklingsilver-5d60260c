@@ -79,13 +79,13 @@ export function OnboardingGate() {
     if (!devPreview && (!p || p.profile_completed)) return;
 
     setUserId(user.id);
-    setBusinessName(p.business_name ?? "");
-    setContactPerson(p.contact_person ?? "");
-    setMobile(p.mobile ?? "");
-    setEmail(p.email ?? user.email ?? "");
-    setDeliveryAddress(p.delivery_address ?? "");
-    setGstin(p.gstin ?? "");
-    setRemarks(p.additional_remarks ?? "");
+    setBusinessName(p?.business_name ?? "");
+    setContactPerson(p?.contact_person ?? "");
+    setMobile(p?.mobile ?? "");
+    setEmail(p?.email ?? user.email ?? "");
+    setDeliveryAddress(p?.delivery_address ?? "");
+    setGstin(p?.gstin ?? "");
+    setRemarks(p?.additional_remarks ?? "");
     setOpen(true);
   };
 
