@@ -117,7 +117,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       const { notifyAdmins } = await import("./push.server");
       notifyAdmins({
         title: "New order received",
-        body: `${data.customer_name} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
+        body: `${customerName} · ${rows.length} item${rows.length > 1 ? "s" : ""} · ₹${total.toFixed(0)}`,
         url: `/admin/orders/${order.id}`,
         tag: `order-${order.id}`,
       }).catch(() => {});
