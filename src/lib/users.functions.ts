@@ -155,6 +155,23 @@ export const adminSendCredentials = createServerFn({ method: "POST" })
     return r;
   });
 
+export const adminDeleteUser = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await ensureAdmin(supabase, userId);
+    if (data.user_id === userId) throw new Error("You cannot delete your own account");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.from("profiles").update({ status: "deleted" }).eq("id", data.user_id);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.auth.admin.updateUserById(data.user_id, { ban_duration: "876000h" }).catch(() => {});
+    await supabaseAdmin.from("user_activity_log").insert({
+      user_id: data.user_id, actor_id: userId, action: "admin_delete_user", meta: {},
+    });
+    return { ok: true };
+  });
+
 export const adminListUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -163,9 +180,17 @@ export const adminListUsers = createServerFn({ method: "GET" })
     const { data, error } = await supabase
       .from("profiles")
       .select("id, username, business_name, contact_person, email, mobile, status, must_change_password, created_at")
+      .neq("status", "deleted")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
-    return data ?? [];
+    const rows = data ?? [];
+    const ids = rows.map((r: any) => r.id);
+    let adminIds = new Set<string>();
+    if (ids.length) {
+      const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "admin").in("user_id", ids);
+      adminIds = new Set((roles ?? []).map((r: any) => r.user_id));
+    }
+    return rows.map((r: any) => ({ ...r, is_admin: adminIds.has(r.id) }));
   });
 
 export const adminListResetRequests = createServerFn({ method: "GET" })

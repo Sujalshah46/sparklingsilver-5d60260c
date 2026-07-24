@@ -11,6 +11,7 @@ import {
   adminSetUserStatus,
   adminSendCredentials,
   adminResolveResetRequest,
+  adminDeleteUser,
 } from "@/lib/users.functions";
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2, MessageCircle } from "lucide-react";
+import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2, MessageCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/_authenticated/admin/users")({
 type UserRow = {
   id: string; username: string | null; business_name: string | null; contact_person: string | null;
   email: string | null; mobile: string | null; status: string; must_change_password: boolean; created_at: string;
+  is_admin?: boolean;
 };
 
 function AdminUsersPage() {
@@ -112,7 +114,9 @@ function AdminUsersPage() {
 function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; onShowCreds: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
   const reset = useServerFn(adminResetPassword);
   const setStatus = useServerFn(adminSetUserStatus);
+  const del = useServerFn(adminDeleteUser);
   const [busy, setBusy] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const onReset = async () => {
     setBusy(true);
@@ -134,12 +138,29 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
     } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
     finally { setBusy(false); }
   };
+  const onDelete = async () => {
+    setBusy(true);
+    try {
+      await del({ data: { user_id: u.id } });
+      toast.success("User deleted");
+      setConfirmDelete(false);
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
 
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="truncate font-serif text-sm font-semibold">{u.business_name ?? u.contact_person ?? u.email}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="truncate font-serif text-sm font-semibold">{u.business_name ?? u.contact_person ?? u.email}</p>
+            {u.is_admin && (
+              <Badge className="shrink-0 gap-0.5 bg-burgundy px-1.5 py-0 text-[10px] font-semibold text-white">
+                <ShieldCheck className="h-3 w-3" /> Admin
+              </Badge>
+            )}
+          </div>
           <p className="truncate text-[11px] text-muted-foreground">@{u.username ?? "—"} · {u.email}</p>
           <p className="text-[11px] text-muted-foreground">Created {formatDate(u.created_at)}</p>
         </div>
@@ -152,7 +173,42 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
         <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
           <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
         </Button>
+        {u.status !== "active" && !u.is_admin && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => setConfirmDelete(true)}
+            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+          </Button>
+        )}
       </div>
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete this user?</DialogTitle>
+            <DialogDescription>
+              The account will be hidden from the admin panel. Data remains in the database and can be restored by support if needed. This action is logged.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-md border bg-muted/40 p-3 text-sm">
+            <p className="font-medium">{u.business_name ?? u.contact_person ?? u.email}</p>
+            <p className="text-[11px] text-muted-foreground">@{u.username ?? "—"} · {u.email}</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDelete(false)} disabled={busy}>Cancel</Button>
+            <Button
+              onClick={onDelete}
+              disabled={busy}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              <Trash2 className="mr-1 h-3.5 w-3.5" /> Yes, delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
