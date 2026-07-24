@@ -98,10 +98,27 @@ export function OnboardingGate() {
         setOpen(false);
         return;
       }
-      if ((event === "SIGNED_IN" || event === "USER_UPDATED") && session?.user) {
+      // Reopen on fresh login, restored session after refresh, token refresh, or user updates.
+      if (
+        (event === "SIGNED_IN" ||
+          event === "USER_UPDATED" ||
+          event === "INITIAL_SESSION" ||
+          event === "TOKEN_REFRESHED") &&
+        session?.user
+      ) {
         check(session.user);
       }
     });
+
+    // Re-check when the user navigates away from an exempt path (e.g. /auth → /).
+    const onNav = () => {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data.user && !open) check(data.user);
+      });
+    };
+    window.addEventListener("popstate", onNav);
+    window.addEventListener("pushstate", onNav);
+    window.addEventListener("replacestate", onNav);
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
