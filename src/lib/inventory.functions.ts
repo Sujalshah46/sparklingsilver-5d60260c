@@ -164,3 +164,52 @@ export const bulkUpdateStock = createServerFn({ method: "POST" })
     const failed = results.filter((r) => r.status === "failed").length;
     return { ok: true, updated, notFound, failed, results };
   });
+
+const bulkApplyInput = z.object({
+  product_ids: z.array(z.string().uuid()).min(1).max(2000),
+  quantity: z.number().int().min(0).max(1000000).optional().nullable(),
+  low_stock_threshold: z.number().int().min(0).max(10000).optional().nullable(),
+  reason: z.string().trim().max(200).optional().nullable(),
+});
+
+export const bulkApplyInventory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => bulkApplyInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await ensureAdmin(supabase, userId);
+    const hasQty = data.quantity !== null && data.quantity !== undefined;
+    const hasThr = data.low_stock_threshold !== null && data.low_stock_threshold !== undefined;
+    if (!hasQty && !hasThr) throw new Error("Provide quantity and/or threshold");
+
+    const { data: prods, error: fe } = await supabase.from("products")
+      .select("id, stock_quantity").in("id", data.product_ids);
+    if (fe) throw new Error(fe.message);
+
+    const reason = data.reason || "Bulk update";
+    let updated = 0, failed = 0;
+    for (const p of prods ?? []) {
+      const patch: { stock_quantity?: number; low_stock_threshold?: number } = {};
+      if (hasQty) patch.stock_quantity = data.quantity as number;
+      if (hasThr) patch.low_stock_threshold = data.low_stock_threshold as number;
+      const { error: ue } = await supabase.from("products").update(patch).eq("id", p.id);
+      if (ue) { failed++; continue; }
+      if (hasQty) {
+        const prev = p.stock_quantity ?? 0;
+        const next = data.quantity as number;
+        if (prev !== next) {
+          await supabase.from("stock_movements").insert({
+            product_id: p.id,
+            delta: next - prev,
+            previous_qty: prev,
+            new_qty: next,
+            reason,
+            created_by: userId,
+          });
+          await maybeAlert(supabase, p.id, prev, next);
+        }
+      }
+      updated++;
+    }
+    return { ok: true, updated, failed };
+  });
