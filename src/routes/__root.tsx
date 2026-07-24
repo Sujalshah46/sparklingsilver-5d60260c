@@ -9,6 +9,8 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { OnboardingGate } from "@/components/OnboardingGate";
+
 
 import { supabase } from "@/integrations/supabase/client";
 
