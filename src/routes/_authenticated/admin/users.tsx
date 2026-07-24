@@ -251,11 +251,36 @@ function Field({ label, value, onChange, type = "text", required = false }: { la
   );
 }
 
+function buildWaMessage(opts: { greetName: string; username: string; email: string; password: string }) {
+  return [
+    opts.greetName ? `Hello ${opts.greetName},` : "Hello,",
+    "",
+    "Your Sparkling Silver account credentials:",
+    opts.username ? `Username: ${opts.username}` : null,
+    `Email: ${opts.email}`,
+    `Password: ${opts.password}`,
+    "",
+    "Please log in and change your password after first sign-in.",
+  ].filter(Boolean).join("\n");
+}
+
+function formatPhoneDisplay(phone: string) {
+  // phone is digits only, e.g. 919330615237
+  if (phone.length === 12 && phone.startsWith("91")) {
+    return `+91 ${phone.slice(2, 7)} ${phone.slice(7)}`;
+  }
+  return `+${phone}`;
+}
+
 function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string; email: string; password: string; user_id: string } | null; onOpenChange: (b: boolean) => void }) {
   const send = useServerFn(adminSendCredentials);
   const [sending, setSending] = useState(false);
   const [waSending, setWaSending] = useState(false);
   const [confirmChannel, setConfirmChannel] = useState<null | "email" | "whatsapp">(null);
+  const [waPreview, setWaPreview] = useState<{ phone: string; message: string; greetName: string } | null>(null);
+  const [waPreviewError, setWaPreviewError] = useState<string | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState(false);
+
   if (!creds) return null;
 
   const copy = (v: string, label: string) => {
@@ -275,6 +300,39 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
     });
   };
 
+  const openWhatsAppConfirm = async () => {
+    setConfirmChannel("whatsapp");
+    setWaPreview(null);
+    setWaPreviewError(null);
+    setLoadingPreview(true);
+    try {
+      const { data: p, error } = await supabase
+        .from("profiles")
+        .select("mobile, business_name, contact_person")
+        .eq("id", creds.user_id)
+        .maybeSingle();
+      if (error) throw error;
+      const raw = (p?.mobile ?? "").replace(/\D/g, "");
+      if (!raw) {
+        setWaPreviewError("This user has no mobile number in their profile.");
+        return;
+      }
+      const phone = raw.length === 10 ? `91${raw}` : raw;
+      const greetName = (p?.contact_person || p?.business_name || "").trim();
+      const message = buildWaMessage({
+        greetName,
+        username: creds.username,
+        email: creds.email,
+        password: creds.password,
+      });
+      setWaPreview({ phone, message, greetName });
+    } catch (e) {
+      setWaPreviewError(e instanceof Error ? e.message : "Failed to load recipient");
+    } finally {
+      setLoadingPreview(false);
+    }
+  };
+
   const onSend = async () => {
     setSending(true);
     try {
@@ -290,35 +348,12 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
   };
 
   const onSendWhatsApp = async () => {
+    if (!waPreview) return;
     setWaSending(true);
     try {
-      const { data: p, error } = await supabase
-        .from("profiles")
-        .select("mobile, business_name, contact_person")
-        .eq("id", creds.user_id)
-        .maybeSingle();
-      if (error) throw error;
-      const raw = (p?.mobile ?? "").replace(/\D/g, "");
-      if (!raw) {
-        toast.error("This user has no mobile number in their profile");
-        await logAudit("whatsapp", false, { reason: "no_mobile" });
-        return;
-      }
-      const phone = raw.length === 10 ? `91${raw}` : raw;
-      const greetName = (p?.contact_person || p?.business_name || "").trim();
-      const lines = [
-        greetName ? `Hello ${greetName},` : "Hello,",
-        "",
-        "Your Sparkling Silver account credentials:",
-        creds.username ? `Username: ${creds.username}` : null,
-        `Email: ${creds.email}`,
-        `Password: ${creds.password}`,
-        "",
-        "Please log in and change your password after first sign-in.",
-      ].filter(Boolean) as string[];
-      const url = `https://wa.me/${phone}?text=${encodeURIComponent(lines.join("\n"))}`;
+      const url = `https://wa.me/${waPreview.phone}?text=${encodeURIComponent(waPreview.message)}`;
       openWhatsAppUrl(url);
-      await logAudit("whatsapp", true, { phone_last4: phone.slice(-4) });
+      await logAudit("whatsapp", true, { phone_last4: waPreview.phone.slice(-4) });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
       await logAudit("whatsapp", false, { error: e instanceof Error ? e.message : String(e) });
@@ -327,12 +362,22 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
     }
   };
 
+  const closeConfirm = () => {
+    setConfirmChannel(null);
+    setWaPreview(null);
+    setWaPreviewError(null);
+  };
+
   const confirmSend = async () => {
     const channel = confirmChannel;
-    setConfirmChannel(null);
+    closeConfirm();
     if (channel === "email") await onSend();
     else if (channel === "whatsapp") await onSendWhatsApp();
   };
+
+  const canConfirm =
+    confirmChannel === "email" ||
+    (confirmChannel === "whatsapp" && !!waPreview && !loadingPreview);
 
   return (
     <Dialog open={!!creds} onOpenChange={onOpenChange}>
@@ -353,7 +398,7 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
             <Send className="mr-1 h-4 w-4" /> {sending ? "Sending…" : "Send credentials (Email)"}
           </Button>
           <Button
-            onClick={() => setConfirmChannel("whatsapp")}
+            onClick={openWhatsAppConfirm}
             disabled={sending || waSending}
             className="w-full bg-green-600 text-white hover:bg-green-700"
           >
@@ -363,7 +408,7 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
         </DialogFooter>
       </DialogContent>
 
-      <Dialog open={confirmChannel !== null} onOpenChange={(o) => !o && setConfirmChannel(null)}>
+      <Dialog open={confirmChannel !== null} onOpenChange={(o) => !o && closeConfirm()}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -371,14 +416,42 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
             </DialogTitle>
             <DialogDescription>
               {confirmChannel === "whatsapp"
-                ? `This will open WhatsApp with the username, email, and password addressed to ${creds.email}. The action will be logged in the audit trail.`
+                ? "Review the recipient and message below. The action will be logged in the audit trail."
                 : `This will email the username and password to ${creds.email}. The action will be logged in the audit trail.`}
             </DialogDescription>
           </DialogHeader>
+
+          {confirmChannel === "whatsapp" && (
+            <div className="space-y-3 text-sm">
+              <div className="rounded-md border bg-muted/40 p-3">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">Recipient</p>
+                {loadingPreview && <p className="text-muted-foreground">Loading…</p>}
+                {waPreviewError && <p className="text-destructive">{waPreviewError}</p>}
+                {waPreview && (
+                  <>
+                    <p className="font-mono">{formatPhoneDisplay(waPreview.phone)}</p>
+                    {waPreview.greetName && (
+                      <p className="text-[11px] text-muted-foreground">{waPreview.greetName}</p>
+                    )}
+                  </>
+                )}
+              </div>
+              {waPreview && (
+                <div className="rounded-md border bg-muted/40 p-3">
+                  <p className="mb-1 text-[11px] uppercase tracking-wide text-muted-foreground">Message preview</p>
+                  <pre className="whitespace-pre-wrap break-words font-sans text-xs leading-relaxed">
+                    {waPreview.message}
+                  </pre>
+                </div>
+              )}
+            </div>
+          )}
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmChannel(null)}>Cancel</Button>
+            <Button variant="outline" onClick={closeConfirm}>Cancel</Button>
             <Button
               onClick={confirmSend}
+              disabled={!canConfirm}
               className={confirmChannel === "whatsapp" ? "bg-green-600 text-white hover:bg-green-700" : ""}
             >
               Yes, send
@@ -389,6 +462,7 @@ function CredentialsDialog({ creds, onOpenChange }: { creds: { username: string;
     </Dialog>
   );
 }
+
 
 
 function Row({ label, value, onCopy, mono = false }: { label: string; value: string; onCopy: () => void; mono?: boolean }) {
