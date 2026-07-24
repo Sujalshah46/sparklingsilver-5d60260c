@@ -122,6 +122,9 @@ export function OnboardingGate() {
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
+      window.removeEventListener("popstate", onNav);
+      window.removeEventListener("pushstate", onNav);
+      window.removeEventListener("replacestate", onNav);
     };
   }, []);
 
