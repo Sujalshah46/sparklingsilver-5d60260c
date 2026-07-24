@@ -579,49 +579,58 @@ export type Database = {
       }
       profiles: {
         Row: {
+          additional_remarks: string | null
           business_name: string | null
           business_type: Database["public"]["Enums"]["business_type"] | null
           city: string | null
           contact_person: string | null
           created_at: string
+          delivery_address: string | null
           email: string | null
           full_name: string | null
           gstin: string | null
           id: string
           mobile: string | null
           must_change_password: boolean
+          profile_completed: boolean
           status: string
           updated_at: string
           username: string | null
         }
         Insert: {
+          additional_remarks?: string | null
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           city?: string | null
           contact_person?: string | null
           created_at?: string
+          delivery_address?: string | null
           email?: string | null
           full_name?: string | null
           gstin?: string | null
           id: string
           mobile?: string | null
           must_change_password?: boolean
+          profile_completed?: boolean
           status?: string
           updated_at?: string
           username?: string | null
         }
         Update: {
+          additional_remarks?: string | null
           business_name?: string | null
           business_type?: Database["public"]["Enums"]["business_type"] | null
           city?: string | null
           contact_person?: string | null
           created_at?: string
+          delivery_address?: string | null
           email?: string | null
           full_name?: string | null
           gstin?: string | null
           id?: string
           mobile?: string | null
           must_change_password?: boolean
+          profile_completed?: boolean
           status?: string
           updated_at?: string
           username?: string | null
