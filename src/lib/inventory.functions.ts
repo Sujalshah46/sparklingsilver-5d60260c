@@ -189,9 +189,9 @@ export const bulkApplyInventory = createServerFn({ method: "POST" })
     const reason = data.reason || "Bulk update";
     let updated = 0, failed = 0;
     for (const p of prods ?? []) {
-      const patch: Record<string, unknown> = {};
-      if (hasQty) patch.stock_quantity = data.quantity;
-      if (hasThr) patch.low_stock_threshold = data.low_stock_threshold;
+      const patch: { stock_quantity?: number; low_stock_threshold?: number } = {};
+      if (hasQty) patch.stock_quantity = data.quantity as number;
+      if (hasThr) patch.low_stock_threshold = data.low_stock_threshold as number;
       const { error: ue } = await supabase.from("products").update(patch).eq("id", p.id);
       if (ue) { failed++; continue; }
       if (hasQty) {
