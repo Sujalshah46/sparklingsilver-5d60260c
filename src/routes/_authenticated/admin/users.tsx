@@ -22,7 +22,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription,
 } from "@/components/ui/dialog";
-import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2, MessageCircle } from "lucide-react";
+import { UserPlus, Copy, KeyRound, Power, Send, RefreshCw, Mail, CheckCircle2, MessageCircle, ShieldCheck, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
