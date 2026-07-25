@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
-import { AccessBanner } from "@/components/AccessBanner";
+
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
@@ -143,7 +143,7 @@ function Home() {
       <h1 className="sr-only">Sparkling Silver — Wholesale Jewellery Catalogue</h1>
 
       <VideoShowcase />
-      <AccessBanner />
+      
 
       {/* NEW ARRIVAL — admin-curated */}
       {newArrivals.length > 0 && (
