@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ChevronLeft } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
-import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage, getSubcategoryImage } from "@/lib/product-images";
 
 type Subcategory = {
   id: string;
@@ -155,7 +155,7 @@ function SubcategoryTile({
   count: number;
   priority?: boolean;
 }) {
-  const image = subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
+  const image = subcategory.image_url || getSubcategoryImage(subcategory.slug, categorySlug) || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
 
   return (
