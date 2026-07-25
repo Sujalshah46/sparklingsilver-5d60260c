@@ -66,6 +66,22 @@ import subcatSpnA from "@/assets/opt-subcat-spn.webp.asset.json";
 import subcatTikkaA from "@/assets/opt-subcat-tikka.webp.asset.json";
 import subcatTopsA from "@/assets/opt-subcat-tops.webp.asset.json";
 import subcatVenkyA from "@/assets/opt-subcat-venky.webp.asset.json";
+// CZ-specific subcategory tiles (override Antique defaults on /category/cz)
+import subcatBajuCz from "@/assets/opt-subcat-baju-cz.webp.asset.json";
+import subcatBangleCz from "@/assets/opt-subcat-bangle-cz.webp.asset.json";
+import subcatBeltCz from "@/assets/opt-subcat-belt-cz.webp.asset.json";
+import subcatBridalCz from "@/assets/opt-subcat-bridal-cz.webp.asset.json";
+import subcatChokerChikCz from "@/assets/opt-subcat-choker-chik-cz.webp.asset.json";
+import subcatEarringsCz from "@/assets/opt-subcat-earrings-cz.webp.asset.json";
+import subcatFingerRingCz from "@/assets/opt-subcat-finger-ring-cz.webp.asset.json";
+import subcatJhumkaCz from "@/assets/opt-subcat-jhumka-cz.webp.asset.json";
+import subcatLongSetCz from "@/assets/opt-subcat-long-set-cz.webp.asset.json";
+import subcatMatilCz from "@/assets/opt-subcat-matil-cz.webp.asset.json";
+import subcatNecklaceCz from "@/assets/opt-subcat-necklace-cz.webp.asset.json";
+import subcatPendantSetCz from "@/assets/opt-subcat-pendant-set-cz.webp.asset.json";
+import subcatTikkaCz from "@/assets/opt-subcat-tikka-cz.webp.asset.json";
+import subcatTopsCz from "@/assets/opt-subcat-tops-cz.webp.asset.json";
+import subcatVenkyCz from "@/assets/opt-subcat-venky-cz.webp.asset.json";
 const subcatBaju = subcatBajuA.url;
 const subcatBangle = subcatBangleA.url;
 const subcatBelt = subcatBeltA.url;
@@ -127,6 +143,36 @@ export const SUBCATEGORY_IMAGES: Record<string, string> = {
   tops: subcatTops,
   venky: subcatVenky,
 };
+
+// Category-specific overrides. Falls back to SUBCATEGORY_IMAGES when a slug
+// is not present here.
+export const SUBCATEGORY_IMAGES_BY_CATEGORY: Record<string, Record<string, string>> = {
+  cz: {
+    baju: subcatBajuCz.url,
+    bangle: subcatBangleCz.url,
+    belt: subcatBeltCz.url,
+    bridal: subcatBridalCz.url,
+    "choker-chik": subcatChokerChikCz.url,
+    earrings: subcatEarringsCz.url,
+    "finger-ring": subcatFingerRingCz.url,
+    jhumka: subcatJhumkaCz.url,
+    "long-set": subcatLongSetCz.url,
+    matil: subcatMatilCz.url,
+    necklace: subcatNecklaceCz.url,
+    "pendant-set": subcatPendantSetCz.url,
+    tikka: subcatTikkaCz.url,
+    tops: subcatTopsCz.url,
+    venky: subcatVenkyCz.url,
+  },
+};
+
+export function getSubcategoryImage(subcategorySlug: string, categorySlug?: string): string | undefined {
+  if (categorySlug) {
+    const catMap = SUBCATEGORY_IMAGES_BY_CATEGORY[categorySlug];
+    if (catMap && catMap[subcategorySlug]) return catMap[subcategorySlug];
+  }
+  return SUBCATEGORY_IMAGES[subcategorySlug];
+}
 
 import pr1 from "@/assets/prod-r-1.jpg";
 import pr2 from "@/assets/prod-r-2.jpg";
