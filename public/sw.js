@@ -1,5 +1,5 @@
 /* Sparkling Silver — push notifications + product image cache */
-const IMG_CACHE = "ss-img-v2";
+const IMG_CACHE = "ss-img-v3";
 const IMG_CACHE_MAX = 2000;
 
 self.addEventListener("install", (e) => self.skipWaiting());
