@@ -1,5 +1,5 @@
 import { pageTitle, pageDescription, descriptionTags, jsonLdScript, collectionPageSchema, breadcrumbSchema } from "@/lib/seo";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -157,6 +157,10 @@ function SubcategoryTile({
 }) {
   const image = getSubcategoryImage(subcategory.slug, categorySlug) || subcategory.image_url || SUBCATEGORY_IMAGES[subcategory.slug] || `subcat-${subcategory.slug}.jpg`;
   const [src, setSrc] = useState(() => resolveProductImage(image, categoryPlaceholder));
+
+  useEffect(() => {
+    setSrc(resolveProductImage(image, categoryPlaceholder));
+  }, [image]);
 
   return (
     <Link
