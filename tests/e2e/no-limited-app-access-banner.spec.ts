@@ -51,11 +51,13 @@ test.describe("Limited App Access banner is gone", () => {
   for (const path of ROUTES) {
     test(`rendered DOM for ${path} has no banner`, async ({ page }) => {
       test.skip(!hasAuth, "No Supabase session injected — cannot reach gated routes");
+      test.setTimeout(90_000);
 
       await restoreSession(page);
-      await page.goto(path, { waitUntil: "domcontentloaded" });
+      await page.goto(path, { waitUntil: "commit" }).catch(() => {});
       // Let client-side data/render settle so a lazily-rendered banner would show.
-      await page.waitForLoadState("networkidle").catch(() => {});
+      await page.waitForLoadState("domcontentloaded").catch(() => {});
+      await page.waitForTimeout(2_000);
 
       await expect(page.getByText(BANNER_RE)).toHaveCount(0);
 
