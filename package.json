@@ -8,6 +8,7 @@
     "build": "npm run validate:jsonld && vite build",
     "build:dev": "npm run validate:jsonld && vite build --mode development",
     "validate:jsonld": "node scripts/validate-jsonld.mjs",
+    "analyze:size": "node scripts/list-largest.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
