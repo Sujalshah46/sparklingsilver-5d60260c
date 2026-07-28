@@ -18,6 +18,10 @@ export interface OrderStageTrackerProps {
   status: OrderStatus;
   /** Optional list of {status, at} entries. Missing/invalid entries are ignored gracefully. */
   history?: unknown;
+  /** Optional per-status item counts — renders an "n/total" split indicator. */
+  counts?: Record<string, number>;
+  /** Total active items in the order. */
+  totalItems?: number;
 }
 
 const STAGES: { key: OrderStatus; label: string }[] = [
@@ -58,7 +62,7 @@ export function normalizeStageHistory(history: unknown): Record<string, string> 
   return out;
 }
 
-export function OrderStageTracker({ status, history }: OrderStageTrackerProps) {
+export function OrderStageTracker({ status, history, counts, totalItems }: OrderStageTrackerProps) {
   if (status === "rejected" || status === "cancelled") {
     const map = normalizeStageHistory(history);
     const when = safeStageTime(map[status]);
@@ -80,6 +84,8 @@ export function OrderStageTracker({ status, history }: OrderStageTrackerProps) {
         const done = i < current;
         const active = i === current;
         const when = safeStageTime(map[s.key]);
+        const at = counts?.[s.key] ?? 0;
+        const split = !!totalItems && totalItems > 1 && at > 0 && at < totalItems;
         return (
           <li key={s.key} className="flex flex-1 items-center gap-1 min-w-max">
             <div className="flex flex-col items-center gap-1">
@@ -109,6 +115,11 @@ export function OrderStageTracker({ status, history }: OrderStageTrackerProps) {
               >
                 {when || "—"}
               </span>
+              {split && (
+                <span className="rounded bg-gold/20 px-1 text-[8px] font-semibold leading-tight text-charcoal">
+                  {at}/{totalItems}
+                </span>
+              )}
             </div>
             {i < STAGES.length - 1 && (
               <span className={`mb-6 h-0.5 flex-1 ${i < current ? "bg-green-700" : "bg-border"}`} />
