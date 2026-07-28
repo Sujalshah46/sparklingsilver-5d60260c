@@ -127,6 +127,13 @@ function OrderDetail() {
                   <p className="mt-1 text-[11px] text-[#555]">
                     <span className="font-semibold text-[#333]">Gross:</span> {Number((it as { gross_weight?: number | string | null }).gross_weight ?? 0).toFixed(3)} g
                   </p>
+                  {(it as { remark?: string | null }).remark && (
+                    <p className="mt-1 whitespace-pre-wrap rounded-md bg-secondary p-2 text-[11px]">
+                      <span className="font-semibold">Your remark: </span>
+                      {(it as { remark?: string | null }).remark}
+                    </p>
+                  )}
+
                 </div>
               </div>
             ))}
