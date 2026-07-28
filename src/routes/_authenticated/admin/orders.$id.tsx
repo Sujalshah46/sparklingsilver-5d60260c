@@ -27,7 +27,7 @@ import {
 import { updateOrderStatus } from "@/lib/admin.functions";
 import { moveItemsForward, cancelOrderItems } from "@/lib/shipments.functions";
 import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
-import { nextStatus, rollupStatus, STATUS_LABEL, canSplitFrom, isActive } from "@/lib/order-rollup";
+import { nextStatus, rollupStatus, STATUS_LABEL, canSplitFrom, isActive, statusBadgeClass } from "@/lib/order-rollup";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Order") }] }),
@@ -57,17 +57,6 @@ type ShipmentRow = {
   created_at: string;
 };
 
-const itemStatusColor: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-900",
-  accepted: "bg-green-100 text-green-900",
-  confirmed: "bg-emerald-100 text-emerald-900",
-  processing: "bg-gold/20 text-charcoal",
-  dispatched: "bg-blue-100 text-blue-900",
-  out_for_delivery: "bg-blue-100 text-blue-900",
-  delivered: "bg-green-100 text-green-900",
-  cancelled: "bg-destructive/15 text-destructive",
-  rejected: "bg-destructive/15 text-destructive",
-};
 
 const STAGE_ICON: Record<string, typeof Package> = {
   processing: Package,
@@ -229,7 +218,7 @@ function AdminOrderDetail() {
               <p className="text-xs text-muted-foreground">Placed {formatDate(order.created_at)}</p>
             </div>
             <div className="flex flex-col items-end gap-1">
-              <Badge className="capitalize">{rollup.label}</Badge>
+              <Badge className={`capitalize ${statusBadgeClass(rollup.status)}`}>{rollup.label}</Badge>
               {rollup.split && (
                 <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-charcoal">
                   Split
@@ -331,7 +320,7 @@ function AdminOrderDetail() {
                         {it.size ? ` · Size ${it.size}` : ""}
                       </p>
                       <span
-                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${itemStatusColor[it.status] ?? "bg-secondary"}`}
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${statusBadgeClass(it.status)}`}
                       >
                         {STATUS_LABEL[it.status] ?? it.status}
                       </span>
@@ -370,7 +359,7 @@ function AdminOrderDetail() {
                   <li key={sh.id} className="rounded-lg border border-border p-3 text-xs">
                     <div className="flex items-center justify-between">
                       <p className="font-semibold">Shipment {i + 1}</p>
-                      <Badge className={itemStatusColor[sh.status] ?? ""}>
+                      <Badge className={statusBadgeClass(sh.status)}>
                         {STATUS_LABEL[sh.status] ?? sh.status}
                       </Badge>
                     </div>

@@ -6,7 +6,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
-import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL } from "@/lib/order-rollup";
+import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -136,7 +136,7 @@ function OrderDetail() {
                 Placed on {formatDate(data.created_at)}
               </p>
             </div>
-            <Badge data-testid="order-rollup" className="capitalize">{roll.label}</Badge>
+            <Badge data-testid="order-rollup" className={`capitalize ${statusBadgeClass(roll.status)}`}>{roll.label}</Badge>
           </div>
 
           {data.tracking_number && (
@@ -164,7 +164,7 @@ function OrderDetail() {
                         {shipItems.map((it) => it.product_sku || it.product_name).join(", ") || "—"}
                       </p>
                     </div>
-                    <Badge className="capitalize">{STATUS_LABEL[sh.status] ?? sh.status}</Badge>
+                    <Badge className={`capitalize ${statusBadgeClass(sh.status)}`}>{STATUS_LABEL[sh.status] ?? sh.status}</Badge>
                   </div>
                   {sh.tracking_number && (
                     <p className="mt-2 rounded-md bg-secondary p-2 text-[11px]">
@@ -262,7 +262,7 @@ function OrderDetail() {
                     <p className="line-clamp-1 font-serif text-sm font-semibold">
                       {it.product_name}
                     </p>
-                    <Badge data-testid={`item-status-${it.id}`} variant="secondary" className="shrink-0 text-[10px] capitalize">
+                    <Badge data-testid={`item-status-${it.id}`} variant="secondary" className={`shrink-0 text-[10px] capitalize ${statusBadgeClass((it as { status?: string }).status ?? status)}`}>
                       {ITEM_STATUS_LABEL[(it as { status?: string }).status ?? status] ??
                         (it as { status?: string }).status ??
                         status}

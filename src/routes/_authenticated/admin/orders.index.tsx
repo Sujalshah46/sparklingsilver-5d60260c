@@ -31,19 +31,6 @@ const STATUS_TABS = [
 ] as const;
 type Tab = (typeof STATUS_TABS)[number];
 
-const statusColor: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-900",
-  accepted: "bg-green-100 text-green-900",
-  rejected: "bg-destructive/15 text-destructive",
-  confirmed: "bg-emerald-100 text-emerald-900",
-  processing: "bg-gold/20 text-charcoal",
-  ready: "bg-gold/20 text-charcoal",
-  dispatched: "bg-blue-100 text-blue-900",
-  out_for_delivery: "bg-indigo-100 text-indigo-900",
-  delivered: "bg-green-100 text-green-900",
-  cancelled: "bg-muted text-muted-foreground",
-  placed: "bg-secondary text-foreground",
-};
 
 function AdminOrders() {
   const qc = useQueryClient();
@@ -255,7 +242,7 @@ function AdminOrders() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <Badge className={statusColor[rollups.get(o.id)?.status ?? o.status] ?? ""}>
+                      <Badge className={statusBadgeClass(rollups.get(o.id)?.status ?? o.status)}>
                         {rollups.get(o.id)?.label ?? o.status}
                       </Badge>
                       {rollups.get(o.id)?.split && (
