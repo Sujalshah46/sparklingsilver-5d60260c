@@ -137,11 +137,16 @@ function Catalogue() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <MobileShell title="Catalogue">
+    <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
       <div className="px-3 pt-4">
         <h1 className="text-[16px] font-bold text-[#1A1A1A]">
-          Catalogue ({products.length}
+          {onlyNew ? "New Arrivals" : "Catalogue"} ({products.length}
           {allProducts.length < total ? ` of ${total}` : ""})
+          {onlyNew && (
+            <span className="ml-2 inline-block rounded-[2px] bg-teal px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+              Featured
+            </span>
+          )}
         </h1>
       </div>
 
