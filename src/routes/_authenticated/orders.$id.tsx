@@ -257,11 +257,21 @@ function OrderDetail() {
                   className="h-16 w-16 rounded-lg object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="line-clamp-1 font-serif text-sm font-semibold">
+                      {it.product_name}
+                    </p>
+                    <Badge variant="secondary" className="shrink-0 text-[10px] capitalize">
+                      {ITEM_STATUS_LABEL[(it as { status?: string }).status ?? status] ??
+                        (it as { status?: string }).status ??
+                        status}
+                    </Badge>
+                  </div>
                   <p className="text-[11px] text-muted-foreground">
                     SKU {it.product_sku} · Qty {it.quantity}
                     {it.size ? ` · Size ${it.size}` : ""}
                   </p>
+
                   <p className="mt-1 text-[11px] text-[#555]">
                     <span className="font-semibold text-[#333]">Gross:</span>{" "}
                     {Number(
