@@ -21,7 +21,6 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
-import { Route as AuthenticatedOrdersRouteImport } from './routes/_authenticated/orders'
 import { Route as AuthenticatedCheckoutRouteImport } from './routes/_authenticated/checkout'
 import { Route as AuthenticatedChangePasswordRouteImport } from './routes/_authenticated/change-password'
 import { Route as AuthenticatedCartRouteImport } from './routes/_authenticated/cart'
@@ -30,6 +29,7 @@ import { Route as AuthenticatedAccountEditRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as CategorySlugIndexRouteImport } from './routes/category.$slug.index'
+import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as CategorySlugSubRouteImport } from './routes/category.$slug.$sub'
 import { Route as ApiPublicAdminBulkLinkImagesRouteImport } from './routes/api/public/admin-bulk-link-images'
@@ -110,11 +110,6 @@ const AuthenticatedWishlistRoute = AuthenticatedWishlistRouteImport.update({
   path: '/wishlist',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedOrdersRoute = AuthenticatedOrdersRouteImport.update({
-  id: '/orders',
-  path: '/orders',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedCheckoutRoute = AuthenticatedCheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -157,6 +152,12 @@ const CategorySlugIndexRoute = CategorySlugIndexRouteImport.update({
   path: '/category/$slug/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedOrdersIndexRoute =
+  AuthenticatedOrdersIndexRouteImport.update({
+    id: '/orders/',
+    path: '/orders/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -174,9 +175,9 @@ const ApiPublicAdminBulkLinkImagesRoute =
     getParentRoute: () => rootRouteImport,
   } as any)
 const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedOrdersRoute,
+  id: '/orders/$id',
+  path: '/orders/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
@@ -288,7 +289,6 @@ export interface FileRoutesByFullPath {
   '/cart': typeof AuthenticatedCartRoute
   '/change-password': typeof AuthenticatedChangePasswordRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
-  '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -305,6 +305,7 @@ export interface FileRoutesByFullPath {
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -329,7 +330,6 @@ export interface FileRoutesByTo {
   '/cart': typeof AuthenticatedCartRoute
   '/change-password': typeof AuthenticatedChangePasswordRoute
   '/checkout': typeof AuthenticatedCheckoutRoute
-  '/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -345,6 +345,7 @@ export interface FileRoutesByTo {
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/orders': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug': typeof CategorySlugIndexRoute
   '/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -372,7 +373,6 @@ export interface FileRoutesById {
   '/_authenticated/cart': typeof AuthenticatedCartRoute
   '/_authenticated/change-password': typeof AuthenticatedChangePasswordRoute
   '/_authenticated/checkout': typeof AuthenticatedCheckoutRoute
-  '/_authenticated/orders': typeof AuthenticatedOrdersRouteWithChildren
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
@@ -389,6 +389,7 @@ export interface FileRoutesById {
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
   '/_authenticated/admin/inventory/$id': typeof AuthenticatedAdminInventoryIdRoute
   '/_authenticated/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
@@ -416,7 +417,6 @@ export interface FileRouteTypes {
     | '/cart'
     | '/change-password'
     | '/checkout'
-    | '/orders'
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
@@ -433,6 +433,7 @@ export interface FileRouteTypes {
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/admin/'
+    | '/orders/'
     | '/category/$slug/'
     | '/admin/inventory/$id'
     | '/admin/inventory/audit'
@@ -457,7 +458,6 @@ export interface FileRouteTypes {
     | '/cart'
     | '/change-password'
     | '/checkout'
-    | '/orders'
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
@@ -473,6 +473,7 @@ export interface FileRouteTypes {
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/admin'
+    | '/orders'
     | '/category/$slug'
     | '/admin/inventory/$id'
     | '/admin/inventory/audit'
@@ -499,7 +500,6 @@ export interface FileRouteTypes {
     | '/_authenticated/cart'
     | '/_authenticated/change-password'
     | '/_authenticated/checkout'
-    | '/_authenticated/orders'
     | '/_authenticated/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
@@ -516,6 +516,7 @@ export interface FileRouteTypes {
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
     | '/_authenticated/admin/'
+    | '/_authenticated/orders/'
     | '/category/$slug/'
     | '/_authenticated/admin/inventory/$id'
     | '/_authenticated/admin/inventory/audit'
@@ -631,13 +632,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWishlistRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/orders': {
-      id: '/_authenticated/orders'
-      path: '/orders'
-      fullPath: '/orders'
-      preLoaderRoute: typeof AuthenticatedOrdersRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/checkout': {
       id: '/_authenticated/checkout'
       path: '/checkout'
@@ -694,6 +688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CategorySlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/orders/': {
+      id: '/_authenticated/orders/'
+      path: '/orders'
+      fullPath: '/orders/'
+      preLoaderRoute: typeof AuthenticatedOrdersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
@@ -717,10 +718,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/orders/$id': {
       id: '/_authenticated/orders/$id'
-      path: '/$id'
+      path: '/orders/$id'
       fullPath: '/orders/$id'
       preLoaderRoute: typeof AuthenticatedOrdersIdRouteImport
-      parentRoute: typeof AuthenticatedOrdersRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/users': {
       id: '/_authenticated/admin/users'
@@ -911,17 +912,6 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
-interface AuthenticatedOrdersRouteChildren {
-  AuthenticatedOrdersIdRoute: typeof AuthenticatedOrdersIdRoute
-}
-
-const AuthenticatedOrdersRouteChildren: AuthenticatedOrdersRouteChildren = {
-  AuthenticatedOrdersIdRoute: AuthenticatedOrdersIdRoute,
-}
-
-const AuthenticatedOrdersRouteWithChildren =
-  AuthenticatedOrdersRoute._addFileChildren(AuthenticatedOrdersRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
@@ -930,8 +920,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCartRoute: typeof AuthenticatedCartRoute
   AuthenticatedChangePasswordRoute: typeof AuthenticatedChangePasswordRoute
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
-  AuthenticatedOrdersRoute: typeof AuthenticatedOrdersRouteWithChildren
   AuthenticatedWishlistRoute: typeof AuthenticatedWishlistRoute
+  AuthenticatedOrdersIdRoute: typeof AuthenticatedOrdersIdRoute
+  AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -942,8 +933,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCartRoute: AuthenticatedCartRoute,
   AuthenticatedChangePasswordRoute: AuthenticatedChangePasswordRoute,
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
-  AuthenticatedOrdersRoute: AuthenticatedOrdersRouteWithChildren,
   AuthenticatedWishlistRoute: AuthenticatedWishlistRoute,
+  AuthenticatedOrdersIdRoute: AuthenticatedOrdersIdRoute,
+  AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -969,3 +961,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

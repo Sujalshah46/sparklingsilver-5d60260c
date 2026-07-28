@@ -189,12 +189,7 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     await expect(listBadge).toHaveText(/processing/i, { timeout: PROPAGATION_BUDGET_MS });
 
     // ---------- Buyer order DETAIL ----------
-    page.on("console", (m) => console.log("[browser]", m.type(), m.text()));
     await page.goto(`/orders/${orderId}`, { waitUntil: "domcontentloaded" });
-    await page.waitForTimeout(6000);
-    await page.screenshot({ path: "/tmp/browser/detail.png" });
-    console.log("URL:", page.url());
-    console.log((await page.locator("body").innerText()).slice(0, 800));
     const item0 = page.getByTestId(`item-status-${itemIds[0]}`);
     const item1 = page.getByTestId(`item-status-${itemIds[1]}`);
     await expect(item0).toBeVisible({ timeout: 20_000 });
