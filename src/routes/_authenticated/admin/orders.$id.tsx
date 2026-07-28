@@ -13,7 +13,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Check, X, ArrowLeft, Truck, PackageCheck, ClipboardCheck, Package, Bike, Ban } from "lucide-react";
+import {
+  Check,
+  X,
+  ArrowLeft,
+  Truck,
+  PackageCheck,
+  ClipboardCheck,
+  Package,
+  Bike,
+  Ban,
+} from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
 import { moveItemsForward, cancelOrderItems } from "@/lib/shipments.functions";
 import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
@@ -98,13 +108,19 @@ function AdminOrderDetail() {
         () => qc.invalidateQueries({ queryKey: ["admin-order", id] }),
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [id, qc]);
 
-  useEffect(() => { if (order?.admin_notes) setNotes(order.admin_notes); }, [order?.admin_notes]);
-  useEffect(() => { if (order?.tracking_number) setTracking(order.tracking_number); }, [order?.tracking_number]);
+  useEffect(() => {
+    if (order?.admin_notes) setNotes(order.admin_notes);
+  }, [order?.admin_notes]);
+  useEffect(() => {
+    if (order?.tracking_number) setTracking(order.tracking_number);
+  }, [order?.tracking_number]);
 
-  const items = useMemo(() => ((order?.order_items ?? []) as unknown as ItemRow[]), [order]);
+  const items = useMemo(() => (order?.order_items ?? []) as unknown as ItemRow[], [order]);
   const shipments = useMemo(
     () =>
       ((order?.shipments ?? []) as unknown as ShipmentRow[])
@@ -113,7 +129,11 @@ function AdminOrderDetail() {
     [order],
   );
   const rollup = useMemo(
-    () => rollupStatus(items.map((i) => i.status), (order?.status as string) ?? "pending"),
+    () =>
+      rollupStatus(
+        items.map((i) => i.status),
+        (order?.status as string) ?? "pending",
+      ),
     [items, order?.status],
   );
 
@@ -127,7 +147,14 @@ function AdminOrderDetail() {
 
   const mutate = useMutation({
     mutationFn: async (status: OrderStatus) =>
-      update({ data: { order_id: id, status, admin_notes: notes || null, tracking_number: tracking || null } }),
+      update({
+        data: {
+          order_id: id,
+          status,
+          admin_notes: notes || null,
+          tracking_number: tracking || null,
+        },
+      }),
     onSuccess: (_d, status) => {
       toast.success(`Order ${status.replace(/_/g, " ")}`);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
@@ -147,7 +174,9 @@ function AdminOrderDetail() {
         },
       }),
     onSuccess: () => {
-      toast.success(`${selected.length} item${selected.length > 1 ? "s" : ""} moved to ${STATUS_LABEL[target!]}`);
+      toast.success(
+        `${selected.length} item${selected.length > 1 ? "s" : ""} moved to ${STATUS_LABEL[target!]}`,
+      );
       setSelected([]);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
@@ -166,11 +195,21 @@ function AdminOrderDetail() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Cancel failed"),
   });
 
-  if (isLoading) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Loading…</p></MobileShell>;
-  if (!order) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Not found</p></MobileShell>;
+  if (isLoading)
+    return (
+      <MobileShell title="Order">
+        <p className="p-8 text-center text-muted-foreground">Loading…</p>
+      </MobileShell>
+    );
+  if (!order)
+    return (
+      <MobileShell title="Order">
+        <p className="p-8 text-center text-muted-foreground">Not found</p>
+      </MobileShell>
+    );
 
   const splittable = canSplitFrom(rollup.status) && rollup.status !== "delivered";
-  const MoveIcon = target ? STAGE_ICON[target] ?? Package : Package;
+  const MoveIcon = target ? (STAGE_ICON[target] ?? Package) : Package;
 
   return (
     <MobileShell title={order.order_no}>
@@ -191,7 +230,11 @@ function AdminOrderDetail() {
             </div>
             <div className="flex flex-col items-end gap-1">
               <Badge className="capitalize">{rollup.label}</Badge>
-              {rollup.split && <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-charcoal">Split</span>}
+              {rollup.split && (
+                <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-charcoal">
+                  Split
+                </span>
+              )}
             </div>
           </div>
           <OrderStageTracker
@@ -206,16 +249,21 @@ function AdminOrderDetail() {
           <h3 className="mb-2 font-serif text-base font-semibold">Customer</h3>
           <p className="font-semibold">{order.customer_name}</p>
           <p className="text-muted-foreground">
-            <a className="text-burgundy" href={`tel:${order.customer_phone}`}>{order.customer_phone}</a>
+            <a className="text-burgundy" href={`tel:${order.customer_phone}`}>
+              {order.customer_phone}
+            </a>
             {" · "}
-            <a className="text-burgundy" href={`mailto:${order.customer_email}`}>{order.customer_email}</a>
+            <a className="text-burgundy" href={`mailto:${order.customer_email}`}>
+              {order.customer_email}
+            </a>
           </p>
           <p className="mt-1 text-muted-foreground">
             {order.customer_address}, {order.customer_city} {order.customer_pincode}
           </p>
           {order.customer_notes && (
             <p className="mt-2 rounded-md bg-secondary p-2 text-xs">
-              <span className="font-semibold">Note: </span>{order.customer_notes}
+              <span className="font-semibold">Note: </span>
+              {order.customer_notes}
             </p>
           )}
         </section>
@@ -228,9 +276,11 @@ function AdminOrderDetail() {
                 type="button"
                 className="text-xs text-burgundy"
                 onClick={() =>
-                  setSelected(selected.length === items.filter((i) => isActive(i.status)).length
-                    ? []
-                    : items.filter((i) => isActive(i.status)).map((i) => i.id))
+                  setSelected(
+                    selected.length === items.filter((i) => isActive(i.status)).length
+                      ? []
+                      : items.filter((i) => isActive(i.status)).map((i) => i.id),
+                  )
                 }
               >
                 {selected.length ? "Clear selection" : "Select all"}
@@ -247,7 +297,9 @@ function AdminOrderDetail() {
                       className="mt-1"
                       checked={selected.includes(it.id)}
                       onCheckedChange={(v) =>
-                        setSelected((prev) => (v ? [...prev, it.id] : prev.filter((x) => x !== it.id)))
+                        setSelected((prev) =>
+                          v ? [...prev, it.id] : prev.filter((x) => x !== it.id),
+                        )
                       }
                       aria-label={`Select ${it.product_name}`}
                     />
@@ -260,22 +312,33 @@ function AdminOrderDetail() {
                     loading="lazy"
                     onError={(e) => {
                       const img = e.currentTarget;
-                      if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }
+                      if (img.dataset.fallback === "1") {
+                        img.style.visibility = "hidden";
+                        return;
+                      }
                       img.dataset.fallback = "1";
                       img.src = categoryPlaceholder;
                     }}
                     className="h-16 w-16 rounded-lg bg-secondary object-cover"
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
+                    <p className="line-clamp-1 font-serif text-sm font-semibold">
+                      {it.product_name}
+                    </p>
                     <div className="flex flex-wrap items-center gap-1">
-                      <p className="text-[11px] text-muted-foreground">SKU {it.product_sku} · Qty {it.quantity}{it.size ? ` · Size ${it.size}` : ""}</p>
-                      <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${itemStatusColor[it.status] ?? "bg-secondary"}`}>
+                      <p className="text-[11px] text-muted-foreground">
+                        SKU {it.product_sku} · Qty {it.quantity}
+                        {it.size ? ` · Size ${it.size}` : ""}
+                      </p>
+                      <span
+                        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${itemStatusColor[it.status] ?? "bg-secondary"}`}
+                      >
                         {STATUS_LABEL[it.status] ?? it.status}
                       </span>
                     </div>
                     <p className="mt-1 text-[11px] text-[#555]">
-                      <span className="font-semibold text-[#333]">Gross:</span> {Number(it.gross_weight ?? 0).toFixed(3)} g
+                      <span className="font-semibold text-[#333]">Gross:</span>{" "}
+                      {Number(it.gross_weight ?? 0).toFixed(3)} g
                     </p>
                     {it.remark && (
                       <p className="mt-1 whitespace-pre-wrap rounded-md bg-secondary p-2 text-[11px]">
@@ -288,7 +351,9 @@ function AdminOrderDetail() {
               );
             })}
           </div>
-          <p className="mt-2 text-right text-xs font-semibold">Total (g): {totalGrams.toFixed(3)}</p>
+          <p className="mt-2 text-right text-xs font-semibold">
+            Total (g): {totalGrams.toFixed(3)}
+          </p>
         </section>
 
         {shipments.length > 0 && (
@@ -297,12 +362,17 @@ function AdminOrderDetail() {
             <ol className="space-y-3">
               {shipments.map((sh, i) => {
                 const shipItems = items.filter((it) => it.shipment_id === sh.id);
-                const grams = shipItems.reduce((s, it) => s + Number(it.gross_weight ?? 0) * (it.quantity ?? 1), 0);
+                const grams = shipItems.reduce(
+                  (s, it) => s + Number(it.gross_weight ?? 0) * (it.quantity ?? 1),
+                  0,
+                );
                 return (
                   <li key={sh.id} className="rounded-lg border border-border p-3 text-xs">
                     <div className="flex items-center justify-between">
                       <p className="font-semibold">Shipment {i + 1}</p>
-                      <Badge className={itemStatusColor[sh.status] ?? ""}>{STATUS_LABEL[sh.status] ?? sh.status}</Badge>
+                      <Badge className={itemStatusColor[sh.status] ?? ""}>
+                        {STATUS_LABEL[sh.status] ?? sh.status}
+                      </Badge>
                     </div>
                     <p className="mt-1 text-muted-foreground">
                       {shipItems.length
@@ -336,22 +406,40 @@ function AdminOrderDetail() {
 
         <section className="rounded-xl border border-border bg-card p-4 text-sm">
           <h3 className="mb-2 font-serif text-base font-semibold">Admin notes</h3>
-          <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={2000} placeholder="Internal notes (visible to admins only)" />
+          <Textarea
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            maxLength={2000}
+            placeholder="Internal notes (visible to admins only)"
+          />
         </section>
 
         <section className="space-y-2">
           {order.status === "pending" && (
             <div className="grid grid-cols-2 gap-2">
-              <Button disabled={mutate.isPending} onClick={() => mutate.mutate("accepted")} className="bg-green-700 hover:bg-green-800">
+              <Button
+                disabled={mutate.isPending}
+                onClick={() => mutate.mutate("accepted")}
+                className="bg-green-700 hover:bg-green-800"
+              >
                 <Check className="mr-1 h-4 w-4" /> Accept
               </Button>
-              <Button disabled={mutate.isPending} variant="destructive" onClick={() => mutate.mutate("rejected")}>
+              <Button
+                disabled={mutate.isPending}
+                variant="destructive"
+                onClick={() => mutate.mutate("rejected")}
+              >
                 <X className="mr-1 h-4 w-4" /> Reject
               </Button>
             </div>
           )}
           {order.status === "accepted" && (
-            <Button disabled={mutate.isPending} onClick={() => mutate.mutate("confirmed")} className="w-full bg-burgundy hover:bg-burgundy/90">
+            <Button
+              disabled={mutate.isPending}
+              onClick={() => mutate.mutate("confirmed")}
+              className="w-full bg-burgundy hover:bg-burgundy/90"
+            >
               <ClipboardCheck className="mr-1 h-4 w-4" /> Confirm Order
             </Button>
           )}
@@ -360,8 +448,15 @@ function AdminOrderDetail() {
               Select items above to move them forward as a batch.
             </p>
           )}
-          {(["accepted", "confirmed", "processing", "dispatched", "out_for_delivery"] as string[]).includes(order.status) && (
-            <Button disabled={mutate.isPending} variant="outline" onClick={() => mutate.mutate("cancelled")} className="w-full">
+          {(
+            ["accepted", "confirmed", "processing", "dispatched", "out_for_delivery"] as string[]
+          ).includes(order.status) && (
+            <Button
+              disabled={mutate.isPending}
+              variant="outline"
+              onClick={() => mutate.mutate("cancelled")}
+              className="w-full"
+            >
               Cancel whole order
             </Button>
           )}
@@ -377,7 +472,12 @@ function AdminOrderDetail() {
           <div className="flex gap-2">
             <Button
               className="flex-1 bg-burgundy hover:bg-burgundy/90"
-              disabled={mixed || !target || moveMut.isPending || (target === "out_for_delivery" && !tracking.trim())}
+              disabled={
+                mixed ||
+                !target ||
+                moveMut.isPending ||
+                (target === "out_for_delivery" && !tracking.trim())
+              }
               title={
                 mixed
                   ? "Select items at the same stage to move them together."
@@ -390,7 +490,11 @@ function AdminOrderDetail() {
               <MoveIcon className="mr-1 h-4 w-4" />
               {target ? `Move selected to ${STATUS_LABEL[target]}` : "No further stage"}
             </Button>
-            <Button variant="outline" disabled={cancelMut.isPending} onClick={() => cancelMut.mutate()}>
+            <Button
+              variant="outline"
+              disabled={cancelMut.isPending}
+              onClick={() => cancelMut.mutate()}
+            >
               <Ban className="mr-1 h-4 w-4" /> Cancel
             </Button>
           </div>

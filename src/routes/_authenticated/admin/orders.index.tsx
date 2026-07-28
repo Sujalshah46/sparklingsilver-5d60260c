@@ -58,7 +58,9 @@ function AdminOrders() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)")
+        .select(
+          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)",
+        )
         .order("created_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -75,7 +77,9 @@ function AdminOrders() {
         if (payload.eventType === "INSERT") toast.success("New order received");
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
   const pendingCount = useMemo(
@@ -85,13 +89,17 @@ function AdminOrders() {
   useEffect(() => {
     const base = "Admin — Orders";
     document.title = pendingCount > 0 ? `(${pendingCount}) ${base}` : base;
-    return () => { document.title = base; };
+    return () => {
+      document.title = base;
+    };
   }, [pendingCount]);
 
   const rollups = useMemo(() => {
     const map = new Map<string, ReturnType<typeof rollupStatus>>();
     for (const o of orders ?? []) {
-      const statuses = ((o as { order_items?: { status: string }[] }).order_items ?? []).map((i) => i.status);
+      const statuses = ((o as { order_items?: { status: string }[] }).order_items ?? []).map(
+        (i) => i.status,
+      );
       map.set(o.id, rollupStatus(statuses.length ? statuses : [o.status], o.status));
     }
     return map;
@@ -111,8 +119,16 @@ function AdminOrders() {
         if (toTs && t > toTs) return false;
       }
       if (q) {
-        const hay = [o.order_no, o.customer_name, o.customer_phone, o.customer_email, o.customer_city]
-          .filter(Boolean).join(" ").toLowerCase();
+        const hay = [
+          o.order_no,
+          o.customer_name,
+          o.customer_phone,
+          o.customer_email,
+          o.customer_city,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
@@ -120,14 +136,21 @@ function AdminOrders() {
   }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
 
   const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
-  const clearAll = () => { setSearch(""); setFromDate(""); setToDate(""); setPendingItemsOnly(false); };
+  const clearAll = () => {
+    setSearch("");
+    setFromDate("");
+    setToDate("");
+    setPendingItemsOnly(false);
+  };
 
   return (
     <MobileShell title="Orders">
       <div className="p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h1 className="font-serif text-xl font-semibold">Orders</h1>
-          <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">← Dashboard</Link>
+          <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">
+            ← Dashboard
+          </Link>
         </div>
 
         <div className="mb-3 space-y-2">
@@ -178,7 +201,10 @@ function AdminOrders() {
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
           {STATUS_TABS.map((t) => {
-            const count = t === "all" ? orders?.length ?? 0 : (orders ?? []).filter((o) => o.status === t).length;
+            const count =
+              t === "all"
+                ? (orders?.length ?? 0)
+                : (orders ?? []).filter((o) => o.status === t).length;
             return (
               <button
                 key={t}

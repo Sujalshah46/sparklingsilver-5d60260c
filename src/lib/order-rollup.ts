@@ -88,7 +88,14 @@ export function rollupStatus(itemStatuses: string[], fallback: string): Rollup {
 
   if (active.length === 0) {
     const s = (itemStatuses[0] ?? fallback) as ItemStatus;
-    return { status: s, split: false, atStatus: itemStatuses.length, total: 0, counts, label: STATUS_LABEL[s] ?? s };
+    return {
+      status: s,
+      split: false,
+      atStatus: itemStatuses.length,
+      total: 0,
+      counts,
+      label: STATUS_LABEL[s] ?? s,
+    };
   }
 
   const unique = Array.from(new Set(active));

@@ -64,7 +64,10 @@ export async function syncOrderStatus(supabase: DB, orderId: string) {
   const least = active
     .map((i) => i.status)
     .sort((a, b) => PIPELINE.indexOf(a as ItemStatus) - PIPELINE.indexOf(b as ItemStatus))[0];
-  await supabase.from("orders").update({ status: least } as never).eq("id", orderId);
+  await supabase
+    .from("orders")
+    .update({ status: least } as never)
+    .eq("id", orderId);
 }
 
 export async function recordHistory(

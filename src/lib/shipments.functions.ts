@@ -86,11 +86,15 @@ export const moveItemsForward = createServerFn({ method: "POST" })
       }
 
       const patch: Record<string, unknown> = { status: data.to_status };
-      if (data.tracking_number !== undefined && data.tracking_number !== null) patch.tracking_number = data.tracking_number;
+      if (data.tracking_number !== undefined && data.tracking_number !== null)
+        patch.tracking_number = data.tracking_number;
       if (data.courier !== undefined && data.courier !== null) patch.courier = data.courier;
       if (data.to_status === "dispatched") patch.dispatched_at = new Date().toISOString();
       if (data.to_status === "delivered") patch.delivered_at = new Date().toISOString();
-      const { error: upErr } = await supabase.from("shipments").update(patch as never).eq("id", shipmentId);
+      const { error: upErr } = await supabase
+        .from("shipments")
+        .update(patch as never)
+        .eq("id", shipmentId);
       if (upErr) throw new Error(upErr.message);
     }
 
@@ -106,7 +110,12 @@ export const moveItemsForward = createServerFn({ method: "POST" })
 
     await recordHistory(
       supabase,
-      selected.map((s) => ({ order_item_id: s.id, from_status: from, to_status: data.to_status, note: data.note })),
+      selected.map((s) => ({
+        order_item_id: s.id,
+        from_status: from,
+        to_status: data.to_status,
+        note: data.note,
+      })),
       userId,
     );
     await syncOrderStatus(supabase, data.order_id);
@@ -146,17 +155,27 @@ export const cancelOrderItems = createServerFn({ method: "POST" })
 
     const all = await loadOrderItems(supabase, data.order_id);
     const selected = all.filter((i) => data.item_ids.includes(i.id));
-    if (selected.length !== data.item_ids.length) throw new Error("An item does not belong to this order");
+    if (selected.length !== data.item_ids.length)
+      throw new Error("An item does not belong to this order");
 
     const { error } = await supabase
       .from("order_items")
-      .update({ status: "cancelled", status_updated_at: new Date().toISOString(), shipment_id: null } as never)
+      .update({
+        status: "cancelled",
+        status_updated_at: new Date().toISOString(),
+        shipment_id: null,
+      } as never)
       .in("id", data.item_ids);
     if (error) throw new Error(error.message);
 
     await recordHistory(
       supabase,
-      selected.map((s) => ({ order_item_id: s.id, from_status: s.status, to_status: "cancelled", note: data.note })),
+      selected.map((s) => ({
+        order_item_id: s.id,
+        from_status: s.status,
+        to_status: "cancelled",
+        note: data.note,
+      })),
       userId,
     );
     await syncOrderStatus(supabase, data.order_id);
