@@ -95,7 +95,17 @@ export const Route = createFileRoute("/")({
 
 
 
-function SectionHeader({ title, total, to }: { title: string; total?: number | string; to?: string }) {
+function SectionHeader({
+  title,
+  total,
+  to,
+  search,
+}: {
+  title: string;
+  total?: number | string;
+  to?: string;
+  search?: Record<string, unknown>;
+}) {
   return (
     <div className="px-3">
       <div className="flex items-end justify-between gap-2">
@@ -108,6 +118,7 @@ function SectionHeader({ title, total, to }: { title: string; total?: number | s
         {to && (
           <Link
             to={to}
+            search={search}
             className="rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
           >
             View All
