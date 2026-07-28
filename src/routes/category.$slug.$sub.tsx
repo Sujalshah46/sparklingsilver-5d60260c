@@ -178,14 +178,18 @@ function SubcategoryPage() {
   return (
     <MobileShell title={`${data.category.name} — ${data.subcategory.name}`}>
       <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-2 py-2">
-        <Link
-          to="/category/$slug"
-          params={{ slug }}
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) window.history.back();
+            else navigate({ to: "/category/$slug", params: { slug } });
+          }}
           aria-label="Back"
           className="grid h-9 w-9 place-items-center text-[#333] hover:bg-[#F4F4F4]"
         >
           <ChevronLeft className="h-5 w-5" />
-        </Link>
+        </button>
+
         <h1 className="text-[16px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
           {data.subcategory.name} <span className="font-normal text-[#777]">({data.products.length})</span>
         </h1>
