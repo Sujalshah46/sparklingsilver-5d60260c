@@ -66,9 +66,13 @@ function OrdersPage() {
             {data.map((o) => {
               const items = (o.order_items ?? []) as unknown as {
                 id: string; product_name: string; product_sku: string | null;
-                quantity: number; size: string | null; image_url: string | null;
+                quantity: number; size: string | null; image_url: string | null; status?: string | null;
               }[];
               const totalQty = items.reduce((s, i) => s + (i.quantity ?? 0), 0);
+              const roll = rollupStatus(
+                items.map((i) => i.status ?? (o.status as string)),
+                o.status as string,
+              );
               return (
                 <li key={o.id}>
                   <Link to="/orders/$id" params={{ id: o.id }} className="block rounded-xl border border-border bg-card p-4 transition hover:border-gold">
@@ -79,7 +83,7 @@ function OrdersPage() {
                           {formatDate(o.created_at)} · {items.length} SKU{items.length === 1 ? "" : "s"} · {totalQty} pcs
                         </p>
                       </div>
-                      <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
+                      <Badge className={statusColor[roll.status] ?? ""}>{roll.label}</Badge>
                     </div>
 
                     {items.length > 0 && (
@@ -103,19 +107,25 @@ function OrdersPage() {
                           )}
                         </div>
                         <ul className="mt-2 space-y-0.5">
-                          {items.slice(0, 3).map((it) => (
+                          {items.slice(0, 2).map((it) => (
                             <li key={it.id} className="truncate text-[11px] text-muted-foreground">
                               {it.product_sku ? `${it.product_sku} · ` : ""}{it.product_name} × {it.quantity}
                               {it.size ? ` · Size ${it.size}` : ""}
                             </li>
                           ))}
-                          {items.length > 3 && (
-                            <li className="text-[11px] font-medium text-burgundy">+{items.length - 3} more item{items.length - 3 === 1 ? "" : "s"} — view details</li>
+                          {items.length > 2 && (
+                            <li className="text-[11px] text-muted-foreground">+{items.length - 2} more item{items.length - 2 === 1 ? "" : "s"}</li>
                           )}
                         </ul>
                       </>
                     )}
+
+                    <div className="mt-3 flex items-center justify-between border-t border-border pt-2 text-[11px] font-semibold text-burgundy">
+                      <span>View order details</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
                   </Link>
+
                 </li>
               );
             })}
