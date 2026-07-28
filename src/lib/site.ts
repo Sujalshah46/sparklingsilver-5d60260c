@@ -31,6 +31,10 @@ export const WHATSAPP_DEFAULT_MESSAGE =
 
 export const WHATSAPP_LINK_TARGET = "_blank";
 
+// Official Sparkling Silver Instagram profile.
+export const INSTAGRAM_URL =
+  "https://www.instagram.com/_sparklingsilver_?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==";
+
 // Categories that exist in the database but are hidden from the public web app.
 // Products in these categories won't be reachable via category pages, product pages, or search.
 export const HIDDEN_CATEGORY_SLUGS: readonly string[] = ["open-close", "victoria"];
@@ -46,6 +50,18 @@ export function openWhatsAppUrl(url: string) {
   if (typeof window === "undefined") return;
 
   const popup = window.open(url, WHATSAPP_LINK_TARGET);
+  if (popup) {
+    popup.opener = null;
+    return;
+  }
+
+  window.location.assign(url);
+}
+
+export function openInstagramUrl(url: string = INSTAGRAM_URL) {
+  if (typeof window === "undefined") return;
+
+  const popup = window.open(url, "_blank");
   if (popup) {
     popup.opener = null;
     return;

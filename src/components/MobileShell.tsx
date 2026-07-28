@@ -1,11 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, Search, ShoppingBag, Menu, User as UserIcon, X } from "lucide-react";
+import { Home, Search, ShoppingBag, Menu, User as UserIcon, X, Instagram } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useCartWeight } from "@/hooks/use-cart-weight";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, INSTAGRAM_URL, openInstagramUrl } from "@/lib/site";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -142,7 +142,7 @@ export function BottomNav() {
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-[#E5E5E5] bg-white">
       <div
-        className="mx-auto grid max-w-2xl grid-cols-4 items-center lg:max-w-[1600px] lg:px-8"
+        className="mx-auto grid max-w-2xl grid-cols-5 items-center lg:max-w-[1600px] lg:px-8"
         style={{ paddingBottom: "env(safe-area-inset-bottom)", height: 56 }}
       >
 
@@ -197,6 +197,20 @@ export function BottomNav() {
               d="M22.9 9.1A9.7 9.7 0 0 0 16.05 6.3c-5.36 0-9.72 4.36-9.72 9.72 0 1.71.45 3.38 1.3 4.85L6.25 25.7l4.98-1.3a9.71 9.71 0 0 0 4.82 1.23h.01c5.36 0 9.72-4.36 9.72-9.72a9.66 9.66 0 0 0-2.88-6.81ZM16.06 24a8.06 8.06 0 0 1-4.11-1.13l-.29-.17-2.96.77.79-2.88-.19-.3a8.05 8.05 0 0 1-1.24-4.28c0-4.46 3.63-8.08 8.09-8.08 2.16 0 4.19.84 5.72 2.37a8.03 8.03 0 0 1 2.37 5.72c0 4.46-3.63 8.08-8.09 8.08Zm4.44-6.05c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.55.12-.16.24-.63.79-.77.95-.14.16-.28.18-.53.06-.24-.12-1.03-.38-1.97-1.21-.73-.65-1.22-1.45-1.36-1.69-.14-.24-.02-.37.11-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.55-1.32-.75-1.81-.2-.48-.4-.41-.55-.42h-.47c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.18.86 2.32.98 2.48.12.16 1.7 2.59 4.12 3.63.58.25 1.03.4 1.38.51.58.18 1.1.16 1.52.1.46-.07 1.44-.59 1.64-1.16.2-.57.2-1.05.14-1.16-.06-.11-.22-.17-.46-.29Z"
             />
           </svg>
+        </a>
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(event) => {
+            event.preventDefault();
+            buzz(20);
+            openInstagramUrl();
+          }}
+          aria-label="Follow Sparkling Silver on Instagram"
+          className="mx-auto grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#833AB4] shadow-[0_4px_12px_rgba(221,42,123,0.35)] active:scale-95 transition-transform"
+        >
+          <Instagram className="h-6 w-6 text-white" strokeWidth={2} />
         </a>
       </div>
     </nav>
