@@ -6,6 +6,8 @@ import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
+import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL } from "@/lib/order-rollup";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +54,8 @@ function OrderDetail() {
   const { data, isLoading } = useQuery({
     queryKey: ["order", id],
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchInterval: 20_000,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
@@ -61,6 +65,7 @@ function OrderDetail() {
       return data;
     },
   });
+
 
   if (isLoading)
     return (
@@ -101,9 +106,14 @@ function OrderDetail() {
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
   const multi = shipments.length > 1;
 
-  const status = data.status as string;
+  const roll = rollupStatus(
+    allItems.map((i) => i.status ?? (data.status as string)),
+    data.status as string,
+  );
+  const status = roll.status as string;
   const isCancelled = status === "cancelled" || status === "rejected";
   const activeIdx = TIMELINE.findIndex((s) => s.key === status);
+
   const ship = data.shipping_address as {
     recipient_name: string;
     mobile: string;
@@ -125,7 +135,7 @@ function OrderDetail() {
                 Placed on {formatDate(data.created_at)}
               </p>
             </div>
-            <Badge className="capitalize">{STATUS_LABEL[status] ?? status}</Badge>
+            <Badge className="capitalize">{roll.label}</Badge>
           </div>
 
           {data.tracking_number && (
@@ -247,11 +257,21 @@ function OrderDetail() {
                   className="h-16 w-16 rounded-lg object-cover"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product_name}</p>
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="line-clamp-1 font-serif text-sm font-semibold">
+                      {it.product_name}
+                    </p>
+                    <Badge variant="secondary" className="shrink-0 text-[10px] capitalize">
+                      {ITEM_STATUS_LABEL[(it as { status?: string }).status ?? status] ??
+                        (it as { status?: string }).status ??
+                        status}
+                    </Badge>
+                  </div>
                   <p className="text-[11px] text-muted-foreground">
                     SKU {it.product_sku} · Qty {it.quantity}
                     {it.size ? ` · Size ${it.size}` : ""}
                   </p>
+
                   <p className="mt-1 text-[11px] text-[#555]">
                     <span className="font-semibold text-[#333]">Gross:</span>{" "}
                     {Number(
