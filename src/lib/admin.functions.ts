@@ -81,6 +81,15 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // Order-level transitions keep every active line item in lock-step, so
+    // item-level (split) fulfillment starts from a consistent baseline.
+    const { error: itemErr } = await supabase
+      .from("order_items")
+      .update({ status: data.status, status_updated_at: new Date().toISOString() } as never)
+      .eq("order_id", data.order_id)
+      .not("status", "in", "(cancelled,rejected)");
+    if (itemErr) console.error("[updateOrderStatus] item sync failed", itemErr);
+
     const msg = CLIENT_MSG[data.status];
     if (msg && updated?.user_id) {
       try {
