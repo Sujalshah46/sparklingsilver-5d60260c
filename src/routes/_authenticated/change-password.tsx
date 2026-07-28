@@ -32,7 +32,10 @@ function ChangePasswordPage() {
     if (pw !== confirm) return toast.error("Passwords do not match");
     setLoading(true);
     try {
-      await change({ data: { new_password: pw } });
+      // Update via the browser client so the current session stays valid.
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw new Error(error.message);
+      await clearFlag({ data: {} });
       toast.success("Password updated. Welcome!");
       navigate({ to: "/", replace: true });
     } catch (e) {
@@ -41,6 +44,7 @@ function ChangePasswordPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="relative min-h-screen w-full" style={pageBg}>
