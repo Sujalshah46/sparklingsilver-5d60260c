@@ -36,7 +36,7 @@ function ChangePasswordPage() {
       // Update via the browser client so the current session stays valid.
       const { error } = await supabase.auth.updateUser({ password: pw });
       if (error) throw new Error(error.message);
-      await clearFlag({ data: {} });
+      await clearFlag({} as never);
       toast.success("Password updated. Welcome!");
       navigate({ to: "/", replace: true });
     } catch (e) {
