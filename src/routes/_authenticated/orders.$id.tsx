@@ -52,6 +52,8 @@ function OrderDetail() {
   const { data, isLoading } = useQuery({
     queryKey: ["order", id],
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchInterval: 20_000,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
@@ -61,6 +63,7 @@ function OrderDetail() {
       return data;
     },
   });
+
 
   if (isLoading)
     return (
