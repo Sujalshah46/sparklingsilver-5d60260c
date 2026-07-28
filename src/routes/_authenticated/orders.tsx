@@ -36,15 +36,18 @@ function OrdersPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["orders", user?.id],
     enabled: !!user,
+    refetchOnWindowFocus: true,
+    refetchInterval: 30_000,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(id, product_name, product_sku, quantity, size, image_url)")
+        .select("*, order_items(id, product_name, product_sku, quantity, size, image_url, status)")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data ?? [];
     },
   });
+
 
   return (
     <MobileShell title="My Orders">
