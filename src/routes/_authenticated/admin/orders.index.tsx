@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { rollupStatus, isActive } from "@/lib/order-rollup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({
@@ -56,7 +57,7 @@ function AdminOrders() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at")
+        .select("id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)")
         .order("created_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -86,12 +87,23 @@ function AdminOrders() {
     return () => { document.title = base; };
   }, [pendingCount]);
 
+  const rollups = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof rollupStatus>>();
+    for (const o of orders ?? []) {
+      const statuses = ((o as { order_items?: { status: string }[] }).order_items ?? []).map((i) => i.status);
+      map.set(o.id, rollupStatus(statuses.length ? statuses : [o.status], o.status));
+    }
+    return map;
+  }, [orders]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
     const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
     return (orders ?? []).filter((o) => {
+      const r = rollups.get(o.id);
       if (tab !== "all" && o.status !== tab) return false;
+      if (pendingItemsOnly && !(r?.split && (r.counts.confirmed ?? 0) > 0)) return false;
       if (fromTs || toTs) {
         const t = new Date(o.created_at).getTime();
         if (fromTs && t < fromTs) return false;
@@ -104,10 +116,10 @@ function AdminOrders() {
       }
       return true;
     });
-  }, [orders, tab, search, fromDate, toDate]);
+  }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
 
-  const hasFilters = !!(search || fromDate || toDate);
-  const clearAll = () => { setSearch(""); setFromDate(""); setToDate(""); };
+  const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
+  const clearAll = () => { setSearch(""); setFromDate(""); setToDate(""); setPendingItemsOnly(false); };
 
   return (
     <MobileShell title="Orders">
@@ -149,6 +161,18 @@ function AdminOrders() {
               </Button>
             )}
           </div>
+        </div>
+
+        <div className="mb-3">
+          <Button
+            type="button"
+            size="sm"
+            variant={pendingItemsOnly ? "default" : "outline"}
+            onClick={() => setPendingItemsOnly((v) => !v)}
+            className="h-8 text-xs"
+          >
+            Has pending items
+          </Button>
         </div>
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
@@ -204,7 +228,14 @@ function AdminOrders() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
+                      <Badge className={statusColor[rollups.get(o.id)?.status ?? o.status] ?? ""}>
+                        {rollups.get(o.id)?.label ?? o.status}
+                      </Badge>
+                      {rollups.get(o.id)?.split && (
+                        <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-charcoal">
+                          Split
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
