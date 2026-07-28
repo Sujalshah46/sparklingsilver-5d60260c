@@ -1,5 +1,5 @@
 import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSuspenseInfiniteQuery, infiniteQueryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+
+const searchSchema = z.object({
+  new: fallback(z.boolean(), false).default(false),
+});
+
+type CatalogProduct = CatalogueCardData & { category_id: string; homepage_featured?: boolean | null };
 
 const PAGE_SIZE = 30;
 
