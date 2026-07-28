@@ -76,16 +76,16 @@ const NEW_DESC = pageDescription(
 
 export const Route = createFileRoute("/catalogue")({
   validateSearch: zodValidator(searchSchema),
-  head: ({ search }) => ({
+  head: () => ({
     meta: [
-      { title: search.new ? NEW_TITLE : CAT_TITLE },
-      ...descriptionTags(search.new ? NEW_DESC : CAT_DESC),
-      { property: "og:title", content: search.new ? NEW_TITLE : CAT_TITLE },
+      { title: CAT_TITLE },
+      ...descriptionTags(CAT_DESC),
+      { property: "og:title", content: CAT_TITLE },
       { property: "og:url", content: "https://sparklingsilver.in/catalogue" },
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/catalogue" }],
   }),
-  loader: ({ context, search }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery(search.new)),
+  loader: ({ context }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery(false)),
   component: Catalogue,
 });
 
