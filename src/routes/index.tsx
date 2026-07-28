@@ -159,7 +159,7 @@ function Home() {
       {/* NEW ARRIVAL — admin-curated */}
       {newArrivals.length > 0 && (
         <section className="pt-6">
-          <SectionHeader title="New Arrival" to="/catalogue" />
+          <SectionHeader title="New Arrival" to="/catalogue" search={{ new: true }} />
           <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
             {newArrivals.map((p) => (
               <div key={p.id} className="w-[170px] shrink-0">
