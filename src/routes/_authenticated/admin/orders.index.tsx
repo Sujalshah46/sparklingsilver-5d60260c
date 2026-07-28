@@ -189,9 +189,14 @@ function AdminOrders() {
                       <p className="truncate font-serif text-sm font-bold text-foreground">
                         {o.customer_name ?? "—"}
                       </p>
-                      <p className="truncate text-xs text-muted-foreground">
+                      <p className="truncate text-xs font-bold text-foreground">
                         {o.order_no}
-                        {o.customer_phone ? ` · ${o.customer_phone}` : ""}
+                        {o.customer_phone ? (
+                          <span className="font-normal text-muted-foreground">
+                            {" "}
+                            · {o.customer_phone}
+                          </span>
+                        ) : null}
                       </p>
 
                       <p className="text-[11px] text-muted-foreground">
