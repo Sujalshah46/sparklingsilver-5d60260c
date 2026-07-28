@@ -51,6 +51,7 @@ function AdminOrders() {
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [pendingItemsOnly, setPendingItemsOnly] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders"],
