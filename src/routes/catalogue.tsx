@@ -31,51 +31,61 @@ async function fetchVisibleCategories() {
   return data ?? [];
 }
 
-const catalogInfiniteQuery = infiniteQueryOptions({
-  queryKey: ["catalogue-infinite"],
-  staleTime: 10 * 60_000,
-  gcTime: 30 * 60_000,
-  initialPageParam: 0,
-  queryFn: async ({ pageParam }) => {
-    const from = (pageParam as number) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const categories = await fetchVisibleCategories();
-    const visibleIds = categories.map((c) => c.id);
-    const { data, count } = await supabase
-      .from("products")
-      .select("*", { count: "exact" })
-      .in("category_id", visibleIds)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-    return {
-      products: (data ?? []) as (CatalogueCardData & { category_id: string })[],
-      categories,
-      total: count ?? 0,
-      page: pageParam as number,
-    };
-  },
-  getNextPageParam: (last) => {
-    const loaded = (last.page + 1) * PAGE_SIZE;
-    return loaded < last.total ? last.page + 1 : undefined;
-  },
-});
+const catalogInfiniteQuery = (onlyNew: boolean) =>
+  infiniteQueryOptions({
+    queryKey: ["catalogue-infinite", onlyNew ? "new" : "all"],
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const from = (pageParam as number) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const categories = await fetchVisibleCategories();
+      const visibleIds = categories.map((c) => c.id);
+      let qb = supabase
+        .from("products")
+        .select("*", { count: "exact" })
+        .in("category_id", visibleIds);
+      if (onlyNew) {
+        qb = qb.eq("homepage_featured", true).order("homepage_featured_order", { ascending: true });
+      } else {
+        qb = qb.order("created_at", { ascending: false });
+      }
+      const { data, count } = await qb.range(from, to);
+      return {
+        products: (data ?? []) as CatalogProduct[],
+        categories,
+        total: count ?? 0,
+        page: pageParam as number,
+      };
+    },
+    getNextPageParam: (last) => {
+      const loaded = (last.page + 1) * PAGE_SIZE;
+      return loaded < last.total ? last.page + 1 : undefined;
+    },
+  });
 
 const CAT_TITLE = pageTitle("Shop 925 Sterling Silver Jewellery");
 const CAT_DESC = pageDescription(
   "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.",
 );
+const NEW_TITLE = pageTitle("New Arrivals");
+const NEW_DESC = pageDescription(
+  "Discover the latest wholesale silver jewellery arrivals hand-picked by Sparkling Silver.",
+);
 
 export const Route = createFileRoute("/catalogue")({
-  head: () => ({
+  validateSearch: zodValidator(searchSchema),
+  head: ({ search }) => ({
     meta: [
-      { title: CAT_TITLE },
-      ...descriptionTags(CAT_DESC),
-      { property: "og:title", content: CAT_TITLE },
+      { title: search.new ? NEW_TITLE : CAT_TITLE },
+      ...descriptionTags(search.new ? NEW_DESC : CAT_DESC),
+      { property: "og:title", content: search.new ? NEW_TITLE : CAT_TITLE },
       { property: "og:url", content: "https://sparklingsilver.in/catalogue" },
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/catalogue" }],
   }),
-  loader: ({ context }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery),
+  loader: ({ context, search }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery(search.new)),
   component: Catalogue,
 });
 
