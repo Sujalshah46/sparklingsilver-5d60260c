@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { rollupStatus } from "@/lib/order-rollup";
 
-export const Route = createFileRoute("/_authenticated/orders")({
+export const Route = createFileRoute("/_authenticated/orders/")({
   head: () => ({ meta: [{ title: pageTitle("My Orders") }] }),
   component: OrdersPage,
 });
