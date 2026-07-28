@@ -28,13 +28,13 @@ const statusColor: Record<string, string> = {
 
 function OrdersPage() {
   const { user } = useAuth();
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["orders", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(count)")
+        .select("*, order_items(id, product_name, product_sku, quantity, size, image_url)")
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       return data ?? [];
@@ -44,7 +44,9 @@ function OrdersPage() {
   return (
     <MobileShell title="My Orders">
       <div className="p-4">
-        {!data?.length ? (
+        {isLoading ? (
+          <p className="py-20 text-center text-sm text-muted-foreground">Loading your orders…</p>
+        ) : !data?.length ? (
           <div className="py-20 text-center">
             <Package className="mx-auto h-12 w-12 text-muted-foreground" />
             <h2 className="mt-4 font-serif text-xl">No orders yet</h2>
@@ -53,23 +55,66 @@ function OrdersPage() {
           </div>
         ) : (
           <ul className="space-y-3">
-            {data.map((o) => (
-              <li key={o.id}>
-                <Link to="/orders/$id" params={{ id: o.id }} className="block rounded-xl border border-border bg-card p-4 transition hover:border-gold">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="font-serif text-sm font-semibold">{o.order_no}</p>
-                      <p className="text-[11px] text-muted-foreground">{formatDate(o.created_at)} · {(o.order_items as unknown as { count: number }[])?.[0]?.count ?? 0} items</p>
+            {data.map((o) => {
+              const items = (o.order_items ?? []) as unknown as {
+                id: string; product_name: string; product_sku: string | null;
+                quantity: number; size: string | null; image_url: string | null;
+              }[];
+              const totalQty = items.reduce((s, i) => s + (i.quantity ?? 0), 0);
+              return (
+                <li key={o.id}>
+                  <Link to="/orders/$id" params={{ id: o.id }} className="block rounded-xl border border-border bg-card p-4 transition hover:border-gold">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-serif text-sm font-semibold">{o.order_no}</p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {formatDate(o.created_at)} · {items.length} SKU{items.length === 1 ? "" : "s"} · {totalQty} pcs
+                        </p>
+                      </div>
+                      <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
                     </div>
-                    <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
-                  </div>
-                  
-                </Link>
-              </li>
-            ))}
+
+                    {items.length > 0 && (
+                      <>
+                        <div className="mt-3 flex gap-2 overflow-hidden">
+                          {items.slice(0, 4).map((it) => (
+                            <img
+                              key={it.id}
+                              src={resolveProductImage(it.image_url)}
+                              alt={it.product_name}
+                              width={48}
+                              height={48}
+                              loading="lazy"
+                              className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover"
+                            />
+                          ))}
+                          {items.length > 4 && (
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-secondary text-[11px] font-medium">
+                              +{items.length - 4}
+                            </div>
+                          )}
+                        </div>
+                        <ul className="mt-2 space-y-0.5">
+                          {items.slice(0, 3).map((it) => (
+                            <li key={it.id} className="truncate text-[11px] text-muted-foreground">
+                              {it.product_sku ? `${it.product_sku} · ` : ""}{it.product_name} × {it.quantity}
+                              {it.size ? ` · Size ${it.size}` : ""}
+                            </li>
+                          ))}
+                          {items.length > 3 && (
+                            <li className="text-[11px] font-medium text-burgundy">+{items.length - 3} more item{items.length - 3 === 1 ? "" : "s"} — view details</li>
+                          )}
+                        </ul>
+                      </>
+                    )}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
     </MobileShell>
   );
 }
+
