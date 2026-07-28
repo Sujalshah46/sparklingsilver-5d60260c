@@ -34,6 +34,50 @@ const STAGES: { key: OrderStatus; label: string }[] = [
   { key: "delivered", label: "Delivered" },
 ];
 
+/** Distinct colour per stage, matching the status badges. */
+const STAGE_TONE: Record<
+  OrderStatus | string,
+  { dot: string; ring: string; text: string; bar: string }
+> = {
+  pending: { dot: "bg-sky-500", ring: "ring-sky-200", text: "text-sky-700", bar: "bg-sky-400" },
+  accepted: {
+    dot: "bg-indigo-500",
+    ring: "ring-indigo-200",
+    text: "text-indigo-700",
+    bar: "bg-indigo-400",
+  },
+  confirmed: {
+    dot: "bg-blue-600",
+    ring: "ring-blue-200",
+    text: "text-blue-700",
+    bar: "bg-blue-400",
+  },
+  processing: {
+    dot: "bg-amber-500",
+    ring: "ring-amber-200",
+    text: "text-amber-700",
+    bar: "bg-amber-400",
+  },
+  dispatched: {
+    dot: "bg-violet-500",
+    ring: "ring-violet-200",
+    text: "text-violet-700",
+    bar: "bg-violet-400",
+  },
+  out_for_delivery: {
+    dot: "bg-orange-500",
+    ring: "ring-orange-200",
+    text: "text-orange-700",
+    bar: "bg-orange-400",
+  },
+  delivered: {
+    dot: "bg-emerald-600",
+    ring: "ring-emerald-200",
+    text: "text-emerald-700",
+    bar: "bg-emerald-500",
+  },
+};
+
 /** Safe formatter: returns "" if input is missing/invalid instead of throwing. */
 function safeStageTime(v: unknown): string {
   if (typeof v !== "string" || v.length === 0) return "";
