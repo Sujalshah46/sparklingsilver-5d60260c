@@ -28,16 +28,41 @@ const ACCESS_TOKEN = process.env.LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN;
 
 const hasAuth = Boolean(STORAGE_KEY && SESSION_JSON && ACCESS_TOKEN);
 
+/**
+ * The browser drives the BUYER session (injected preview session). The admin
+ * write is performed with a separate admin token: either supplied directly
+ * (E2E_ADMIN_ACCESS_TOKEN) or minted from admin credentials
+ * (E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD). Without one, the admin half is
+ * skipped rather than failing.
+ */
+const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD;
+let adminToken = process.env.E2E_ADMIN_ACCESS_TOKEN ?? "";
+
+async function signInAdmin(): Promise<string> {
+  if (adminToken) return adminToken;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return "";
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: "POST",
+    headers: { apikey: PUBLISHABLE_KEY, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD }),
+  });
+  if (!res.ok) throw new Error(`admin sign-in failed: ${res.status}`);
+  const json = (await res.json()) as { access_token: string };
+  adminToken = json.access_token;
+  return adminToken;
+}
+
 /** How long a buyer may wait before an admin change shows up. */
 const PROPAGATION_BUDGET_MS = 12_000;
 
-type RestOptions = { method?: string; body?: unknown; prefer?: string };
+type RestOptions = { method?: string; body?: unknown; prefer?: string; token?: string };
 async function rest(path: string, opts: RestOptions = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     method: opts.method ?? "GET",
     headers: {
       apikey: PUBLISHABLE_KEY,
-      Authorization: `Bearer ${ACCESS_TOKEN}`,
+      Authorization: `Bearer ${opts.token ?? ACCESS_TOKEN}`,
       "Content-Type": "application/json",
       ...(opts.prefer ? { Prefer: opts.prefer } : {}),
     },
@@ -63,10 +88,8 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     const session = JSON.parse(SESSION_JSON!);
     userId = session.user.id as string;
 
-    const roles = (await rest(
-      `user_roles?user_id=eq.${userId}&role=eq.admin&select=role`,
-    ).catch(() => [])) as Array<{ role: string }>;
-    isAdmin = roles.length > 0;
+    await signInAdmin();
+    isAdmin = Boolean(adminToken);
     if (!isAdmin) return;
 
     const products = (await rest(
@@ -127,7 +150,7 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
   });
 
   test("buyer list rollup + detail item badges update live", async ({ page }) => {
-    test.skip(!isAdmin, "Session user is not an admin; cannot perform admin writes");
+    test.skip(!isAdmin, "No admin credentials (E2E_ADMIN_EMAIL/E2E_ADMIN_PASSWORD) available");
 
     // Restore the Supabase session so the app treats us as signed in.
     await page.goto("/");
@@ -145,6 +168,7 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     // Admin accepts BOTH items (the write the admin panel makes).
     await rest(`order_items?id=in.(${itemIds.join(",")})`, {
       method: "PATCH",
+      token: adminToken,
       body: { status: "accepted", status_updated_at: new Date().toISOString() },
     });
 
@@ -154,10 +178,12 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     // Admin moves only ONE item forward → rollup must show partial progress.
     await rest(`order_items?id=eq.${itemIds[0]}`, {
       method: "PATCH",
+      token: adminToken,
       body: { status: "confirmed", status_updated_at: new Date().toISOString() },
     });
     await rest(`order_items?id=eq.${itemIds[0]}`, {
       method: "PATCH",
+      token: adminToken,
       body: { status: "processing", status_updated_at: new Date().toISOString() },
     });
     await expect(listBadge).toHaveText(/processing/i, { timeout: PROPAGATION_BUDGET_MS });
@@ -173,6 +199,7 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     // Admin advances the second item while the buyer sits on the page.
     await rest(`order_items?id=eq.${itemIds[1]}`, {
       method: "PATCH",
+      token: adminToken,
       body: { status: "confirmed", status_updated_at: new Date().toISOString() },
     });
     await expect(item1).toHaveText(/confirmed/i, { timeout: PROPAGATION_BUDGET_MS });
@@ -180,6 +207,7 @@ test.describe("admin SKU status update → buyer order views refresh", () => {
     // Rollup on the detail header reacts too.
     await rest(`order_items?id=eq.${itemIds[1]}`, {
       method: "PATCH",
+      token: adminToken,
       body: { status: "processing", status_updated_at: new Date().toISOString() },
     });
     await expect(page.getByTestId("order-rollup")).toHaveText(/processing/i, {
