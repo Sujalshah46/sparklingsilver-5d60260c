@@ -106,27 +106,34 @@ export function OnboardingGate() {
           event === "TOKEN_REFRESHED") &&
         session?.user
       ) {
-        check(session.user);
+        // Never await Supabase calls inside the auth callback — it deadlocks the
+        // client's internal lock. Defer to a microtask-free tick instead.
+        const user = session.user;
+        setTimeout(() => {
+          if (!cancelled) check(user);
+        }, 0);
       }
     });
 
     // Re-check when the user navigates away from an exempt path (e.g. /auth → /).
+    // The router uses history.pushState, which fires no event, so subscribe to
+    // the router's own location instead of non-existent "pushstate" events.
     const onNav = () => {
       supabase.auth.getUser().then(({ data }) => {
-        if (data.user && !open) check(data.user);
+        if (data.user && !openRef.current) check(data.user);
       });
     };
+    const unsubRouter = router.subscribe("onResolved", onNav);
     window.addEventListener("popstate", onNav);
-    window.addEventListener("pushstate", onNav);
-    window.addEventListener("replacestate", onNav);
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
+      unsubRouter();
       window.removeEventListener("popstate", onNav);
-      window.removeEventListener("pushstate", onNav);
-      window.removeEventListener("replacestate", onNav);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
 
   useEffect(() => {
     if (!open) return;
