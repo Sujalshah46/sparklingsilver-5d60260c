@@ -104,9 +104,14 @@ function OrderDetail() {
     .sort((a, b) => a.created_at.localeCompare(b.created_at));
   const multi = shipments.length > 1;
 
-  const status = data.status as string;
+  const roll = rollupStatus(
+    allItems.map((i) => i.status ?? (data.status as string)),
+    data.status as string,
+  );
+  const status = roll.status as string;
   const isCancelled = status === "cancelled" || status === "rejected";
   const activeIdx = TIMELINE.findIndex((s) => s.key === status);
+
   const ship = data.shipping_address as {
     recipient_name: string;
     mobile: string;
