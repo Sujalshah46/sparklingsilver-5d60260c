@@ -34,6 +34,50 @@ const STAGES: { key: OrderStatus; label: string }[] = [
   { key: "delivered", label: "Delivered" },
 ];
 
+/** Distinct colour per stage, matching the status badges. */
+const STAGE_TONE: Record<
+  OrderStatus | string,
+  { dot: string; ring: string; text: string; bar: string }
+> = {
+  pending: { dot: "bg-sky-500", ring: "ring-sky-200", text: "text-sky-700", bar: "bg-sky-400" },
+  accepted: {
+    dot: "bg-indigo-500",
+    ring: "ring-indigo-200",
+    text: "text-indigo-700",
+    bar: "bg-indigo-400",
+  },
+  confirmed: {
+    dot: "bg-blue-600",
+    ring: "ring-blue-200",
+    text: "text-blue-700",
+    bar: "bg-blue-400",
+  },
+  processing: {
+    dot: "bg-amber-500",
+    ring: "ring-amber-200",
+    text: "text-amber-700",
+    bar: "bg-amber-400",
+  },
+  dispatched: {
+    dot: "bg-violet-500",
+    ring: "ring-violet-200",
+    text: "text-violet-700",
+    bar: "bg-violet-400",
+  },
+  out_for_delivery: {
+    dot: "bg-orange-500",
+    ring: "ring-orange-200",
+    text: "text-orange-700",
+    bar: "bg-orange-400",
+  },
+  delivered: {
+    dot: "bg-emerald-600",
+    ring: "ring-emerald-200",
+    text: "text-emerald-700",
+    bar: "bg-emerald-500",
+  },
+};
+
 /** Safe formatter: returns "" if input is missing/invalid instead of throwing. */
 function safeStageTime(v: unknown): string {
   if (typeof v !== "string" || v.length === 0) return "";
@@ -86,15 +130,22 @@ export function OrderStageTracker({ status, history, counts, totalItems }: Order
         const when = safeStageTime(map[s.key]);
         const at = counts?.[s.key] ?? 0;
         const split = !!totalItems && totalItems > 1 && at > 0 && at < totalItems;
+        const tone = STAGE_TONE[s.key] ?? {
+          dot: "bg-green-700",
+          ring: "ring-green-200",
+          text: "text-green-700",
+          bar: "bg-green-700",
+        };
+        const nextTone = STAGE_TONE[STAGES[i + 1]?.key] ?? tone;
         return (
           <li key={s.key} className="flex flex-1 items-center gap-1 min-w-max">
             <div className="flex flex-col items-center gap-1">
               <span
                 className={`grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold ${
                   done
-                    ? "bg-green-700 text-white"
+                    ? `${tone.dot} text-white`
                     : active
-                      ? "bg-burgundy text-white ring-4 ring-burgundy/15"
+                      ? `${tone.dot} text-white ring-4 ${tone.ring}`
                       : "bg-secondary text-muted-foreground"
                 }`}
               >
@@ -102,7 +153,7 @@ export function OrderStageTracker({ status, history, counts, totalItems }: Order
               </span>
               <span
                 className={`text-[9px] leading-tight text-center ${
-                  active ? "font-semibold text-burgundy" : "text-muted-foreground"
+                  active ? `font-semibold ${tone.text}` : done ? tone.text : "text-muted-foreground"
                 }`}
               >
                 {s.label}
@@ -122,7 +173,9 @@ export function OrderStageTracker({ status, history, counts, totalItems }: Order
               )}
             </div>
             {i < STAGES.length - 1 && (
-              <span className={`mb-6 h-0.5 flex-1 ${i < current ? "bg-green-700" : "bg-border"}`} />
+              <span
+                className={`mb-6 h-0.5 flex-1 ${i < current ? nextTone.bar : "bg-border"}`}
+              />
             )}
           </li>
         );
