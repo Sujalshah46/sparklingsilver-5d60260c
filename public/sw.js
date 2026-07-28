@@ -1,5 +1,5 @@
 /* Sparkling Silver — push notifications + product image cache */
-const IMG_CACHE = "ss-img-v3";
+const IMG_CACHE = "ss-img-v4";
 const IMG_CACHE_MAX = 2000;
 
 self.addEventListener("install", (e) => self.skipWaiting());
@@ -37,7 +37,9 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() => cached);
-      return cached || network;
+      // Never resolve to undefined: respondWith() would reject and surface a
+      // broken-image network error when both cache and network miss.
+      return (await (cached || network)) || Response.error();
     })(),
   );
 });
