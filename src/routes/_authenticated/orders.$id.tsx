@@ -47,7 +47,7 @@ function OrderDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(*)")
+        .select("*, order_items(*), shipments(*)")
         .eq("id", id)
         .maybeSingle();
       return data;
@@ -56,6 +56,14 @@ function OrderDetail() {
 
   if (isLoading) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Loading…</p></MobileShell>;
   if (!data) return <MobileShell title="Order"><p className="p-8 text-center text-muted-foreground">Order not found</p></MobileShell>;
+
+  type Ship = { id: string; status: string; tracking_number: string | null; dispatched_at: string | null; delivered_at: string | null; created_at: string };
+  type Item = { id: string; product_name: string; product_sku: string | null; quantity: number; size: string | null; image_url: string | null; status: string; shipment_id: string | null; gross_weight?: number | string | null; remark?: string | null };
+  const allItems = ((data.order_items ?? []) as unknown as Item[]);
+  const shipments = ((data as unknown as { shipments?: Ship[] }).shipments ?? [])
+    .slice()
+    .sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const multi = shipments.length > 1;
 
   const status = data.status as string;
   const isCancelled = status === "cancelled" || status === "rejected";
@@ -84,7 +92,57 @@ function OrderDetail() {
           )}
         </div>
 
-        {!isCancelled && (
+        {!isCancelled && multi && (
+          <section className="space-y-3">
+            {shipments.map((sh, si) => {
+              const shipItems = allItems.filter((it) => it.shipment_id === sh.id);
+              const shipIdx = TIMELINE.findIndex((t) => t.key === sh.status);
+              return (
+                <div key={sh.id} className="rounded-xl border border-border bg-card p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="font-serif text-sm font-semibold">
+                        Shipment {si + 1} of {shipments.length} — {shipItems.length} item{shipItems.length === 1 ? "" : "s"}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {shipItems.map((it) => it.product_sku || it.product_name).join(", ") || "—"}
+                      </p>
+                    </div>
+                    <Badge className="capitalize">{STATUS_LABEL[sh.status] ?? sh.status}</Badge>
+                  </div>
+                  {sh.tracking_number && (
+                    <p className="mt-2 rounded-md bg-secondary p-2 text-[11px]">
+                      <span className="font-semibold">Tracking / AWB: </span>
+                      <span className="font-mono">{sh.tracking_number}</span>
+                    </p>
+                  )}
+                  <ol className="mt-3 space-y-2">
+                    {TIMELINE.map((t, i) => {
+                      const done = shipIdx >= 0 && i <= shipIdx;
+                      const Icon = done ? t.Icon : Circle;
+                      return (
+                        <li key={t.key} className="flex items-center gap-3">
+                          <div className={`flex h-7 w-7 items-center justify-center rounded-full border ${done ? "border-burgundy bg-burgundy text-white" : "border-border bg-background text-muted-foreground"}`}>
+                            <Icon className="h-3.5 w-3.5" />
+                          </div>
+                          <p className={`text-xs ${done ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{t.label}</p>
+                        </li>
+                      );
+                    })}
+                  </ol>
+                </div>
+              );
+            })}
+            {allItems.some((it) => !it.shipment_id && it.status !== "cancelled") && (
+              <div className="rounded-xl border border-dashed border-border bg-card p-4 text-xs text-muted-foreground">
+                <span className="font-semibold text-foreground">Awaiting production: </span>
+                {allItems.filter((it) => !it.shipment_id && it.status !== "cancelled").map((it) => it.product_sku || it.product_name).join(", ")}
+              </div>
+            )}
+          </section>
+        )}
+
+        {!isCancelled && !multi && (
           <section className="rounded-xl border border-border bg-card p-4">
             <h3 className="mb-3 font-serif text-base font-semibold">Order timeline</h3>
             <ol className="space-y-3">
