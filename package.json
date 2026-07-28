@@ -15,7 +15,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:auth": "playwright test auth-gate"
+    "test:e2e:auth": "playwright test auth-gate",
+    "test:e2e:orders": "playwright test order-status-live-refresh"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
