@@ -22,7 +22,7 @@ const silverStyle: React.CSSProperties = { backgroundImage: "linear-gradient(180
 
 function ChangePasswordPage() {
   const navigate = useNavigate();
-  const change = useServerFn(changeOwnPassword);
+  const clearFlag = useServerFn(clearMustChangePassword);
   const [pw, setPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
