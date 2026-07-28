@@ -39,6 +39,27 @@ export const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+/**
+ * One distinct colour per fulfilment stage (Delivered = solid green).
+ * Shared by buyer + admin order screens.
+ */
+export const STATUS_BADGE_CLASS: Record<string, string> = {
+  placed: "bg-slate-200 text-slate-800 ring-1 ring-slate-300",
+  pending: "bg-sky-100 text-sky-800 ring-1 ring-sky-300",
+  accepted: "bg-indigo-100 text-indigo-800 ring-1 ring-indigo-300",
+  confirmed: "bg-blue-100 text-blue-800 ring-1 ring-blue-300",
+  processing: "bg-amber-100 text-amber-900 ring-1 ring-amber-300",
+  ready: "bg-teal-100 text-teal-800 ring-1 ring-teal-300",
+  dispatched: "bg-violet-100 text-violet-800 ring-1 ring-violet-300",
+  out_for_delivery: "bg-orange-100 text-orange-900 ring-1 ring-orange-300",
+  delivered: "bg-emerald-600 text-white ring-1 ring-emerald-700",
+  rejected: "bg-rose-100 text-rose-800 ring-1 ring-rose-300",
+  cancelled: "bg-rose-100 text-rose-800 ring-1 ring-rose-300",
+};
+
+export const statusBadgeClass = (s: string) =>
+  STATUS_BADGE_CLASS[s] ?? "bg-secondary text-foreground";
+
 /** Statuses that no longer participate in the rollup. */
 export const TERMINAL_INACTIVE: ItemStatus[] = ["cancelled", "rejected"];
 

@@ -9,26 +9,13 @@ import { resolveProductImage } from "@/lib/product-images";
 import { Package, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { rollupStatus } from "@/lib/order-rollup";
+import { rollupStatus, statusBadgeClass } from "@/lib/order-rollup";
 
 export const Route = createFileRoute("/_authenticated/orders/")({
   head: () => ({ meta: [{ title: pageTitle("My Orders") }] }),
   component: OrdersPage,
 });
 
-const statusColor: Record<string, string> = {
-  pending: "bg-amber-100 text-amber-900",
-  accepted: "bg-green-100 text-green-900",
-  confirmed: "bg-green-100 text-green-900",
-  rejected: "bg-destructive/15 text-destructive",
-  placed: "bg-secondary text-foreground",
-  processing: "bg-gold/20 text-charcoal",
-  ready: "bg-gold/20 text-charcoal",
-  dispatched: "bg-blue-100 text-blue-900",
-  out_for_delivery: "bg-blue-100 text-blue-900",
-  delivered: "bg-green-100 text-green-900",
-  cancelled: "bg-destructive/15 text-destructive",
-};
 
 
 function OrdersPage() {
@@ -84,7 +71,7 @@ function OrdersPage() {
                           {formatDate(o.created_at)} · {items.length} SKU{items.length === 1 ? "" : "s"} · {totalQty} pcs
                         </p>
                       </div>
-                      <Badge data-testid={`order-rollup-${o.order_no}`} className={statusColor[roll.status] ?? ""}>{roll.label}</Badge>
+                      <Badge data-testid={`order-rollup-${o.order_no}`} className={statusBadgeClass(roll.status)}>{roll.label}</Badge>
                     </div>
 
                     {items.length > 0 && (
