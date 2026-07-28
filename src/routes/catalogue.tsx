@@ -90,12 +90,14 @@ export const Route = createFileRoute("/catalogue")({
 });
 
 function Catalogue() {
+  const { new: onlyNew } = useSearch({ from: "/catalogue" });
+
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useSuspenseInfiniteQuery(catalogInfiniteQuery);
+  } = useSuspenseInfiniteQuery(catalogInfiniteQuery(onlyNew));
 
   const allProducts = useMemo(
     () => data.pages.flatMap((p) => p.products),
