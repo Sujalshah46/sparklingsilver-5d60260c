@@ -76,9 +76,13 @@ function AdminOrderDetail() {
   return (
     <MobileShell title={order.order_no}>
       <div className="space-y-4 p-4">
-        <Link to="/admin" className="inline-flex items-center gap-1 text-sm text-burgundy">
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-1 text-sm text-burgundy"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to orders
-        </Link>
+        </button>
 
         <div className="rounded-xl border border-border bg-card p-4">
           <div className="flex items-start justify-between">
