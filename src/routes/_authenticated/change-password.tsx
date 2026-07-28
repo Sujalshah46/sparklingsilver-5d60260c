@@ -2,7 +2,8 @@ import { pageTitle } from "@/lib/seo";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { changeOwnPassword } from "@/lib/users.functions";
+import { clearMustChangePassword } from "@/lib/users.functions";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Lock, ArrowRight, ShieldCheck } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -21,7 +22,7 @@ const silverStyle: React.CSSProperties = { backgroundImage: "linear-gradient(180
 
 function ChangePasswordPage() {
   const navigate = useNavigate();
-  const change = useServerFn(changeOwnPassword);
+  const clearFlag = useServerFn(clearMustChangePassword);
   const [pw, setPw] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,7 +33,10 @@ function ChangePasswordPage() {
     if (pw !== confirm) return toast.error("Passwords do not match");
     setLoading(true);
     try {
-      await change({ data: { new_password: pw } });
+      // Update via the browser client so the current session stays valid.
+      const { error } = await supabase.auth.updateUser({ password: pw });
+      if (error) throw new Error(error.message);
+      await clearFlag({} as never);
       toast.success("Password updated. Welcome!");
       navigate({ to: "/", replace: true });
     } catch (e) {
@@ -41,6 +45,7 @@ function ChangePasswordPage() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="relative min-h-screen w-full" style={pageBg}>

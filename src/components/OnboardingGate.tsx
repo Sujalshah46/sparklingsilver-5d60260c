@@ -71,7 +71,10 @@ export function OnboardingGate() {
 
   const check = async (user: User) => {
     const pathname = window.location.pathname;
-    if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) return;
+    if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) {
+      setOpen(false);
+      return;
+    }
 
     const { data: role } = await supabase
       .from("user_roles").select("role").eq("user_id", user.id).eq("role", "admin").maybeSingle();
@@ -79,10 +82,25 @@ export function OnboardingGate() {
 
     const { data: p } = await supabase
       .from("profiles")
-      .select("business_name, contact_person, mobile, email, delivery_address, gstin, additional_remarks, profile_completed")
+      .select("business_name, contact_person, mobile, email, delivery_address, gstin, additional_remarks, profile_completed, must_change_password")
       .eq("id", user.id)
       .maybeSingle();
-    if (!p || p.profile_completed) return;
+    if (!p) return;
+    // First-time password change takes priority over the profile form.
+    if (p.must_change_password) {
+      setOpen(false);
+      return;
+    }
+
+    const missingRequired =
+      !p.business_name?.trim() ||
+      !p.contact_person?.trim() ||
+      !p.mobile?.trim() ||
+      !(p.email ?? user.email ?? "").trim() ||
+      !p.delivery_address?.trim() ||
+      !p.gstin?.trim();
+
+    if (p.profile_completed && !missingRequired) return;
 
     setUserId(user.id);
     setBusinessName(p?.business_name ?? "");
@@ -94,6 +112,7 @@ export function OnboardingGate() {
     setRemarks(p?.additional_remarks ?? "");
     setOpen(true);
   };
+
 
   useEffect(() => {
     let cancelled = false;
@@ -123,22 +142,24 @@ export function OnboardingGate() {
       }
     });
 
-    // Re-check when the user navigates away from an exempt path (e.g. /auth → /).
-    // The router uses history.pushState, which fires no event, so subscribe to
-    // the router's own location instead of non-existent "pushstate" events.
+    // Re-check on every route resolve (pushState fires no event), on back/forward,
+    // and when the tab regains focus — so an incomplete profile always resurfaces.
     const onNav = () => {
       supabase.auth.getUser().then(({ data }) => {
-        if (data.user && !openRef.current) check(data.user);
+        if (data.user) check(data.user);
       });
     };
     const unsubRouter = router.subscribe("onResolved", onNav);
     window.addEventListener("popstate", onNav);
+    window.addEventListener("focus", onNav);
     return () => {
       cancelled = true;
       sub.subscription.unsubscribe();
       unsubRouter();
       window.removeEventListener("popstate", onNav);
+      window.removeEventListener("focus", onNav);
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

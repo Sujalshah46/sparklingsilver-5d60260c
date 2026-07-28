@@ -257,3 +257,17 @@ export const changeOwnPassword = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+// Authenticated: clear must_change_password after a client-side password update
+// (client-side updateUser keeps the current session alive, unlike the admin API).
+export const clearMustChangePassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("profiles").update({ must_change_password: false }).eq("id", context.userId);
+    await supabaseAdmin.from("user_activity_log").insert({
+      user_id: context.userId, actor_id: context.userId, action: "self_change_password", meta: {},
+    });
+    return { ok: true };
+  });
+
