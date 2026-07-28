@@ -255,6 +255,44 @@ export type Database = {
         }
         Relationships: []
       }
+      item_status_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          from_status: Database["public"]["Enums"]["order_status"] | null
+          id: string
+          note: string | null
+          order_item_id: string
+          to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: Database["public"]["Enums"]["order_status"] | null
+          id?: string
+          note?: string | null
+          order_item_id: string
+          to_status: Database["public"]["Enums"]["order_status"]
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          from_status?: Database["public"]["Enums"]["order_status"] | null
+          id?: string
+          note?: string | null
+          order_item_id?: string
+          to_status?: Database["public"]["Enums"]["order_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_status_history_order_item_id_fkey"
+            columns: ["order_item_id"]
+            isOneToOne: false
+            referencedRelation: "order_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           gross_weight: number | null
@@ -267,7 +305,10 @@ export type Database = {
           product_sku: string | null
           quantity: number
           remark: string | null
+          shipment_id: string | null
           size: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          status_updated_at: string
           unit_price: number
         }
         Insert: {
@@ -281,7 +322,10 @@ export type Database = {
           product_sku?: string | null
           quantity: number
           remark?: string | null
+          shipment_id?: string | null
           size?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          status_updated_at?: string
           unit_price: number
         }
         Update: {
@@ -295,7 +339,10 @@ export type Database = {
           product_sku?: string | null
           quantity?: number
           remark?: string | null
+          shipment_id?: string | null
           size?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          status_updated_at?: string
           unit_price?: number
         }
         Relationships: [
@@ -311,6 +358,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_shipment_id_fkey"
+            columns: ["shipment_id"]
+            isOneToOne: false
+            referencedRelation: "shipments"
             referencedColumns: ["id"]
           },
         ]
@@ -663,6 +717,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      shipments: {
+        Row: {
+          courier: string | null
+          created_at: string
+          created_by: string | null
+          delivered_at: string | null
+          dispatched_at: string | null
+          id: string
+          order_id: string
+          status: Database["public"]["Enums"]["order_status"]
+          tracking_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          courier?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          id?: string
+          order_id: string
+          status?: Database["public"]["Enums"]["order_status"]
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          courier?: string | null
+          created_at?: string
+          created_by?: string | null
+          delivered_at?: string | null
+          dispatched_at?: string | null
+          id?: string
+          order_id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          tracking_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stock_movements: {
         Row: {

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
+import { rollupStatus } from "@/lib/order-rollup";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({
@@ -50,13 +51,16 @@ function AdminOrders() {
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [pendingItemsOnly, setPendingItemsOnly] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders"],
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at")
+        .select(
+          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)",
+        )
         .order("created_at", { ascending: false })
         .limit(500);
       return data ?? [];
@@ -73,7 +77,9 @@ function AdminOrders() {
         if (payload.eventType === "INSERT") toast.success("New order received");
       })
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [qc]);
 
   const pendingCount = useMemo(
@@ -83,38 +89,68 @@ function AdminOrders() {
   useEffect(() => {
     const base = "Admin — Orders";
     document.title = pendingCount > 0 ? `(${pendingCount}) ${base}` : base;
-    return () => { document.title = base; };
+    return () => {
+      document.title = base;
+    };
   }, [pendingCount]);
+
+  const rollups = useMemo(() => {
+    const map = new Map<string, ReturnType<typeof rollupStatus>>();
+    for (const o of orders ?? []) {
+      const statuses = ((o as { order_items?: { status: string }[] }).order_items ?? []).map(
+        (i) => i.status,
+      );
+      map.set(o.id, rollupStatus(statuses.length ? statuses : [o.status], o.status));
+    }
+    return map;
+  }, [orders]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
     const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
     return (orders ?? []).filter((o) => {
+      const r = rollups.get(o.id);
       if (tab !== "all" && o.status !== tab) return false;
+      if (pendingItemsOnly && !(r?.split && (r.counts.confirmed ?? 0) > 0)) return false;
       if (fromTs || toTs) {
         const t = new Date(o.created_at).getTime();
         if (fromTs && t < fromTs) return false;
         if (toTs && t > toTs) return false;
       }
       if (q) {
-        const hay = [o.order_no, o.customer_name, o.customer_phone, o.customer_email, o.customer_city]
-          .filter(Boolean).join(" ").toLowerCase();
+        const hay = [
+          o.order_no,
+          o.customer_name,
+          o.customer_phone,
+          o.customer_email,
+          o.customer_city,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [orders, tab, search, fromDate, toDate]);
+  }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
 
-  const hasFilters = !!(search || fromDate || toDate);
-  const clearAll = () => { setSearch(""); setFromDate(""); setToDate(""); };
+  const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
+  const clearAll = () => {
+    setSearch("");
+    setFromDate("");
+    setToDate("");
+    setPendingItemsOnly(false);
+  };
 
   return (
     <MobileShell title="Orders">
       <div className="p-4">
         <div className="mb-3 flex items-center justify-between gap-2">
           <h1 className="font-serif text-xl font-semibold">Orders</h1>
-          <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">← Dashboard</Link>
+          <Link to="/admin" className="text-xs text-muted-foreground hover:text-foreground">
+            ← Dashboard
+          </Link>
         </div>
 
         <div className="mb-3 space-y-2">
@@ -151,9 +187,24 @@ function AdminOrders() {
           </div>
         </div>
 
+        <div className="mb-3">
+          <Button
+            type="button"
+            size="sm"
+            variant={pendingItemsOnly ? "default" : "outline"}
+            onClick={() => setPendingItemsOnly((v) => !v)}
+            className="h-8 text-xs"
+          >
+            Has pending items
+          </Button>
+        </div>
+
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
           {STATUS_TABS.map((t) => {
-            const count = t === "all" ? orders?.length ?? 0 : (orders ?? []).filter((o) => o.status === t).length;
+            const count =
+              t === "all"
+                ? (orders?.length ?? 0)
+                : (orders ?? []).filter((o) => o.status === t).length;
             return (
               <button
                 key={t}
@@ -204,7 +255,14 @@ function AdminOrders() {
                       </p>
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <Badge className={statusColor[o.status] ?? ""}>{o.status}</Badge>
+                      <Badge className={statusColor[rollups.get(o.id)?.status ?? o.status] ?? ""}>
+                        {rollups.get(o.id)?.label ?? o.status}
+                      </Badge>
+                      {rollups.get(o.id)?.split && (
+                        <span className="rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-charcoal">
+                          Split
+                        </span>
+                      )}
                     </div>
                   </div>
                 </Link>
