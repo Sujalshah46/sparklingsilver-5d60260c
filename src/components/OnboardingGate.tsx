@@ -48,8 +48,14 @@ function Row({
 const EXEMPT_PREFIXES = ["/auth", "/reset-password", "/api/", "/change-password"];
 
 export function OnboardingGate() {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const openRef = useRef(false);
+  useEffect(() => {
+    openRef.current = open;
+  }, [open]);
   const [userId, setUserId] = useState<string | null>(null);
+
   const [businessName, setBusinessName] = useState("");
   const [contactPerson, setContactPerson] = useState("");
   const [mobile, setMobile] = useState("");
