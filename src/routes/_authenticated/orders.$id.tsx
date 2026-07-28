@@ -129,7 +129,7 @@ function OrderDetail() {
                   </p>
                   {(it as { remark?: string | null }).remark && (
                     <p className="mt-1 whitespace-pre-wrap rounded-md bg-secondary p-2 text-[11px]">
-                      <span className="font-semibold">Your remark: </span>
+                      <span className="font-semibold">Item Remarks: </span>
                       {(it as { remark?: string | null }).remark}
                     </p>
                   )}
