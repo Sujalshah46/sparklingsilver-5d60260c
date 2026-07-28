@@ -142,7 +142,7 @@ function VideoCard({
       el.play().catch(() => {});
     } else {
       el.pause();
-      try { el.currentTime = 0; } catch {}
+      try { el.currentTime = 0; } catch { /* non-critical */ }
     }
   }, [active, muted]);
 

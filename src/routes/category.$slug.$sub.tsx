@@ -118,15 +118,15 @@ function SubcategoryPage() {
       if (v === "grid1" || v === "grid2" || v === "compact") setView(v);
       const s = localStorage.getItem("sj.sortKey") as SortKey | null;
       if (s) setSort(s);
-    } catch {}
+    } catch { /* non-critical */ }
   }, []);
   const updateView = (v: ViewStyle) => {
     setView(v);
-    try { localStorage.setItem("sj.viewStyle", v); } catch {}
+    try { localStorage.setItem("sj.viewStyle", v); } catch { /* non-critical */ }
   };
   const updateSort = (s: SortKey) => {
     setSort(s);
-    try { localStorage.setItem("sj.sortKey", s); } catch {}
+    try { localStorage.setItem("sj.sortKey", s); } catch { /* non-critical */ }
     setSortOpen(false);
   };
 
