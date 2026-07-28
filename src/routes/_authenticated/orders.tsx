@@ -37,7 +37,8 @@ function OrdersPage() {
     queryKey: ["orders", user?.id],
     enabled: !!user,
     refetchOnWindowFocus: true,
-    refetchInterval: 30_000,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
@@ -83,7 +84,7 @@ function OrdersPage() {
                           {formatDate(o.created_at)} · {items.length} SKU{items.length === 1 ? "" : "s"} · {totalQty} pcs
                         </p>
                       </div>
-                      <Badge className={statusColor[roll.status] ?? ""}>{roll.label}</Badge>
+                      <Badge data-testid={`order-rollup-${o.order_no}`} className={statusColor[roll.status] ?? ""}>{roll.label}</Badge>
                     </div>
 
                     {items.length > 0 && (
