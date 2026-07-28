@@ -25,8 +25,12 @@ export async function sendAdminEmail(opts: {
         "X-Connection-Api-Key": resendKey,
       },
       body: JSON.stringify({
-        from: "Sparkling Alerts <onboarding@resend.dev>",
+        // Mailbox providers block sending "from" a gmail.com address, so the
+        // envelope sender stays on a verified domain while replies land in the
+        // Sparkling Silver inbox.
+        from: process.env.SENDER_EMAIL ?? "Sparkling Silver <onboarding@resend.dev>",
         to: [to],
+        reply_to: process.env.REPLY_TO_EMAIL ?? "arikafactory@gmail.com",
         subject: opts.subject,
         html: opts.html,
       }),
