@@ -135,7 +135,7 @@ function OrderDetail() {
                 Placed on {formatDate(data.created_at)}
               </p>
             </div>
-            <Badge className="capitalize">{STATUS_LABEL[status] ?? status}</Badge>
+            <Badge className="capitalize">{roll.label}</Badge>
           </div>
 
           {data.tracking_number && (
