@@ -280,19 +280,27 @@ function InventoryPage() {
                 if (qty !== null && (!Number.isFinite(qty) || qty < 0)) { toast.error("Invalid quantity"); return; }
                 if (thr !== null && (!Number.isFinite(thr) || thr < 0)) { toast.error("Invalid threshold"); return; }
                 try {
-                  const res = await bulkApply({ data: {
-                    product_ids: Array.from(selected),
-                    quantity: qty,
-                    low_stock_threshold: thr,
-                    reason: bulkReason.trim() || null,
-                  }});
-                  toast.success(`Updated ${res.updated}${res.failed ? `, ${res.failed} failed` : ""}`);
+                  const ids = Array.from(selected);
+                  const CHUNK = 100;
+                  let updated = 0, failed = 0;
+                  for (let i = 0; i < ids.length; i += CHUNK) {
+                    const res = await bulkApply({ data: {
+                      product_ids: ids.slice(i, i + CHUNK),
+                      quantity: qty,
+                      low_stock_threshold: thr,
+                      reason: bulkReason.trim() || null,
+                    }});
+                    updated += res.updated;
+                    failed += res.failed;
+                  }
+                  toast.success(`Updated ${updated}${failed ? `, ${failed} failed` : ""}`);
                   setBulkOpen(false);
                   setSelected(new Set());
                   qc.invalidateQueries({ queryKey: ["admin-inventory"] });
                 } catch (e) {
                   toast.error(e instanceof Error ? e.message : "Bulk update failed");
                 }
+
               }}
             >
               Apply
