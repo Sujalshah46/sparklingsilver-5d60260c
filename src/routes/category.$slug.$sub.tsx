@@ -1,6 +1,6 @@
 import { pageTitle, pageDescription, descriptionTags, jsonLdScript, collectionPageSchema, breadcrumbSchema } from "@/lib/seo";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createFileRoute, notFound, Link } from "@tanstack/react-router";
+import { createFileRoute, notFound, Link, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
@@ -104,6 +104,7 @@ type Filters = { onlyNew: boolean; onlyBestseller: boolean };
 
 function SubcategoryPage() {
   const { slug, sub } = Route.useParams();
+  const navigate = useNavigate();
   const { data } = useSuspenseQuery(subcatQuery(slug, sub));
 
   const [sort, setSort] = useState<SortKey>("featured");
