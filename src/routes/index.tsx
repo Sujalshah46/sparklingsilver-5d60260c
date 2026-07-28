@@ -95,7 +95,17 @@ export const Route = createFileRoute("/")({
 
 
 
-function SectionHeader({ title, total, to }: { title: string; total?: number | string; to?: string }) {
+function SectionHeader({
+  title,
+  total,
+  to,
+  search,
+}: {
+  title: string;
+  total?: number | string;
+  to?: string;
+  search?: Record<string, unknown>;
+}) {
   return (
     <div className="px-3">
       <div className="flex items-end justify-between gap-2">
@@ -108,6 +118,7 @@ function SectionHeader({ title, total, to }: { title: string; total?: number | s
         {to && (
           <Link
             to={to}
+            search={search}
             className="rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
           >
             View All
@@ -148,7 +159,7 @@ function Home() {
       {/* NEW ARRIVAL — admin-curated */}
       {newArrivals.length > 0 && (
         <section className="pt-6">
-          <SectionHeader title="New Arrival" to="/catalogue" />
+          <SectionHeader title="New Arrival" to="/catalogue" search={{ new: true }} />
           <div className="mt-3 flex gap-2 overflow-x-auto px-3 pb-2 scrollbar-hide">
             {newArrivals.map((p) => (
               <div key={p.id} className="w-[170px] shrink-0">

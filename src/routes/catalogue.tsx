@@ -1,5 +1,5 @@
 import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { useSuspenseInfiniteQuery, infiniteQueryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,6 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
+import { z } from "zod";
+import { zodValidator, fallback } from "@tanstack/zod-adapter";
+
+const searchSchema = z.object({
+  new: fallback(z.boolean(), false).default(false),
+});
+
+type CatalogProduct = CatalogueCardData & { category_id: string; homepage_featured?: boolean | null };
 
 const PAGE_SIZE = 30;
 
@@ -23,41 +31,51 @@ async function fetchVisibleCategories() {
   return data ?? [];
 }
 
-const catalogInfiniteQuery = infiniteQueryOptions({
-  queryKey: ["catalogue-infinite"],
-  staleTime: 10 * 60_000,
-  gcTime: 30 * 60_000,
-  initialPageParam: 0,
-  queryFn: async ({ pageParam }) => {
-    const from = (pageParam as number) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
-    const categories = await fetchVisibleCategories();
-    const visibleIds = categories.map((c) => c.id);
-    const { data, count } = await supabase
-      .from("products")
-      .select("*", { count: "exact" })
-      .in("category_id", visibleIds)
-      .order("created_at", { ascending: false })
-      .range(from, to);
-    return {
-      products: (data ?? []) as (CatalogueCardData & { category_id: string })[],
-      categories,
-      total: count ?? 0,
-      page: pageParam as number,
-    };
-  },
-  getNextPageParam: (last) => {
-    const loaded = (last.page + 1) * PAGE_SIZE;
-    return loaded < last.total ? last.page + 1 : undefined;
-  },
-});
+const catalogInfiniteQuery = (onlyNew: boolean) =>
+  infiniteQueryOptions({
+    queryKey: ["catalogue-infinite", onlyNew ? "new" : "all"],
+    staleTime: 10 * 60_000,
+    gcTime: 30 * 60_000,
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const from = (pageParam as number) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
+      const categories = await fetchVisibleCategories();
+      const visibleIds = categories.map((c) => c.id);
+      let qb = supabase
+        .from("products")
+        .select("*", { count: "exact" })
+        .in("category_id", visibleIds);
+      if (onlyNew) {
+        qb = qb.eq("homepage_featured", true).order("homepage_featured_order", { ascending: true });
+      } else {
+        qb = qb.order("created_at", { ascending: false });
+      }
+      const { data, count } = await qb.range(from, to);
+      return {
+        products: (data ?? []) as CatalogProduct[],
+        categories,
+        total: count ?? 0,
+        page: pageParam as number,
+      };
+    },
+    getNextPageParam: (last) => {
+      const loaded = (last.page + 1) * PAGE_SIZE;
+      return loaded < last.total ? last.page + 1 : undefined;
+    },
+  });
 
 const CAT_TITLE = pageTitle("Shop 925 Sterling Silver Jewellery");
 const CAT_DESC = pageDescription(
   "Browse our complete wholesale silver jewellery catalogue. Filter by category, purity and weight.",
 );
+const NEW_TITLE = pageTitle("New Arrivals");
+const NEW_DESC = pageDescription(
+  "Discover the latest wholesale silver jewellery arrivals hand-picked by Sparkling Silver.",
+);
 
 export const Route = createFileRoute("/catalogue")({
+  validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
       { title: CAT_TITLE },
@@ -67,17 +85,19 @@ export const Route = createFileRoute("/catalogue")({
     ],
     links: [{ rel: "canonical", href: "https://sparklingsilver.in/catalogue" }],
   }),
-  loader: ({ context }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery),
+  loader: ({ context }) => context.queryClient.ensureInfiniteQueryData(catalogInfiniteQuery(false)),
   component: Catalogue,
 });
 
 function Catalogue() {
+  const { new: onlyNew } = useSearch({ from: "/catalogue" });
+
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useSuspenseInfiniteQuery(catalogInfiniteQuery);
+  } = useSuspenseInfiniteQuery(catalogInfiniteQuery(onlyNew));
 
   const allProducts = useMemo(
     () => data.pages.flatMap((p) => p.products),
@@ -117,11 +137,16 @@ function Catalogue() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
-    <MobileShell title="Catalogue">
+    <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
       <div className="px-3 pt-4">
         <h1 className="text-[16px] font-bold text-[#1A1A1A]">
-          Catalogue ({products.length}
+          {onlyNew ? "New Arrivals" : "Catalogue"} ({products.length}
           {allProducts.length < total ? ` of ${total}` : ""})
+          {onlyNew && (
+            <span className="ml-2 inline-block rounded-[2px] bg-teal px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+              Featured
+            </span>
+          )}
         </h1>
       </div>
 
