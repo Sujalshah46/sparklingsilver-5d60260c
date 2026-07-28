@@ -6,6 +6,8 @@ import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
+import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL } from "@/lib/order-rollup";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
