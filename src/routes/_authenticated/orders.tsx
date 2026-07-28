@@ -6,9 +6,10 @@ import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
-import { Package } from "lucide-react";
+import { Package, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { rollupStatus } from "@/lib/order-rollup";
 
 export const Route = createFileRoute("/_authenticated/orders")({
   head: () => ({ meta: [{ title: pageTitle("My Orders") }] }),
@@ -18,14 +19,17 @@ export const Route = createFileRoute("/_authenticated/orders")({
 const statusColor: Record<string, string> = {
   pending: "bg-amber-100 text-amber-900",
   accepted: "bg-green-100 text-green-900",
+  confirmed: "bg-green-100 text-green-900",
   rejected: "bg-destructive/15 text-destructive",
   placed: "bg-secondary text-foreground",
   processing: "bg-gold/20 text-charcoal",
   ready: "bg-gold/20 text-charcoal",
   dispatched: "bg-blue-100 text-blue-900",
+  out_for_delivery: "bg-blue-100 text-blue-900",
   delivered: "bg-green-100 text-green-900",
   cancelled: "bg-destructive/15 text-destructive",
 };
+
 
 function OrdersPage() {
   const { user } = useAuth();
