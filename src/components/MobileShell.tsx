@@ -1,11 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { Home, Search, ShoppingBag, Menu, User as UserIcon, X } from "lucide-react";
+import { Home, Search, ShoppingBag, Menu, User as UserIcon, X, Instagram } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useIsAdmin } from "@/hooks/use-is-admin";
 import { useCartWeight } from "@/hooks/use-cart-weight";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, INSTAGRAM_URL, openInstagramUrl } from "@/lib/site";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
