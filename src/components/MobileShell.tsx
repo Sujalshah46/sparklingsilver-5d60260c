@@ -127,7 +127,7 @@ export function TopBar() {
 
 const buzz = (ms = 15) => {
   if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
-    try { navigator.vibrate(ms); } catch {}
+    try { navigator.vibrate(ms); } catch { /* non-critical */ }
   }
 };
 

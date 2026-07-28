@@ -132,7 +132,7 @@ function Home() {
   }, []);
   const updateStyle = (s: "premium" | "classic") => {
     setStyle(s);
-    try { localStorage.setItem("sj.categoryStyle", s); } catch {}
+    try { localStorage.setItem("sj.categoryStyle", s); } catch { /* non-critical */ }
   };
   const newArrivals = data?.products.slice(0, 10) ?? [];
   const categories = data?.categories ?? [];

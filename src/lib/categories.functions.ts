@@ -22,7 +22,7 @@ const setInput = z.object({
     .trim()
     .min(1)
     .max(512)
-    .regex(/^[A-Za-z0-9._\-\/]+$/, "Invalid storage path"),
+    .regex(/^[A-Za-z0-9._\-/]+$/, "Invalid storage path"),
 });
 
 export const setCategoryImage = createServerFn({ method: "POST" })
