@@ -55,7 +55,8 @@ function OrderDetail() {
     queryKey: ["order", id],
     enabled: !!user,
     refetchOnWindowFocus: true,
-    refetchInterval: 20_000,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: false,
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
@@ -135,7 +136,7 @@ function OrderDetail() {
                 Placed on {formatDate(data.created_at)}
               </p>
             </div>
-            <Badge className="capitalize">{roll.label}</Badge>
+            <Badge data-testid="order-rollup" className="capitalize">{roll.label}</Badge>
           </div>
 
           {data.tracking_number && (
@@ -261,7 +262,7 @@ function OrderDetail() {
                     <p className="line-clamp-1 font-serif text-sm font-semibold">
                       {it.product_name}
                     </p>
-                    <Badge variant="secondary" className="shrink-0 text-[10px] capitalize">
+                    <Badge data-testid={`item-status-${it.id}`} variant="secondary" className="shrink-0 text-[10px] capitalize">
                       {ITEM_STATUS_LABEL[(it as { status?: string }).status ?? status] ??
                         (it as { status?: string }).status ??
                         status}
