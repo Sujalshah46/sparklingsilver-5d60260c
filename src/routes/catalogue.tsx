@@ -9,6 +9,9 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter
 import { Button } from "@/components/ui/button";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { CategoryTile } from "@/components/CategoryTile";
+import { PREMIUM_CATEGORY_IMAGES, resolveProductImage } from "@/lib/product-images";
+import { useQuery } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { z } from "zod";
