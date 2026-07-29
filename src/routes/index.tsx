@@ -174,7 +174,7 @@ function Home() {
             const dbImage = (c as unknown as { image_url?: string | null }).image_url;
             const premium = PREMIUM_CATEGORY_IMAGES[c.slug];
             const classic = resolveProductImage(c.slug === "jewelry-sets" ? "cat-necklaces-a.jpg" : `cat-${c.slug}-a.jpg`);
-            const image = style === "premium" ? (premium || dbImage || classic) : (classic || dbImage || premium);
+            const image = premium || dbImage || classic;
             return (
               <CategoryTile
                 key={c.id}
