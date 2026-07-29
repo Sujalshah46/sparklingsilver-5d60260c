@@ -133,18 +133,6 @@ function SectionHeader({
 function Home() {
   // Client-side fetch: no SSR blocking; shell paints immediately.
   const { data } = useQuery(homeQuery);
-  const [style, setStyle] = useState<"premium" | "classic">("premium");
-  useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("sj.categoryStyle")) as
-      | "premium"
-      | "classic"
-      | null;
-    if (saved === "premium" || saved === "classic") setStyle(saved);
-  }, []);
-  const updateStyle = (s: "premium" | "classic") => {
-    setStyle(s);
-    try { localStorage.setItem("sj.categoryStyle", s); } catch { /* non-critical */ }
-  };
   const newArrivals = data?.products.slice(0, 10) ?? [];
   const categories = data?.categories ?? [];
   const counts = data?.counts ?? new Map<string, number>();
