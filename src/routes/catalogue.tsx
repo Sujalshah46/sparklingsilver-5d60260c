@@ -158,6 +158,35 @@ function Catalogue() {
     enabled: categories.length > 0,
   });
 
+  // Collections-only view for /catalogue (no product grid)
+  if (!onlyNew) {
+    return (
+      <MobileShell title="Catalogue">
+        <section className="px-3 py-6">
+          <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>
+          <span className="mt-1 block h-px w-8 bg-teal" />
+          <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-6">
+            {categories.map((c, i) => (
+              <CategoryTile
+                key={c.id}
+                slug={c.slug}
+                name={c.name}
+                image={
+                  PREMIUM_CATEGORY_IMAGES[c.slug] ||
+                  (c as unknown as { image_url?: string | null }).image_url ||
+                  resolveProductImage(`cat-${c.slug}-a.jpg`)
+                }
+                count={catCounts?.[c.id as string] ?? 0}
+                priority={i < 2}
+              />
+            ))}
+          </div>
+        </section>
+        <div className="h-24" />
+      </MobileShell>
+    );
+  }
+
   return (
     <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
       {!onlyNew && categories.length > 0 && (
