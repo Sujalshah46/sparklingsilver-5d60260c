@@ -180,26 +180,6 @@ function Home() {
             <SectionHeader title="Our Collection" to="/catalogue" />
           </div>
         </div>
-        <div className="mt-2 flex justify-end px-3">
-          <div className="inline-flex rounded-[2px] border border-teal/40 p-[2px] text-[11px] font-bold uppercase tracking-wider">
-            <button
-              type="button"
-              onClick={() => updateStyle("premium")}
-              aria-pressed={style === "premium"}
-              className={`px-3 py-1 rounded-[2px] transition-colors ${style === "premium" ? "bg-teal text-white" : "text-teal hover:bg-teal/10"}`}
-            >
-              Premium
-            </button>
-            <button
-              type="button"
-              onClick={() => updateStyle("classic")}
-              aria-pressed={style === "classic"}
-              className={`px-3 py-1 rounded-[2px] transition-colors ${style === "classic" ? "bg-teal text-white" : "text-teal hover:bg-teal/10"}`}
-            >
-              Classic
-            </button>
-          </div>
-        </div>
         <div className="mt-3 flex flex-col gap-3 px-3 lg:grid lg:grid-cols-2 lg:gap-6">
           {categories.map((c, i) => {
             const count = counts.get(c.id) ?? 0;
