@@ -139,10 +139,53 @@ function Catalogue() {
     return () => io.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+  // Per-category design counts for the collection tiles
+  const { data: catCounts } = useQuery({
+    queryKey: ["catalogue-category-counts"],
+    staleTime: 10 * 60_000,
+    queryFn: async () => {
+      const entries = await Promise.all(
+        categories.map(async (c) => {
+          const { count } = await supabase
+            .from("products")
+            .select("id", { count: "exact", head: true })
+            .eq("category_id", c.id as string);
+          return [c.id as string, count ?? 0] as const;
+        }),
+      );
+      return Object.fromEntries(entries) as Record<string, number>;
+    },
+    enabled: categories.length > 0,
+  });
+
   return (
     <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
+      {!onlyNew && categories.length > 0 && (
+        <section className="px-3 pt-4">
+          <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>
+          <span className="mt-1 block h-px w-8 bg-teal" />
+          <div className="mt-3 flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-6">
+            {categories.map((c, i) => (
+              <CategoryTile
+                key={c.id}
+                slug={c.slug}
+                name={c.name}
+                image={
+                  PREMIUM_CATEGORY_IMAGES[c.slug] ||
+                  (c as unknown as { image_url?: string | null }).image_url ||
+                  resolveProductImage(`cat-${c.slug}-a.jpg`)
+                }
+                count={catCounts?.[c.id as string] ?? 0}
+                priority={i < 2}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="px-3 pt-4">
         <h1 className="text-[16px] font-bold text-[#1A1A1A]">
+
           {onlyNew ? "New Arrivals" : "Catalogue"} ({products.length}
           {allProducts.length < total ? ` of ${total}` : ""})
           {onlyNew && (
