@@ -50,6 +50,12 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+/** Items still before the "processing" stage haven't entered production yet. */
+const PRE_PRODUCTION = new Set(["pending", "accepted", "confirmed"]);
+function isAwaitingProduction(status: string) {
+  return PRE_PRODUCTION.has(status);
+}
+
 function OrderDetail() {
   const { id } = Route.useParams();
   const { user } = useAuth();
