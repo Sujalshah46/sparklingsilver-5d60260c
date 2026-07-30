@@ -209,7 +209,11 @@ function AdminOrders() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search order #, name, phone, email, city"
+              placeholder={
+                mode === "sku"
+                  ? "Search SKU, product, order #, name, city"
+                  : "Search order #, name, phone, email, city"
+              }
               className="h-9 pl-8 text-sm"
             />
           </div>
