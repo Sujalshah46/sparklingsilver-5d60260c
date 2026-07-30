@@ -159,51 +159,21 @@ function OrderDetail() {
 
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Items</h3>
+          <p className="mb-2 text-[11px] text-muted-foreground">
+            Tap an item to see its own order timeline.
+          </p>
           <div className="space-y-2">
-            {data.order_items?.map((it) => (
-              <div key={it.id} className="flex gap-3 rounded-xl border border-border bg-card p-3">
-                <img
-                  src={resolveProductImage(it.image_url)}
-                  alt={it.product_name}
-                  width={64}
-                  height={64}
-                  loading="lazy"
-                  className="h-16 w-16 rounded-lg object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-2">
-                    <p className="line-clamp-1 font-serif text-sm font-semibold">
-                      {it.product_name}
-                    </p>
-                    <Badge data-testid={`item-status-${it.id}`} variant="secondary" className={`shrink-0 text-[10px] capitalize ${statusBadgeClass((it as { status?: string }).status ?? status)}`}>
-                      {ITEM_STATUS_LABEL[(it as { status?: string }).status ?? status] ??
-                        (it as { status?: string }).status ??
-                        status}
-                    </Badge>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    SKU {it.product_sku} · Qty {it.quantity}
-                    {it.size ? ` · Size ${it.size}` : ""}
-                  </p>
-
-                  <p className="mt-1 text-[11px] text-[#555]">
-                    <span className="font-semibold text-[#333]">Gross:</span>{" "}
-                    {Number(
-                      (it as { gross_weight?: number | string | null }).gross_weight ?? 0,
-                    ).toFixed(3)}{" "}
-                    g
-                  </p>
-                  {(it as { remark?: string | null }).remark && (
-                    <p className="mt-1 whitespace-pre-wrap rounded-md bg-secondary p-2 text-[11px]">
-                      <span className="font-semibold">Item Remarks: </span>
-                      {(it as { remark?: string | null }).remark}
-                    </p>
-                  )}
-                </div>
-              </div>
+            {allItems.map((it) => (
+              <ItemCard
+                key={it.id}
+                item={it}
+                fallbackStatus={status}
+                tracking={trackingByShipment[it.shipment_id ?? ""] ?? null}
+              />
             ))}
           </div>
         </section>
+
 
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Shipping Address</h3>
