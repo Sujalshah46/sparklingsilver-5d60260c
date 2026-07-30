@@ -87,27 +87,12 @@ function OrderDetail() {
     id: string;
     status: string;
     tracking_number: string | null;
-    dispatched_at: string | null;
-    delivered_at: string | null;
     created_at: string;
   };
-  type Item = {
-    id: string;
-    product_name: string;
-    product_sku: string | null;
-    quantity: number;
-    size: string | null;
-    image_url: string | null;
-    status: string;
-    shipment_id: string | null;
-    gross_weight?: number | string | null;
-    remark?: string | null;
-  };
-  const allItems = (data.order_items ?? []) as unknown as Item[];
-  const shipments = ((data as unknown as { shipments?: Ship[] }).shipments ?? [])
-    .slice()
-    .sort((a, b) => a.created_at.localeCompare(b.created_at));
-  const multi = shipments.length > 1;
+  const allItems = (data.order_items ?? []) as unknown as ItemRow[];
+  const shipments = ((data as unknown as { shipments?: Ship[] }).shipments ?? []).slice();
+  const trackingByShipment: Record<string, string | null> = {};
+  for (const sh of shipments) trackingByShipment[sh.id] = sh.tracking_number;
 
   const roll = rollupStatus(
     allItems.map((i) => i.status ?? (data.status as string)),
@@ -115,7 +100,7 @@ function OrderDetail() {
   );
   const status = roll.status as string;
   const isCancelled = status === "cancelled" || status === "rejected";
-  const activeIdx = TIMELINE.findIndex((s) => s.key === status);
+
 
   const ship = data.shipping_address as {
     recipient_name: string;
