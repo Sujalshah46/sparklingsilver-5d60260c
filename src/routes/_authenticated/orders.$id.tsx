@@ -153,6 +153,7 @@ function OrderDetail() {
                 key={it.id}
                 item={it}
                 fallbackStatus={status}
+                placedAt={data.created_at as string}
                 tracking={trackingByShipment[it.shipment_id ?? ""] ?? null}
               />
             ))}
