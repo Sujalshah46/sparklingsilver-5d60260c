@@ -11,6 +11,30 @@ function escapeHtml(s: string) {
 const GENERIC = { ok: true as const };
 
 /**
+ * Lightweight probe so the UI only reveals the admin reset option after an
+ * admin email has actually been typed in.
+ */
+export const isAdminEmail = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => z.object({ email: emailSchema }).parse(d))
+  .handler(async ({ data }) => {
+    const email = data.email.toLowerCase();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: prof } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .ilike("email", email)
+      .maybeSingle();
+    if (!prof) return { admin: false as const };
+    const { data: role } = await supabaseAdmin
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", prof.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    return { admin: !!role };
+  });
+
+/**
  * Step 1 — an admin requests a 6-digit code by email.
  * Only accounts holding the `admin` role get a code; everyone else silently
  * receives the same generic response.
