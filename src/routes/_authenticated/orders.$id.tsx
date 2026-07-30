@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 
@@ -293,7 +293,7 @@ function ItemCard({
                       >
                         {s.label}
                       </p>
-                      {at && <p className="text-[11px] text-muted-foreground">{formatDate(at)}</p>}
+                      {at && <p className="text-[11px] text-muted-foreground">{formatDateTime(at)}</p>}
                       {current && <p className="text-[11px] text-burgundy">Current status</p>}
                     </div>
                   </li>
