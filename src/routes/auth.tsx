@@ -6,7 +6,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
-import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
+import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
