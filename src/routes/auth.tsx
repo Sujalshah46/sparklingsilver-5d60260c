@@ -262,8 +262,10 @@ function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }
     }
   };
 
+  if (!isAdmin) return null;
+
   return (
-    <div>
+    <div className="border-b border-white/10 pb-3">
       <p className="font-semibold text-white">Admin account?</p>
       <p className="mt-0.5">Get a 6-digit verification code on your registered email and reset your password instantly.</p>
       {stage === "idle" ? (
