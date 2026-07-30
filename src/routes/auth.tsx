@@ -6,7 +6,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
-import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
+import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
@@ -182,7 +182,7 @@ function SignInForm({ redirect }: { redirect: string }) {
       {forgot && (
         <div className="space-y-3 rounded-md border border-white/15 bg-white/[0.03] p-3 text-[12px] text-white/80">
           <AdminCodeReset email={email} onDone={() => setForgot(false)} />
-          <div className="border-t border-white/10 pt-3">
+          <div>
             <p>Buyer account? We'll notify the admin to reset your password.</p>
             <button type="button" onClick={onForgotSubmit} className="mt-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/15">
               Send request to admin
@@ -202,10 +202,35 @@ function SignInForm({ redirect }: { redirect: string }) {
 function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }) {
   const requestCode = useServerFn(requestAdminResetCode);
   const confirmCode = useServerFn(confirmAdminResetCode);
+  const checkAdmin = useServerFn(isAdminEmail);
   const [stage, setStage] = useState<"idle" | "code">("idle");
   const [code, setCode] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Only reveal the admin reset option once an admin email has been entered.
+  useEffect(() => {
+    const value = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setIsAdmin(false);
+      return;
+    }
+    let active = true;
+    const t = setTimeout(async () => {
+      try {
+        const res = await checkAdmin({ data: { email: value } });
+        if (active) setIsAdmin(!!res?.admin);
+      } catch {
+        if (active) setIsAdmin(false);
+      }
+    }, 400);
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [email, checkAdmin]);
+
 
   const send = async () => {
     if (!email) return toast.error("Enter your admin email first.");
@@ -237,8 +262,10 @@ function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }
     }
   };
 
+  if (!isAdmin) return null;
+
   return (
-    <div>
+    <div className="border-b border-white/10 pb-3">
       <p className="font-semibold text-white">Admin account?</p>
       <p className="mt-0.5">Get a 6-digit verification code on your registered email and reset your password instantly.</p>
       {stage === "idle" ? (
