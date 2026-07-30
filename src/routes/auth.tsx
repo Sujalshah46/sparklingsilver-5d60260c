@@ -182,7 +182,7 @@ function SignInForm({ redirect }: { redirect: string }) {
       {forgot && (
         <div className="space-y-3 rounded-md border border-white/15 bg-white/[0.03] p-3 text-[12px] text-white/80">
           <AdminCodeReset email={email} onDone={() => setForgot(false)} />
-          <div className="border-t border-white/10 pt-3">
+          <div>
             <p>Buyer account? We'll notify the admin to reset your password.</p>
             <button type="button" onClick={onForgotSubmit} className="mt-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/15">
               Send request to admin
