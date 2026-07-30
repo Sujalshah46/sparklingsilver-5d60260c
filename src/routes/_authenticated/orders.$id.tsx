@@ -153,6 +153,7 @@ function OrderDetail() {
                 key={it.id}
                 item={it}
                 fallbackStatus={status}
+                placedAt={data.created_at as string}
                 tracking={trackingByShipment[it.shipment_id ?? ""] ?? null}
               />
             ))}
@@ -195,10 +196,12 @@ type ItemRow = {
 function ItemCard({
   item,
   fallbackStatus,
+  placedAt,
   tracking,
 }: {
   item: ItemRow;
   fallbackStatus: string;
+  placedAt?: string | null;
   tracking: string | null;
 }) {
   const [open, setOpen] = useState(false);
@@ -212,6 +215,11 @@ function ItemCard({
     if (!h?.to_status || !h?.changed_at) continue;
     if (!(h.to_status in when)) when[h.to_status] = h.changed_at;
   }
+  // "Order Placed" is never written to history — it happens when the order is created.
+  if (!when.pending && placedAt) when.pending = placedAt;
+  // Current stage always shows a time, even if history wasn't recorded for it.
+  if (!when[st] && item.status_updated_at) when[st] = item.status_updated_at;
+
 
   return (
     <div className="rounded-xl border border-border bg-card">
