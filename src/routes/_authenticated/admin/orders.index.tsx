@@ -33,9 +33,31 @@ const STATUS_TABS = [
 type Tab = (typeof STATUS_TABS)[number];
 
 
+type ItemRow = {
+  id: string;
+  product_name: string;
+  product_sku: string | null;
+  quantity: number;
+  gross_weight: number | string | null;
+  image_url: string | null;
+  status: string;
+};
+type OrderRow = {
+  id: string;
+  order_no: string;
+  status: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  customer_email: string | null;
+  customer_city: string | null;
+  created_at: string;
+  order_items?: ItemRow[] | null;
+};
+
 function AdminOrders() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("pending");
+  const [mode, setMode] = useState<"order" | "sku">("order");
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -47,13 +69,14 @@ function AdminOrders() {
       const { data } = await supabase
         .from("orders")
         .select(
-          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)",
+          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(id, product_name, product_sku, quantity, gross_weight, image_url, status)",
         )
         .order("created_at", { ascending: false })
         .limit(500);
-      return data ?? [];
+      return (data ?? []) as unknown as OrderRow[];
     },
   });
+
 
   useEffect(() => {
     const ch = supabase
