@@ -273,9 +273,13 @@ function AdminOrders() {
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
           {STATUS_TABS.map((t) => {
             const count =
-              t === "all"
-                ? (orders?.length ?? 0)
-                : (orders ?? []).filter((o) => o.status === t).length;
+              mode === "sku"
+                ? t === "all"
+                  ? skuRows.length
+                  : skuRows.filter((r) => (r.item.status ?? r.order.status) === t).length
+                : t === "all"
+                  ? (orders?.length ?? 0)
+                  : (orders ?? []).filter((o) => o.status === t).length;
             return (
               <button
                 key={t}
@@ -291,11 +295,60 @@ function AdminOrders() {
         </div>
 
         <p className="mb-2 text-[11px] text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "order" : "orders"}
+          {mode === "sku"
+            ? `${skuFiltered.length} ${skuFiltered.length === 1 ? "item" : "items"}`
+            : `${filtered.length} ${filtered.length === 1 ? "order" : "orders"}`}
           {hasFilters && " matching filters"}
         </p>
 
-        {filtered.length === 0 ? (
+        {mode === "sku" ? (
+          skuFiltered.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">No items here.</p>
+          ) : (
+            <ul className="space-y-2">
+              {skuFiltered.map(({ item, order }) => {
+                const st = item.status ?? order.status;
+                return (
+                  <li key={item.id}>
+                    <Link
+                      to="/admin/orders/$id"
+                      params={{ id: order.id }}
+                      className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-gold"
+                    >
+                      <img
+                        src={resolveProductImage(item.image_url)}
+                        alt={item.product_name}
+                        width={56}
+                        height={56}
+                        loading="lazy"
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-sm font-semibold">
+                          {item.product_name}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          SKU {item.product_sku ?? "—"} · Qty {item.quantity}
+                          {item.gross_weight != null
+                            ? ` · ${Number(item.gross_weight).toFixed(3)} g`
+                            : ""}
+                        </p>
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          <span className="font-semibold text-foreground">Order</span>{" "}
+                          {order.order_no} · {order.customer_name ?? "—"} ·{" "}
+                          {formatDate(order.created_at)}
+                        </p>
+                      </div>
+                      <Badge className={`shrink-0 capitalize ${statusBadgeClass(st)}`}>
+                        {STATUS_LABEL[st] ?? st}
+                      </Badge>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : filtered.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">No orders here.</p>
         ) : (
           <ul className="space-y-2">
