@@ -238,8 +238,12 @@ function ItemCard({
   if (!when[st] && item.status_updated_at) when[st] = item.status_updated_at;
 
 
+  const awaiting = !cancelled && isAwaitingProduction(st);
+
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div
+      className={`rounded-xl border bg-card ${awaiting ? "border-amber-400 ring-1 ring-amber-300/60 bg-amber-50/60 dark:bg-amber-500/5" : "border-border"}`}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
