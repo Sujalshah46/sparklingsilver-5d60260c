@@ -1,0 +1,1 @@
+DELETE FROM public.admin_reset_codes;

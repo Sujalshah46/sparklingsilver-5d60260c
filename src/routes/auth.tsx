@@ -6,6 +6,7 @@ import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
+import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
@@ -179,17 +180,91 @@ function SignInForm({ redirect }: { redirect: string }) {
       </div>
 
       {forgot && (
-        <div className="rounded-md border border-white/15 bg-white/[0.03] p-3 text-[12px] text-white/80">
-          <p>We'll notify the admin to reset your password. Make sure the email above is your registered address.</p>
-          <button type="button" onClick={onForgotSubmit} className="mt-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/15">
-            Send request to admin
-          </button>
+        <div className="space-y-3 rounded-md border border-white/15 bg-white/[0.03] p-3 text-[12px] text-white/80">
+          <AdminCodeReset email={email} onDone={() => setForgot(false)} />
+          <div className="border-t border-white/10 pt-3">
+            <p>Buyer account? We'll notify the admin to reset your password.</p>
+            <button type="button" onClick={onForgotSubmit} className="mt-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/15">
+              Send request to admin
+            </button>
+          </div>
         </div>
       )}
+
 
       <button type="submit" disabled={loading} style={silverStyle} className={silverBtn}>
         {loading ? "Signing in…" : (<>Login <ArrowRight className="h-4 w-4" /></>)}
       </button>
     </form>
+  );
+}
+
+function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }) {
+  const requestCode = useServerFn(requestAdminResetCode);
+  const confirmCode = useServerFn(confirmAdminResetCode);
+  const [stage, setStage] = useState<"idle" | "code">("idle");
+  const [code, setCode] = useState("");
+  const [pwd, setPwd] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const send = async () => {
+    if (!email) return toast.error("Enter your admin email first.");
+    setBusy(true);
+    try {
+      await requestCode({ data: { email } });
+      setStage("code");
+      toast.success("If that's an admin account, a 6-digit code is on its way to that inbox.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not send code");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const confirm = async () => {
+    setBusy(true);
+    try {
+      await confirmCode({ data: { email, code, new_password: pwd } });
+      toast.success("Password updated. Sign in with your new password.");
+      setCode("");
+      setPwd("");
+      setStage("idle");
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not reset password");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <p className="font-semibold text-white">Admin account?</p>
+      <p className="mt-0.5">Get a 6-digit verification code on your registered email and reset your password instantly.</p>
+      {stage === "idle" ? (
+        <button type="button" disabled={busy} onClick={send} className="mt-2 rounded-md border border-white/30 bg-white/10 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/15 disabled:opacity-60">
+          {busy ? "Sending…" : "Email me a code"}
+        </button>
+      ) : (
+        <div className="mt-2 space-y-2">
+          <input
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            inputMode="numeric"
+            placeholder="6-digit code"
+            className="h-10 w-full rounded-md border border-white/20 bg-transparent px-3 text-[14px] tracking-[0.3em] text-white placeholder:tracking-normal placeholder:text-white/45 outline-none focus:border-white/60"
+          />
+          <PasswordField value={pwd} onChange={setPwd} autoComplete="new-password" placeholder="New password (min 8 chars)" />
+          <div className="flex gap-2">
+            <button type="button" disabled={busy || code.length !== 6 || pwd.length < 8} onClick={confirm} className="rounded-md border border-white/30 bg-white/15 px-3 py-1.5 text-[12px] font-semibold text-white hover:bg-white/25 disabled:opacity-50">
+              {busy ? "Resetting…" : "Reset password"}
+            </button>
+            <button type="button" disabled={busy} onClick={send} className="rounded-md px-2 py-1.5 text-[12px] text-white/70 underline hover:text-white">
+              Resend code
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
