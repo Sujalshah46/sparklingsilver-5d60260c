@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import { rollupStatus, statusBadgeClass } from "@/lib/order-rollup";
+import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
+import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({
