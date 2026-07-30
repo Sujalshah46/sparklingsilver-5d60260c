@@ -142,6 +142,17 @@ function OrderDetail() {
           </div>
         )}
 
+        {!isCancelled && allItems.some((i) => isAwaitingProduction(i.status ?? status)) && (
+          <div className="rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+            <span className="font-semibold">Awaiting production: </span>
+            {allItems
+              .filter((i) => isAwaitingProduction(i.status ?? status))
+              .map((i) => i.product_sku || i.product_name)
+              .join(", ")}
+            <p className="mt-1 opacity-80">These items have not gone into production yet.</p>
+          </div>
+        )}
+
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Items</h3>
           <p className="mb-2 text-[11px] text-muted-foreground">
