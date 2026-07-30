@@ -278,7 +278,6 @@ function ItemCard({
               Awaiting production
             </p>
           )}
-          </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Gross:</span>{" "}
             {Number(item.gross_weight ?? 0).toFixed(3)} g
