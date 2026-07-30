@@ -202,10 +202,35 @@ function SignInForm({ redirect }: { redirect: string }) {
 function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }) {
   const requestCode = useServerFn(requestAdminResetCode);
   const confirmCode = useServerFn(confirmAdminResetCode);
+  const checkAdmin = useServerFn(isAdminEmail);
   const [stage, setStage] = useState<"idle" | "code">("idle");
   const [code, setCode] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Only reveal the admin reset option once an admin email has been entered.
+  useEffect(() => {
+    const value = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      setIsAdmin(false);
+      return;
+    }
+    let active = true;
+    const t = setTimeout(async () => {
+      try {
+        const res = await checkAdmin({ data: { email: value } });
+        if (active) setIsAdmin(!!res?.admin);
+      } catch {
+        if (active) setIsAdmin(false);
+      }
+    }, 400);
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [email, checkAdmin]);
+
 
   const send = async () => {
     if (!email) return toast.error("Enter your admin email first.");
