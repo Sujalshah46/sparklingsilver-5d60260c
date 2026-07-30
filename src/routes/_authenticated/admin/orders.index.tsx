@@ -241,17 +241,34 @@ function AdminOrders() {
           </div>
         </div>
 
-        <div className="mb-3">
-          <Button
-            type="button"
-            size="sm"
-            variant={pendingItemsOnly ? "default" : "outline"}
-            onClick={() => setPendingItemsOnly((v) => !v)}
-            className="h-8 text-xs"
-          >
-            Has pending items
-          </Button>
+        <div className="mb-3 flex items-center gap-2">
+          {mode === "order" && (
+            <Button
+              type="button"
+              size="sm"
+              variant={pendingItemsOnly ? "default" : "outline"}
+              onClick={() => setPendingItemsOnly((v) => !v)}
+              className="h-8 text-xs"
+            >
+              Has pending items
+            </Button>
+          )}
+          <div className="inline-flex rounded-md bg-secondary p-1">
+            {(["order", "sku"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={`rounded px-3 py-1 text-xs font-medium ${
+                  mode === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {m === "order" ? "Order-wise" : "SKU-wise"}
+              </button>
+            ))}
+          </div>
         </div>
+
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
           {STATUS_TABS.map((t) => {
