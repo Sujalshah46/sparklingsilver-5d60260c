@@ -273,6 +273,12 @@ function ItemCard({
             SKU {item.product_sku} · Qty {item.quantity}
             {item.size ? ` · Size ${item.size}` : ""}
           </p>
+          {awaiting && (
+            <p className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
+              Awaiting production
+            </p>
+          )}
+          </p>
           <p className="mt-1 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Gross:</span>{" "}
             {Number(item.gross_weight ?? 0).toFixed(3)} g
