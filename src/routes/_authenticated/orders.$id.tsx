@@ -8,10 +8,12 @@ import { formatDate } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
+  ChevronDown,
   Circle,
   ClipboardCheck,
   Package,
