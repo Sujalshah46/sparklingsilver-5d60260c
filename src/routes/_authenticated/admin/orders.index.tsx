@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
-import { rollupStatus, statusBadgeClass } from "@/lib/order-rollup";
+import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
+import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/orders/")({
@@ -32,9 +33,31 @@ const STATUS_TABS = [
 type Tab = (typeof STATUS_TABS)[number];
 
 
+type ItemRow = {
+  id: string;
+  product_name: string;
+  product_sku: string | null;
+  quantity: number;
+  gross_weight: number | string | null;
+  image_url: string | null;
+  status: string;
+};
+type OrderRow = {
+  id: string;
+  order_no: string;
+  status: string;
+  customer_name: string | null;
+  customer_phone: string | null;
+  customer_email: string | null;
+  customer_city: string | null;
+  created_at: string;
+  order_items?: ItemRow[] | null;
+};
+
 function AdminOrders() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<Tab>("pending");
+  const [mode, setMode] = useState<"order" | "sku">("order");
   const [search, setSearch] = useState("");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
@@ -46,13 +69,14 @@ function AdminOrders() {
       const { data } = await supabase
         .from("orders")
         .select(
-          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(status)",
+          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(id, product_name, product_sku, quantity, gross_weight, image_url, status)",
         )
         .order("created_at", { ascending: false })
         .limit(500);
-      return data ?? [];
+      return (data ?? []) as unknown as OrderRow[];
     },
   });
+
 
   useEffect(() => {
     const ch = supabase
@@ -122,6 +146,45 @@ function AdminOrders() {
     });
   }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
 
+  /** Order+item pairs, filtered by date/search; status filtering happens per tab. */
+  const skuRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
+    const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
+    const rows: { item: ItemRow; order: OrderRow }[] = [];
+    for (const o of orders ?? []) {
+      if (fromTs || toTs) {
+        const t = new Date(o.created_at).getTime();
+        if (fromTs && t < fromTs) continue;
+        if (toTs && t > toTs) continue;
+      }
+      for (const it of o.order_items ?? []) {
+        if (q) {
+          const hay = [
+            o.order_no,
+            o.customer_name,
+            o.customer_phone,
+            o.customer_email,
+            o.customer_city,
+            it.product_sku,
+            it.product_name,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          if (!hay.includes(q)) continue;
+        }
+        rows.push({ item: it, order: o });
+      }
+    }
+    return rows;
+  }, [orders, search, fromDate, toDate]);
+
+  const skuFiltered = useMemo(
+    () => skuRows.filter((r) => tab === "all" || (r.item.status ?? r.order.status) === tab),
+    [skuRows, tab],
+  );
+
   const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
   const clearAll = () => {
     setSearch("");
@@ -146,7 +209,11 @@ function AdminOrders() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search order #, name, phone, email, city"
+              placeholder={
+                mode === "sku"
+                  ? "Search SKU, product, order #, name, city"
+                  : "Search order #, name, phone, email, city"
+              }
               className="h-9 pl-8 text-sm"
             />
           </div>
@@ -174,24 +241,45 @@ function AdminOrders() {
           </div>
         </div>
 
-        <div className="mb-3">
-          <Button
-            type="button"
-            size="sm"
-            variant={pendingItemsOnly ? "default" : "outline"}
-            onClick={() => setPendingItemsOnly((v) => !v)}
-            className="h-8 text-xs"
-          >
-            Has pending items
-          </Button>
+        <div className="mb-3 flex items-center gap-2">
+          {mode === "order" && (
+            <Button
+              type="button"
+              size="sm"
+              variant={pendingItemsOnly ? "default" : "outline"}
+              onClick={() => setPendingItemsOnly((v) => !v)}
+              className="h-8 text-xs"
+            >
+              Has pending items
+            </Button>
+          )}
+          <div className="inline-flex rounded-md bg-secondary p-1">
+            {(["order", "sku"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                className={`rounded px-3 py-1 text-xs font-medium ${
+                  mode === m ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
+                }`}
+              >
+                {m === "order" ? "Order-wise" : "SKU-wise"}
+              </button>
+            ))}
+          </div>
         </div>
+
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
           {STATUS_TABS.map((t) => {
             const count =
-              t === "all"
-                ? (orders?.length ?? 0)
-                : (orders ?? []).filter((o) => o.status === t).length;
+              mode === "sku"
+                ? t === "all"
+                  ? skuRows.length
+                  : skuRows.filter((r) => (r.item.status ?? r.order.status) === t).length
+                : t === "all"
+                  ? (orders?.length ?? 0)
+                  : (orders ?? []).filter((o) => o.status === t).length;
             return (
               <button
                 key={t}
@@ -207,11 +295,60 @@ function AdminOrders() {
         </div>
 
         <p className="mb-2 text-[11px] text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "order" : "orders"}
+          {mode === "sku"
+            ? `${skuFiltered.length} ${skuFiltered.length === 1 ? "item" : "items"}`
+            : `${filtered.length} ${filtered.length === 1 ? "order" : "orders"}`}
           {hasFilters && " matching filters"}
         </p>
 
-        {filtered.length === 0 ? (
+        {mode === "sku" ? (
+          skuFiltered.length === 0 ? (
+            <p className="py-10 text-center text-sm text-muted-foreground">No items here.</p>
+          ) : (
+            <ul className="space-y-2">
+              {skuFiltered.map(({ item, order }) => {
+                const st = item.status ?? order.status;
+                return (
+                  <li key={item.id}>
+                    <Link
+                      to="/admin/orders/$id"
+                      params={{ id: order.id }}
+                      className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-gold"
+                    >
+                      <img
+                        src={resolveProductImage(item.image_url)}
+                        alt={item.product_name}
+                        width={56}
+                        height={56}
+                        loading="lazy"
+                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-serif text-sm font-semibold">
+                          {item.product_name}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          SKU {item.product_sku ?? "—"} · Qty {item.quantity}
+                          {item.gross_weight != null
+                            ? ` · ${Number(item.gross_weight).toFixed(3)} g`
+                            : ""}
+                        </p>
+                        <p className="truncate text-[11px] text-muted-foreground">
+                          <span className="font-semibold text-foreground">Order</span>{" "}
+                          {order.order_no} · {order.customer_name ?? "—"} ·{" "}
+                          {formatDate(order.created_at)}
+                        </p>
+                      </div>
+                      <Badge className={`shrink-0 capitalize ${statusBadgeClass(st)}`}>
+                        {STATUS_LABEL[st] ?? st}
+                      </Badge>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          )
+        ) : filtered.length === 0 ? (
           <p className="py-10 text-center text-sm text-muted-foreground">No orders here.</p>
         ) : (
           <ul className="space-y-2">
