@@ -50,6 +50,12 @@ const STATUS_LABEL: Record<string, string> = {
   cancelled: "Cancelled",
 };
 
+/** Items still before the "processing" stage haven't entered production yet. */
+const PRE_PRODUCTION = new Set(["pending", "accepted", "confirmed"]);
+function isAwaitingProduction(status: string) {
+  return PRE_PRODUCTION.has(status);
+}
+
 function OrderDetail() {
   const { id } = Route.useParams();
   const { user } = useAuth();
@@ -142,6 +148,17 @@ function OrderDetail() {
           </div>
         )}
 
+        {!isCancelled && allItems.some((i) => isAwaitingProduction(i.status ?? status)) && (
+          <div className="rounded-xl border border-amber-400 bg-amber-50 p-3 text-xs text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+            <span className="font-semibold">Awaiting production: </span>
+            {allItems
+              .filter((i) => isAwaitingProduction(i.status ?? status))
+              .map((i) => i.product_sku || i.product_name)
+              .join(", ")}
+            <p className="mt-1 opacity-80">These items have not gone into production yet.</p>
+          </div>
+        )}
+
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Items</h3>
           <p className="mb-2 text-[11px] text-muted-foreground">
@@ -221,8 +238,12 @@ function ItemCard({
   if (!when[st] && item.status_updated_at) when[st] = item.status_updated_at;
 
 
+  const awaiting = !cancelled && isAwaitingProduction(st);
+
   return (
-    <div className="rounded-xl border border-border bg-card">
+    <div
+      className={`rounded-xl border bg-card ${awaiting ? "border-amber-400 ring-1 ring-amber-300/60 bg-amber-50/60 dark:bg-amber-500/5" : "border-border"}`}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -252,6 +273,11 @@ function ItemCard({
             SKU {item.product_sku} · Qty {item.quantity}
             {item.size ? ` · Size ${item.size}` : ""}
           </p>
+          {awaiting && (
+            <p className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-500/20 dark:text-amber-200">
+              Awaiting production
+            </p>
+          )}
           <p className="mt-1 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Gross:</span>{" "}
             {Number(item.gross_weight ?? 0).toFixed(3)} g
