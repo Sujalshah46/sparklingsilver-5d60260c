@@ -146,6 +146,45 @@ function AdminOrders() {
     });
   }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
 
+  /** Order+item pairs, filtered by date/search; status filtering happens per tab. */
+  const skuRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
+    const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
+    const rows: { item: ItemRow; order: OrderRow }[] = [];
+    for (const o of orders ?? []) {
+      if (fromTs || toTs) {
+        const t = new Date(o.created_at).getTime();
+        if (fromTs && t < fromTs) continue;
+        if (toTs && t > toTs) continue;
+      }
+      for (const it of o.order_items ?? []) {
+        if (q) {
+          const hay = [
+            o.order_no,
+            o.customer_name,
+            o.customer_phone,
+            o.customer_email,
+            o.customer_city,
+            it.product_sku,
+            it.product_name,
+          ]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          if (!hay.includes(q)) continue;
+        }
+        rows.push({ item: it, order: o });
+      }
+    }
+    return rows;
+  }, [orders, search, fromDate, toDate]);
+
+  const skuFiltered = useMemo(
+    () => skuRows.filter((r) => tab === "all" || (r.item.status ?? r.order.status) === tab),
+    [skuRows, tab],
+  );
+
   const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
   const clearAll = () => {
     setSearch("");
