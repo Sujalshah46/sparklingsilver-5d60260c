@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 
 export type OrderStatus =
   | "pending"
@@ -84,7 +84,7 @@ function safeStageTime(v: unknown): string {
   const t = new Date(v).getTime();
   if (!Number.isFinite(t)) return "";
   try {
-    return formatDate(v);
+    return formatDateTime(v);
   } catch {
     return "";
   }
