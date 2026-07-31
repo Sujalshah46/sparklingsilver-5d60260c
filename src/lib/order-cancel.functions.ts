@@ -2,8 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Buyers may only cancel items that have not been confirmed by admin yet. */
-export const BUYER_CANCELLABLE = ["pending", "accepted"] as const;
+import { BUYER_CANCELLABLE } from "./order-cancel";
 
 const input = z.object({
   order_id: z.string().uuid(),

@@ -8,7 +8,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { formatDate, formatDateTime } from "@/lib/format";
 import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
-import { cancelOwnOrderItems, BUYER_CANCELLABLE } from "@/lib/order-cancel.functions";
+import { cancelOwnOrderItems } from "@/lib/order-cancel.functions";
+import { BUYER_CANCELLABLE } from "@/lib/order-cancel";
 import { toast } from "sonner";
 
 import { useState } from "react";
