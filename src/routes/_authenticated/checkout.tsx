@@ -24,7 +24,7 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 function Checkout() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [placed, setPlaced] = useState<{ id: string; order_no: string } | null>(null);
+  const [placed, setPlaced] = useState<{ id: string; order_no: string; waHref: string; itemCount: number } | null>(null);
   const [useDefault, setUseDefault] = useState(true);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
@@ -35,7 +35,7 @@ function Checkout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, product:products(*)")
+        .select("id, quantity, size, remark, product:products(*)")
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
@@ -68,6 +68,33 @@ function Checkout() {
     0,
   );
 
+  /** Full order summary sent to the shop's WhatsApp right after placing the order. */
+  const buildOrderWhatsAppUrl = (orderNo: string) => {
+    const lines = (items ?? []).map((it, idx) => {
+      const p = it.product as { sku?: string | null; name?: string | null } | null;
+      const bits = [`${idx + 1}. ${p?.sku ?? p?.name ?? "Item"} × ${it.quantity}`];
+      if (it.size) bits.push(`Size: ${it.size}`);
+      if (it.remark) bits.push(`Remark: ${it.remark}`);
+      return bits.join(" | ");
+    });
+    const msg = [
+      `Hello Sparkling Silver, I have just placed order ${orderNo}.`,
+      "",
+      ...lines,
+      "",
+      `Total pieces: ${totalPieces}`,
+      `Approx. gross weight: ${totalGrossWt.toFixed(2)} g`,
+      address.trim() ? `Delivery address: ${address.trim()}` : "",
+      notes.trim() ? `Notes: ${notes.trim()}` : "",
+      "",
+      "Please confirm my order.",
+    ]
+      .filter((l) => l !== undefined)
+      .join("\n");
+    return whatsappUrl(msg);
+  };
+
+
   const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
     mutationFn: async () =>
@@ -78,7 +105,12 @@ function Checkout() {
         },
       }),
     onSuccess: (order) => {
-      setPlaced({ id: order.id, order_no: order.order_no });
+      // Auto-trigger the WhatsApp message so the buyer doesn't have to tap "notify us".
+      const href = buildOrderWhatsAppUrl(order.order_no);
+      setPlaced({ id: order.id, order_no: order.order_no, waHref: href, itemCount: totalPieces });
+      const popup = typeof window !== "undefined" ? window.open(href, "_blank") : null;
+      if (popup) popup.opener = null;
+      else toast.info("Tap “Send order on WhatsApp” to open WhatsApp.");
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -90,10 +122,11 @@ function Checkout() {
     },
   });
 
+
   if (placed) {
     const placedOn = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-    const itemCount = (items ?? []).reduce((n, it) => n + it.quantity, 0);
-    const whatsAppHref = whatsappUrl(`Hello Sparkling Silver, I just placed order ${placed.order_no}. Please confirm.`);
+    const itemCount = placed.itemCount;
+    const whatsAppHref = placed.waHref;
     return (
       <MobileShell title="Order Placed">
         <div className="p-6 text-center">
@@ -129,7 +162,7 @@ function Checkout() {
                   openWhatsAppUrl(whatsAppHref);
                 }}
               >
-                <MessageCircle className="mr-2 h-4 w-4" /> Notify us on WhatsApp
+                <MessageCircle className="mr-2 h-4 w-4" /> Send order on WhatsApp
               </a>
             </Button>
             <Button asChild variant="ghost">
