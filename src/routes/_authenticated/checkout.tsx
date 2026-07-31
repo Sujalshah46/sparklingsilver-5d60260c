@@ -68,6 +68,33 @@ function Checkout() {
     0,
   );
 
+  /** Full order summary sent to the shop's WhatsApp right after placing the order. */
+  const buildOrderWhatsAppUrl = (orderNo: string) => {
+    const lines = (items ?? []).map((it, idx) => {
+      const p = it.product as { sku?: string | null; name?: string | null } | null;
+      const bits = [`${idx + 1}. ${p?.sku ?? p?.name ?? "Item"} × ${it.quantity}`];
+      if (it.size) bits.push(`Size: ${it.size}`);
+      if (it.remark) bits.push(`Remark: ${it.remark}`);
+      return bits.join(" | ");
+    });
+    const msg = [
+      `Hello Sparkling Silver, I have just placed order ${orderNo}.`,
+      "",
+      ...lines,
+      "",
+      `Total pieces: ${totalPieces}`,
+      `Approx. gross weight: ${totalGrossWt.toFixed(2)} g`,
+      address.trim() ? `Delivery address: ${address.trim()}` : "",
+      notes.trim() ? `Notes: ${notes.trim()}` : "",
+      "",
+      "Please confirm my order.",
+    ]
+      .filter((l) => l !== undefined)
+      .join("\n");
+    return whatsappUrl(msg);
+  };
+
+
   const placeOrderRpc = useServerFn(placeOrderFn);
   const placeOrder = useMutation({
     mutationFn: async () =>
