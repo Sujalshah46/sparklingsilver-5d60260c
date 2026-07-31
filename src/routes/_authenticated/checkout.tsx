@@ -14,7 +14,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { CheckCircle2, Clock, MessageCircle } from "lucide-react";
-import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { buildOrderWhatsAppUrl } from "@/lib/order-whatsapp";
+
 
 export const Route = createFileRoute("/_authenticated/checkout")({
   head: () => ({ meta: [{ title: pageTitle("Checkout") }] }),
@@ -69,30 +71,24 @@ function Checkout() {
   );
 
   /** Full order summary sent to the shop's WhatsApp right after placing the order. */
-  const buildOrderWhatsAppUrl = (orderNo: string) => {
-    const lines = (items ?? []).map((it, idx) => {
-      const p = it.product as { sku?: string | null; name?: string | null } | null;
-      const bits = [`${idx + 1}. ${p?.sku ?? p?.name ?? "Item"} × ${it.quantity}`];
-      if (it.size) bits.push(`Size: ${it.size}`);
-      if (it.remark) bits.push(`Remark: ${it.remark}`);
-      return bits.join(" | ");
+  const buildWaUrl = (orderNo: string) =>
+    buildOrderWhatsAppUrl({
+      orderNo,
+      items: (items ?? []).map((it) => {
+        const p = it.product as { sku?: string | null; name?: string | null } | null;
+        return {
+          sku: p?.sku ?? null,
+          name: p?.name ?? null,
+          quantity: it.quantity,
+          size: it.size,
+          remark: it.remark,
+        };
+      }),
+      totalPieces,
+      totalGrossWeight: totalGrossWt,
+      address,
+      notes,
     });
-    const msg = [
-      `Hello Sparkling Silver, I have just placed order ${orderNo}.`,
-      "",
-      ...lines,
-      "",
-      `Total pieces: ${totalPieces}`,
-      `Approx. gross weight: ${totalGrossWt.toFixed(2)} g`,
-      address.trim() ? `Delivery address: ${address.trim()}` : "",
-      notes.trim() ? `Notes: ${notes.trim()}` : "",
-      "",
-      "Please confirm my order.",
-    ]
-      .filter((l) => l !== undefined)
-      .join("\n");
-    return whatsappUrl(msg);
-  };
 
 
   const placeOrderRpc = useServerFn(placeOrderFn);
@@ -106,15 +102,16 @@ function Checkout() {
       }),
     onSuccess: (order) => {
       // Auto-trigger the WhatsApp message so the buyer doesn't have to tap "notify us".
-      const href = buildOrderWhatsAppUrl(order.order_no);
+      const href = buildWaUrl(order.order_no);
       setPlaced({ id: order.id, order_no: order.order_no, waHref: href, itemCount: totalPieces });
-      const popup = typeof window !== "undefined" ? window.open(href, "_blank") : null;
-      if (popup) popup.opener = null;
-      else toast.info("Tap “Send order on WhatsApp” to open WhatsApp.");
+      // openWhatsAppUrl falls back to a same-tab navigation when the popup is blocked
+      // (common: this runs after an await, so it's outside the click gesture).
+      openWhatsAppUrl(href);
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
     },
+
     onError: (err: unknown) => {
       import("@/lib/errors").then(({ getErrorMessage }) =>
         toast.error(getErrorMessage(err, "Could not place order")),
