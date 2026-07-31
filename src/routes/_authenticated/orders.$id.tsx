@@ -174,6 +174,20 @@ function OrderDetail() {
           </div>
         )}
 
+        {!isCancelled && (
+          <CancelPanel
+            orderId={id}
+            items={allItems.map((i) => ({
+              id: i.id,
+              status: i.status ?? status,
+              label: i.product_sku || i.product_name,
+              name: i.product_name,
+            }))}
+          />
+        )}
+
+
+
         <section>
           <h3 className="mb-2 font-serif text-base font-semibold">Items</h3>
           <p className="mb-2 text-[11px] text-muted-foreground">
