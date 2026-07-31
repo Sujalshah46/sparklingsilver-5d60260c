@@ -35,7 +35,7 @@ function Checkout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, product:products(*)")
+        .select("id, quantity, size, remark, product:products(*)")
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
