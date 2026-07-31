@@ -301,7 +301,7 @@ function AdminOrders() {
                   : skuRows.filter((r) => (r.item.status ?? r.order.status) === t).length
                 : t === "all"
                   ? (orders?.length ?? 0)
-                  : (orders ?? []).filter((o) => o.status === t).length;
+                  : (orders ?? []).filter((o) => matchesTab(o, t)).length;
             return (
               <button
                 key={t}
