@@ -79,6 +79,11 @@ function Checkout() {
       }),
     onSuccess: (order) => {
       setPlaced({ id: order.id, order_no: order.order_no });
+      // Auto-trigger the WhatsApp message so the buyer doesn't have to tap "notify us".
+      const href = buildOrderWhatsAppUrl(order.order_no);
+      const popup = typeof window !== "undefined" ? window.open(href, "_blank") : null;
+      if (popup) popup.opener = null;
+      else toast.info("Tap “Send order on WhatsApp” to open WhatsApp.");
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["orders"] });
@@ -89,6 +94,7 @@ function Checkout() {
       );
     },
   });
+
 
   if (placed) {
     const placedOn = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
