@@ -116,14 +116,34 @@ function AdminOrders() {
     return map;
   }, [orders]);
 
+  /**
+   * An order belongs to a status tab when its displayed rollup status matches,
+   * or when any of its items still sits at that status (split orders).
+   * Using the raw `orders.status` column here made orders disappear from the
+   * tab their badge pointed at.
+   */
+  const matchesTab = useMemo(
+    () => (o: OrderRow, t: Tab) => {
+      if (t === "all") return true;
+      if ((rollups.get(o.id)?.status ?? o.status) === t) return true;
+      const items = o.order_items ?? [];
+      if (items.length === 0) return o.status === t;
+      return items.some((i) => (i.status ?? o.status) === t);
+    },
+    [rollups],
+  );
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     const fromTs = fromDate ? new Date(fromDate + "T00:00:00").getTime() : null;
     const toTs = toDate ? new Date(toDate + "T23:59:59").getTime() : null;
     return (orders ?? []).filter((o) => {
-      const r = rollups.get(o.id);
-      if (tab !== "all" && o.status !== tab) return false;
-      if (pendingItemsOnly && !(r?.split && (r.counts.confirmed ?? 0) > 0)) return false;
+      if (!matchesTab(o, tab)) return false;
+      if (pendingItemsOnly) {
+        const items = o.order_items ?? [];
+        const hasPre = items.some((i) => ["pending", "accepted"].includes(i.status ?? o.status));
+        if (!hasPre) return false;
+      }
       if (fromTs || toTs) {
         const t = new Date(o.created_at).getTime();
         if (fromTs && t < fromTs) return false;
@@ -136,6 +156,7 @@ function AdminOrders() {
           o.customer_phone,
           o.customer_email,
           o.customer_city,
+          ...(o.order_items ?? []).flatMap((i) => [i.product_sku, i.product_name]),
         ]
           .filter(Boolean)
           .join(" ")
@@ -144,7 +165,8 @@ function AdminOrders() {
       }
       return true;
     });
-  }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, rollups]);
+  }, [orders, tab, search, fromDate, toDate, pendingItemsOnly, matchesTab]);
+
 
   /** Order+item pairs, filtered by date/search; status filtering happens per tab. */
   const skuRows = useMemo(() => {
@@ -279,7 +301,7 @@ function AdminOrders() {
                   : skuRows.filter((r) => (r.item.status ?? r.order.status) === t).length
                 : t === "all"
                   ? (orders?.length ?? 0)
-                  : (orders ?? []).filter((o) => o.status === t).length;
+                  : (orders ?? []).filter((o) => matchesTab(o, t)).length;
             return (
               <button
                 key={t}
