@@ -369,3 +369,129 @@ function ItemCard({
     </div>
   );
 }
+
+type CancelItem = { id: string; status: string; label: string; name: string };
+
+const CANCELLABLE = new Set<string>(BUYER_CANCELLABLE as unknown as string[]);
+
+/**
+ * Buyer-side "change my mind" panel: cancel individual SKUs or the whole order
+ * as long as the items have not been confirmed by the team yet.
+ */
+function CancelPanel({ orderId, items }: { orderId: string; items: CancelItem[] }) {
+  const qc = useQueryClient();
+  const cancelFn = useServerFn(cancelOwnOrderItems);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [mode, setMode] = useState<null | "items" | "order">(null);
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const open = items.filter((i) => CANCELLABLE.has(i.status));
+  if (open.length === 0) return null;
+
+  const toggle = (id: string) =>
+    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      const res = await cancelFn({
+        data: {
+          order_id: orderId,
+          item_ids: mode === "items" ? selected : undefined,
+          reason: reason.trim() || null,
+        },
+      });
+      toast.success(
+        res.orderCancelled
+          ? "Your order has been cancelled."
+          : `${res.cancelled} item${res.cancelled > 1 ? "s" : ""} cancelled.`,
+      );
+      setMode(null);
+      setSelected([]);
+      setReason("");
+      await qc.invalidateQueries({ queryKey: ["order", orderId] });
+      await qc.invalidateQueries({ queryKey: ["orders"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not cancel");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="rounded-xl border border-border bg-card p-4">
+      <h3 className="font-serif text-base font-semibold">Need changes?</h3>
+      <p className="mt-1 text-[11px] text-muted-foreground">
+        You can cancel items or the entire order until we confirm it. Once confirmed, please reach us
+        on WhatsApp.
+      </p>
+
+      <div className="mt-3 space-y-2">
+        {open.map((i) => (
+          <label
+            key={i.id}
+            className="flex items-center gap-3 rounded-lg border border-border p-2 text-sm"
+          >
+            <Checkbox
+              checked={selected.includes(i.id)}
+              onCheckedChange={() => toggle(i.id)}
+              aria-label={`Select ${i.label}`}
+            />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-medium">{i.name}</span>
+              <span className="text-[11px] text-muted-foreground">SKU {i.label}</span>
+            </span>
+            <Badge variant="secondary" className={`text-[10px] ${statusBadgeClass(i.status)}`}>
+              {ITEM_STATUS_LABEL[i.status] ?? i.status}
+            </Badge>
+          </label>
+        ))}
+      </div>
+
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          disabled={selected.length === 0}
+          onClick={() => setMode("items")}
+        >
+          <XCircle className="mr-1 h-4 w-4" />
+          Cancel selected ({selected.length})
+        </Button>
+        <Button variant="destructive" size="sm" onClick={() => setMode("order")}>
+          Cancel entire order
+        </Button>
+      </div>
+
+      <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {mode === "order" ? "Cancel entire order?" : "Cancel selected items?"}
+            </DialogTitle>
+            <DialogDescription>
+              {mode === "order"
+                ? "All items that are not yet confirmed will be cancelled. This cannot be undone."
+                : `${selected.length} item(s) will be cancelled. This cannot be undone.`}
+            </DialogDescription>
+          </DialogHeader>
+          <Textarea
+            value={reason}
+            maxLength={500}
+            onChange={(e) => setReason(e.target.value)}
+            placeholder="Reason (optional) — e.g. wrong size, want a different design"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMode(null)} disabled={busy}>
+              Keep order
+            </Button>
+            <Button variant="destructive" onClick={submit} disabled={busy}>
+              {busy ? "Cancelling…" : "Yes, cancel"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </section>
+  );
+}
