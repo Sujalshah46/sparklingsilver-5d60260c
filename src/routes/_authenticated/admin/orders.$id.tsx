@@ -192,6 +192,50 @@ function AdminOrderDetail() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Cancel failed"),
   });
 
+  const adjustMut = useMutation({
+    mutationFn: async (vars: { item_id: string; quantity: number; gross_weight: number | null }) =>
+      adjust({
+        data: {
+          order_id: id,
+          items: [
+            {
+              item_id: vars.item_id,
+              quantity: vars.quantity,
+              gross_weight: vars.gross_weight,
+            },
+          ],
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.updated ? "Item updated" : "No changes");
+      setEditingId(null);
+      qc.invalidateQueries({ queryKey: ["admin-order", id] });
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
+  });
+
+  const startEdit = (it: ItemRow) => {
+    setEditingId(it.id);
+    setEditQty(String(it.quantity ?? 1));
+    setEditGross(it.gross_weight == null ? "" : String(Number(it.gross_weight)));
+  };
+
+  const saveEdit = (it: ItemRow) => {
+    const q = Math.floor(Number(editQty));
+    if (!Number.isFinite(q) || q < 1 || q > 999) {
+      toast.error("Quantity must be between 1 and 999");
+      return;
+    }
+    const g = editGross.trim() === "" ? null : Number(editGross);
+    if (g !== null && (!Number.isFinite(g) || g < 0)) {
+      toast.error("Gross weight must be a positive number");
+      return;
+    }
+    adjustMut.mutate({ item_id: it.id, quantity: q, gross_weight: g });
+  };
+
+
   if (isLoading)
     return (
       <MobileShell title="Order">
