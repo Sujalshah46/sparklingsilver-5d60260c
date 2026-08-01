@@ -3,6 +3,8 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { BUYER_CANCELLABLE } from "./order-cancel";
+import { qtyLimits, validateQty, MAX_ITEM_QTY } from "./order-qty";
+
 
 const input = z.object({
   order_id: z.string().uuid(),
