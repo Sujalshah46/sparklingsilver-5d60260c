@@ -112,12 +112,13 @@ export function rollupStatus(itemStatuses: string[], fallback: string): Rollup {
     return {
       status: s,
       split: false,
-      atStatus: itemStatuses.length,
-      total: 0,
+      atStatus: counts[s] ?? 0,
+      total: itemStatuses.length,
       counts,
       label: STATUS_LABEL[s] ?? s,
     };
   }
+
 
   const unique = Array.from(new Set(active));
   if (unique.length === 1) {
