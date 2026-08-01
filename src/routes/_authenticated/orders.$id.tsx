@@ -191,6 +191,8 @@ function OrderDetail() {
               name: i.product_name,
               quantity: i.quantity,
               image_url: i.image_url,
+              product: i.product ?? null,
+
             }))}
           />
         )}
