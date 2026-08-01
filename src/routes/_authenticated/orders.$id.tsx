@@ -506,7 +506,18 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
                   className={`rounded-lg border p-2 ${gone ? "border-border opacity-50" : err ? "border-destructive" : "border-border"}`}
                 >
                   <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={selected.includes(i.id)}
+                      disabled={gone}
+                      aria-label={`Select ${i.label}`}
+                      onCheckedChange={(c) =>
+                        setSelected((s) =>
+                          c === true ? [...new Set([...s, i.id])] : s.filter((x) => x !== i.id),
+                        )
+                      }
+                    />
                     <img
+
                       src={resolveProductImage(i.image_url)}
                       alt={i.name}
                       width={40}
