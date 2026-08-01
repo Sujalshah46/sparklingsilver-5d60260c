@@ -335,15 +335,21 @@ function AdminOrders() {
                 : t === "all"
                   ? (orders?.length ?? 0)
                   : (orders ?? []).filter((o) => matchesTab(o, t)).length;
+            const w = tabWeights.get(t) ?? 0;
             return (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium capitalize ${
+                className={`flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium capitalize ${
                   tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
                 }`}
               >
-                {t} {count > 0 && <span className="ml-1 text-[10px]">({count})</span>}
+                <span className="block">
+                  {t} {count > 0 && <span className="ml-1 text-[10px]">({count})</span>}
+                </span>
+                <span className="block text-[10px] font-normal tabular-nums opacity-80">
+                  {fmtWeight(w)}
+                </span>
               </button>
             );
           })}
@@ -354,6 +360,12 @@ function AdminOrders() {
             ? `${skuFiltered.length} ${skuFiltered.length === 1 ? "item" : "items"}`
             : `${filtered.length} ${filtered.length === 1 ? "order" : "orders"}`}
           {hasFilters && " matching filters"}
+          {" · "}
+          <span className="font-semibold text-foreground tabular-nums">
+            {fmtWeight(visibleWeight)}
+          </span>{" "}
+          gross
+
         </p>
 
         {mode === "sku" ? (
