@@ -36,6 +36,7 @@ import { Route as ApiPublicAdminBulkLinkImagesRouteImport } from './routes/api/p
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
 import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
+import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin/reports'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminImageQualityPreviewRouteImport } from './routes/_authenticated/admin/image-quality-preview'
@@ -189,6 +190,12 @@ const AuthenticatedAdminScanRoute = AuthenticatedAdminScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminReportsRoute =
+  AuthenticatedAdminReportsRouteImport.update({
+    id: '/reports',
+    path: '/reports',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminProductsRoute =
   AuthenticatedAdminProductsRouteImport.update({
     id: '/products',
@@ -299,6 +306,7 @@ export interface FileRoutesByFullPath {
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
@@ -339,6 +347,7 @@ export interface FileRoutesByTo {
   '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
+  '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
@@ -383,6 +392,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
+  '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
   '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
@@ -427,6 +437,7 @@ export interface FileRouteTypes {
     | '/admin/image-quality-preview'
     | '/admin/inventory'
     | '/admin/products'
+    | '/admin/reports'
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
@@ -467,6 +478,7 @@ export interface FileRouteTypes {
     | '/admin/image-backfill'
     | '/admin/image-quality-preview'
     | '/admin/inventory'
+    | '/admin/reports'
     | '/admin/scan'
     | '/admin/users'
     | '/orders/$id'
@@ -510,6 +522,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/image-quality-preview'
     | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/products'
+    | '/_authenticated/admin/reports'
     | '/_authenticated/admin/scan'
     | '/_authenticated/admin/users'
     | '/_authenticated/orders/$id'
@@ -737,6 +750,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminScanRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/reports': {
+      id: '/_authenticated/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AuthenticatedAdminReportsRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/products': {
       id: '/_authenticated/admin/products'
       path: '/products'
@@ -881,6 +901,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminImageQualityPreviewRoute: typeof AuthenticatedAdminImageQualityPreviewRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRouteWithChildren
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
+  AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminScanRoute: typeof AuthenticatedAdminScanRoute
   AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -900,6 +921,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminInventoryRouteWithChildren,
     AuthenticatedAdminProductsRoute:
       AuthenticatedAdminProductsRouteWithChildren,
+    AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
     AuthenticatedAdminScanRoute: AuthenticatedAdminScanRoute,
     AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

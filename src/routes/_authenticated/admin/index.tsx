@@ -8,7 +8,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Bell, BellOff, Package, ShoppingBag, Users, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog, Star, Images } from "lucide-react";
+import { Bell, BellOff, Package, ShoppingBag, Users, Clock, Boxes, AlertTriangle, ImageIcon, ScanLine, UserCog, Star, Images, FileSpreadsheet } from "lucide-react";
 import { toast } from "sonner";
 import { ensurePushSubscription, serializeSubscription } from "@/lib/push";
 import { savePushSubscription } from "@/lib/push.functions";
@@ -187,6 +187,8 @@ function AdminDashboard() {
             <QuickAction to="/admin/homepage-featured" icon={Star} label="Homepage New Arrival" badge={undefined} />
             <QuickAction to="/admin/image-backfill" icon={Images} label="Image variants" badge={stats?.missingVariantsCount} />
             <QuickAction to="/admin/users" icon={UserCog} label="Buyer accounts" />
+            <QuickAction to="/admin/reports" icon={FileSpreadsheet} label="Reports" />
+
           </div>
         </div>
 
