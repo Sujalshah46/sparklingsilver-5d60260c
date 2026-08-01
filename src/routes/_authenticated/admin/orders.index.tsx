@@ -362,7 +362,19 @@ function AdminOrders() {
               </button>
             ))}
           </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleExport}
+            disabled={exporting}
+            className="ml-auto h-8 gap-1.5 text-xs"
+          >
+            <Download className="h-3.5 w-3.5" />
+            {exporting ? "Exporting…" : "Export Excel"}
+          </Button>
         </div>
+
 
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
