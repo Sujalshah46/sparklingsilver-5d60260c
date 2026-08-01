@@ -207,6 +207,39 @@ function AdminOrders() {
     [skuRows, tab],
   );
 
+  const itemWeight = (i: ItemRow) => Number(i.gross_weight ?? 0) * Number(i.quantity ?? 0);
+  const fmtWeight = (g: number) =>
+    `${g.toLocaleString("en-IN", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} g`;
+
+  /** Total gross weight per status tab (sum of qty × gross weight of matching items). */
+  const tabWeights = useMemo(() => {
+    const map = new Map<Tab, number>();
+    for (const t of STATUS_TABS) map.set(t, 0);
+    for (const o of orders ?? []) {
+      for (const it of o.order_items ?? []) {
+        const st = (it.status ?? o.status) as Tab;
+        const w = itemWeight(it);
+        map.set("all", (map.get("all") ?? 0) + w);
+        if (map.has(st)) map.set(st, (map.get(st) ?? 0) + w);
+      }
+    }
+    return map;
+  }, [orders]);
+
+  /** Weight of what's currently on screen (respects search / date filters). */
+  const visibleWeight = useMemo(() => {
+    if (mode === "sku") return skuFiltered.reduce((s, r) => s + itemWeight(r.item), 0);
+    return filtered.reduce(
+      (s, o) =>
+        s +
+        (o.order_items ?? [])
+          .filter((i) => tab === "all" || (i.status ?? o.status) === tab)
+          .reduce((a, i) => a + itemWeight(i), 0),
+      0,
+    );
+  }, [mode, skuFiltered, filtered, tab]);
+
+
   const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
   const clearAll = () => {
     setSearch("");
@@ -302,15 +335,21 @@ function AdminOrders() {
                 : t === "all"
                   ? (orders?.length ?? 0)
                   : (orders ?? []).filter((o) => matchesTab(o, t)).length;
+            const w = tabWeights.get(t) ?? 0;
             return (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                className={`flex-1 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium capitalize ${
+                className={`flex-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium capitalize ${
                   tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground"
                 }`}
               >
-                {t} {count > 0 && <span className="ml-1 text-[10px]">({count})</span>}
+                <span className="block">
+                  {t} {count > 0 && <span className="ml-1 text-[10px]">({count})</span>}
+                </span>
+                <span className="block text-[10px] font-normal tabular-nums opacity-80">
+                  {fmtWeight(w)}
+                </span>
               </button>
             );
           })}
@@ -321,6 +360,12 @@ function AdminOrders() {
             ? `${skuFiltered.length} ${skuFiltered.length === 1 ? "item" : "items"}`
             : `${filtered.length} ${filtered.length === 1 ? "order" : "orders"}`}
           {hasFilters && " matching filters"}
+          {" · "}
+          <span className="font-semibold text-foreground tabular-nums">
+            {fmtWeight(visibleWeight)}
+          </span>{" "}
+          gross
+
         </p>
 
         {mode === "sku" ? (
