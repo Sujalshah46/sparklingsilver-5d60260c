@@ -207,6 +207,39 @@ function AdminOrders() {
     [skuRows, tab],
   );
 
+  const itemWeight = (i: ItemRow) => Number(i.gross_weight ?? 0) * Number(i.quantity ?? 0);
+  const fmtWeight = (g: number) =>
+    `${g.toLocaleString("en-IN", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} g`;
+
+  /** Total gross weight per status tab (sum of qty × gross weight of matching items). */
+  const tabWeights = useMemo(() => {
+    const map = new Map<Tab, number>();
+    for (const t of STATUS_TABS) map.set(t, 0);
+    for (const o of orders ?? []) {
+      for (const it of o.order_items ?? []) {
+        const st = (it.status ?? o.status) as Tab;
+        const w = itemWeight(it);
+        map.set("all", (map.get("all") ?? 0) + w);
+        if (map.has(st)) map.set(st, (map.get(st) ?? 0) + w);
+      }
+    }
+    return map;
+  }, [orders]);
+
+  /** Weight of what's currently on screen (respects search / date filters). */
+  const visibleWeight = useMemo(() => {
+    if (mode === "sku") return skuFiltered.reduce((s, r) => s + itemWeight(r.item), 0);
+    return filtered.reduce(
+      (s, o) =>
+        s +
+        (o.order_items ?? [])
+          .filter((i) => tab === "all" || (i.status ?? o.status) === tab)
+          .reduce((a, i) => a + itemWeight(i), 0),
+      0,
+    );
+  }, [mode, skuFiltered, filtered, tab]);
+
+
   const hasFilters = !!(search || fromDate || toDate || pendingItemsOnly);
   const clearAll = () => {
     setSearch("");
