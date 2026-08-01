@@ -8,7 +8,9 @@ import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Download, Search, X } from "lucide-react";
+import { exportOrdersExcel } from "@/lib/orders-export";
+
 import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
