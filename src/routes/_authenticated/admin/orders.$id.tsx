@@ -182,15 +182,17 @@ function AdminOrderDetail() {
   });
 
   const cancelMut = useMutation({
-    mutationFn: async () => cancelItems({ data: { order_id: id, item_ids: selected } }),
-    onSuccess: () => {
-      toast.success("Item(s) cancelled");
+    mutationFn: async (itemIds: string[]) =>
+      cancelItems({ data: { order_id: id, item_ids: itemIds } }),
+    onSuccess: (_d, itemIds) => {
+      toast.success(`${itemIds.length} SKU${itemIds.length > 1 ? "s" : ""} cancelled`);
       setSelected([]);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Cancel failed"),
   });
+
 
   const adjustMut = useMutation({
     mutationFn: async (vars: { item_id: string; quantity: number; gross_weight: number | null }) =>
