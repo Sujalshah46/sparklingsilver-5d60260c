@@ -612,10 +612,18 @@ function AdminOrderDetail() {
             <Button
               variant="outline"
               disabled={cancelMut.isPending}
-              onClick={() => cancelMut.mutate()}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Cancel ${selected.length} selected SKU${selected.length > 1 ? "s" : ""}? This cannot be undone.`,
+                  )
+                )
+                  cancelMut.mutate(selected);
+              }}
             >
-              <Ban className="mr-1 h-4 w-4" /> Cancel
+              <Ban className="mr-1 h-4 w-4" /> Cancel selected SKUs
             </Button>
+
           </div>
         </div>
       )}
