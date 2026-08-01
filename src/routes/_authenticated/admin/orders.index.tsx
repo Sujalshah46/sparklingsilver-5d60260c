@@ -8,7 +8,9 @@ import { formatDate } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X } from "lucide-react";
+import { Download, Search, X } from "lucide-react";
+import { exportOrdersExcel } from "@/lib/orders-export";
+
 import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
@@ -248,6 +250,44 @@ function AdminOrders() {
     setPendingItemsOnly(false);
   };
 
+  const [exporting, setExporting] = useState(false);
+  /** Exports exactly what the current tab + filters show. */
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const scope =
+        mode === "sku"
+          ? {
+              orderIds: [...new Set(skuFiltered.map((r) => r.order.id))],
+              itemIds: skuFiltered.map((r) => r.item.id),
+              label: `${tab}-sku-wise`,
+            }
+          : {
+              orderIds: filtered.map((o) => o.id),
+              itemIds:
+                tab === "all"
+                  ? undefined
+                  : filtered.flatMap((o) =>
+                      (o.order_items ?? [])
+                        .filter((i) => (i.status ?? o.status) === tab)
+                        .map((i) => i.id),
+                    ),
+              label: `${tab}-order-wise`,
+            };
+      if (scope.orderIds.length === 0) {
+        toast.error("Nothing to export in this view");
+        return;
+      }
+      const res = await exportOrdersExcel(scope);
+      toast.success(`Exported ${res.orders} orders · ${res.items} SKUs`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+
   return (
     <MobileShell title="Orders">
       <div className="p-4">
@@ -322,7 +362,19 @@ function AdminOrders() {
               </button>
             ))}
           </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={handleExport}
+            disabled={exporting}
+            className="ml-auto h-8 gap-1.5 text-xs"
+          >
+            <Download className="h-3.5 w-3.5" />
+            {exporting ? "Exporting…" : "Export Excel"}
+          </Button>
         </div>
+
 
 
         <div className="mb-3 flex gap-1 overflow-x-auto rounded-lg bg-secondary p-1">
