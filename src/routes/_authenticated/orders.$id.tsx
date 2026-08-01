@@ -233,6 +233,13 @@ function OrderDetail() {
   );
 }
 
+type ProductLimits = {
+  id: string;
+  moq: number | null;
+  stock_quantity: number | null;
+  in_stock: boolean | null;
+};
+
 type ItemRow = {
   id: string;
   product_name: string;
@@ -246,7 +253,9 @@ type ItemRow = {
   remark?: string | null;
   status_updated_at?: string | null;
   item_status_history?: { to_status: string; changed_at: string }[] | null;
+  product?: ProductLimits | null;
 };
+
 
 function ItemCard({
   item,
