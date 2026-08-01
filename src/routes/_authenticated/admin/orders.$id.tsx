@@ -23,11 +23,14 @@ import {
   Package,
   Bike,
   Ban,
+  Pencil,
 } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
 import { moveItemsForward, cancelOrderItems } from "@/lib/shipments.functions";
+import { adjustOrderItems } from "@/lib/order-items-admin.functions";
 import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
 import { nextStatus, rollupStatus, STATUS_LABEL, canSplitFrom, isActive, statusBadgeClass } from "@/lib/order-rollup";
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Order") }] }),
