@@ -10,6 +10,8 @@ import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { editOwnOrder } from "@/lib/order-edit.functions";
 import { BUYER_CANCELLABLE } from "@/lib/order-cancel";
+import { qtyLimits, clampQty, validateQty } from "@/lib/order-qty";
+
 
 import { toast } from "sonner";
 
@@ -87,7 +89,10 @@ function OrderDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(*, item_status_history(*)), shipments(*)")
+        .select(
+          "*, order_items(*, item_status_history(*), product:products(id, moq, stock_quantity, in_stock)), shipments(*)",
+        )
+
         .eq("id", id)
         .maybeSingle();
       return data;
@@ -188,6 +193,8 @@ function OrderDetail() {
               name: i.product_name,
               quantity: i.quantity,
               image_url: i.image_url,
+              product: i.product ?? null,
+
             }))}
           />
         )}
@@ -230,6 +237,13 @@ function OrderDetail() {
   );
 }
 
+type ProductLimits = {
+  id: string;
+  moq: number | null;
+  stock_quantity: number | null;
+  in_stock: boolean | null;
+};
+
 type ItemRow = {
   id: string;
   product_name: string;
@@ -243,7 +257,9 @@ type ItemRow = {
   remark?: string | null;
   status_updated_at?: string | null;
   item_status_history?: { to_status: string; changed_at: string }[] | null;
+  product?: ProductLimits | null;
 };
+
 
 function ItemCard({
   item,
@@ -383,7 +399,9 @@ type EditItem = {
   name: string;
   quantity: number;
   image_url: string | null;
+  product: ProductLimits | null;
 };
+
 
 const CANCELLABLE = new Set<string>(BUYER_CANCELLABLE as unknown as string[]);
 
@@ -409,12 +427,27 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
     setOpen(true);
   };
 
+  const kept = editable.filter((i) => !removed.includes(i.id));
   const changed =
     removed.length > 0 || editable.some((i) => (qty[i.id] ?? i.quantity) !== i.quantity);
 
+  const errorFor = (i: EditItem) => {
+    const limits = qtyLimits(i.product, i.quantity);
+    const q = qty[i.id] ?? i.quantity;
+    if (q > i.quantity && i.product?.in_stock === false)
+      return `${i.label} is out of stock — quantity cannot be increased.`;
+    return validateQty(q, limits, i.label);
+  };
+  const errors = kept.map(errorFor).filter((e): e is string => !!e);
+
   const save = async () => {
+    if (errors.length > 0) {
+      toast.error(errors[0]!);
+      return;
+    }
     setBusy(true);
     try {
+
       const res = await editFn({
         data: {
           order_id: orderId,
@@ -461,69 +494,107 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
           <div className="max-h-[55vh] space-y-2 overflow-y-auto">
             {editable.map((i) => {
               const gone = removed.includes(i.id);
+              const limits = qtyLimits(i.product, i.quantity);
               const q = qty[i.id] ?? i.quantity;
+              const err = gone ? null : errorFor(i);
+              const outOfStock = i.product?.in_stock === false;
+              const setQ = (n: number) =>
+                setQty((s) => ({ ...s, [i.id]: clampQty(n, limits) }));
               return (
                 <div
                   key={i.id}
-                  className={`flex items-center gap-3 rounded-lg border border-border p-2 ${gone ? "opacity-50" : ""}`}
+                  className={`rounded-lg border p-2 ${gone ? "border-border opacity-50" : err ? "border-destructive" : "border-border"}`}
                 >
-                  <img
-                    src={resolveProductImage(i.image_url)}
-                    alt={i.name}
-                    width={40}
-                    height={40}
-                    className="h-10 w-10 rounded-md object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className={`truncate text-sm font-medium ${gone ? "line-through" : ""}`}>
-                      {i.name}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground">SKU {i.label}</p>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={resolveProductImage(i.image_url)}
+                      alt={i.name}
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 rounded-md object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className={`truncate text-sm font-medium ${gone ? "line-through" : ""}`}>
+                        {i.name}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">SKU {i.label}</p>
+                    </div>
+
+                    {gone ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setRemoved((r) => r.filter((x) => x !== i.id))}
+                      >
+                        Undo
+                      </Button>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            aria-label={`Decrease quantity for ${i.label}`}
+                            disabled={q <= limits.min}
+                            onClick={() => setQ(q - 1)}
+                          >
+                            <Minus className="h-3 w-3" />
+                          </Button>
+                          <input
+                            type="number"
+                            inputMode="numeric"
+                            min={limits.min}
+                            max={limits.max}
+                            value={q}
+                            aria-label={`Quantity for ${i.label}`}
+                            onChange={(e) => {
+                              const n = parseInt(e.target.value, 10);
+                              setQty((s) => ({
+                                ...s,
+                                [i.id]: Number.isNaN(n) ? limits.min : n,
+                              }));
+                            }}
+                            onBlur={() => setQ(q)}
+                            className="h-7 w-12 rounded-md border border-border bg-background text-center text-sm font-semibold"
+                          />
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-7 w-7"
+                            aria-label={`Increase quantity for ${i.label}`}
+                            disabled={q >= limits.max || outOfStock}
+                            onClick={() => setQ(q + 1)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-7 w-7 text-destructive"
+                          aria-label={`Remove ${i.label}`}
+                          onClick={() => setRemoved((r) => [...r, i.id])}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
                   </div>
 
-                  {gone ? (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => setRemoved((r) => r.filter((x) => x !== i.id))}
+                  {!gone && (err || limits.min > 1 || limits.stockCapped || outOfStock) && (
+                    <p
+                      className={`mt-1 pl-[52px] text-[11px] ${err ? "font-medium text-destructive" : "text-muted-foreground"}`}
                     >
-                      Undo
-                    </Button>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          aria-label={`Decrease quantity for ${i.label}`}
-                          disabled={q <= 1}
-                          onClick={() => setQty((s) => ({ ...s, [i.id]: Math.max(1, q - 1) }))}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        <span className="w-6 text-center text-sm font-semibold">{q}</span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-7 w-7"
-                          aria-label={`Increase quantity for ${i.label}`}
-                          disabled={q >= 999}
-                          onClick={() => setQty((s) => ({ ...s, [i.id]: Math.min(999, q + 1) }))}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-destructive"
-                        aria-label={`Remove ${i.label}`}
-                        onClick={() => setRemoved((r) => [...r, i.id])}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </>
+                      {err ??
+                        [
+                          outOfStock ? "Out of stock" : null,
+                          limits.min > 1 ? `Min ${limits.min} pcs` : null,
+                          limits.stockCapped ? `Max ${limits.max} pcs available` : null,
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                    </p>
                   )}
                 </div>
               );
@@ -534,10 +605,11 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
             <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
               Close
             </Button>
-            <Button onClick={save} disabled={busy || !changed}>
+            <Button onClick={save} disabled={busy || !changed || errors.length > 0}>
               {busy ? "Saving…" : "Save changes"}
             </Button>
           </DialogFooter>
+
         </DialogContent>
       </Dialog>
     </section>

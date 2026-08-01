@@ -3,12 +3,17 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 import { BUYER_CANCELLABLE } from "./order-cancel";
+import { qtyLimits, validateQty, MAX_ITEM_QTY } from "./order-qty";
+
 
 const input = z.object({
   order_id: z.string().uuid(),
   /** New quantities for items the buyer changed. */
   quantities: z
-    .array(z.object({ item_id: z.string().uuid(), quantity: z.number().int().min(1).max(999) }))
+    .array(
+      z.object({ item_id: z.string().uuid(), quantity: z.number().int().min(1).max(MAX_ITEM_QTY) }),
+    )
+
     .max(500)
     .optional(),
   /** Items the buyer removed from the order. */
@@ -37,16 +42,25 @@ export const editOwnOrder = createServerFn({ method: "POST" })
 
     const { data: itemRows, error: itemsErr } = await supabase
       .from("order_items")
-      .select("id, status, quantity, unit_price, product_sku, product_name")
+      .select(
+        "id, status, quantity, unit_price, product_sku, product_name, product_id, product:products(id, moq, stock_quantity, in_stock)",
+      )
       .eq("order_id", data.order_id);
     if (itemsErr) throw new Error(itemsErr.message);
-    const items = (itemRows ?? []) as {
+    const items = (itemRows ?? []) as unknown as {
       id: string;
       status: string;
       quantity: number;
       unit_price: number | string;
       product_sku: string | null;
       product_name: string;
+      product_id: string | null;
+      product: {
+        id: string;
+        moq: number | null;
+        stock_quantity: number | null;
+        in_stock: boolean | null;
+      } | null;
     }[];
     const byId = new Map(items.map((i) => [i.id, i]));
     const editable = new Set<string>(BUYER_CANCELLABLE as unknown as string[]);
@@ -63,9 +77,24 @@ export const editOwnOrder = createServerFn({ method: "POST" })
         );
       }
     }
+
+    // Server-authoritative quantity + stock validation.
+    for (const q of qtyChanges) {
+      const it = byId.get(q.item_id)!;
+      if (it.quantity === q.quantity) continue;
+      const label = it.product_sku || it.product_name;
+      const limits = qtyLimits(it.product, it.quantity);
+      const err = validateQty(q.quantity, limits, label);
+      if (err) throw new Error(err);
+      if (q.quantity > it.quantity && it.product && it.product.in_stock === false) {
+        throw new Error(`${label} is out of stock — quantity cannot be increased.`);
+      }
+    }
+
     if (removeIds.length === 0 && qtyChanges.length === 0) {
       throw new Error("No changes to save");
     }
+
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const now = new Date().toISOString();
