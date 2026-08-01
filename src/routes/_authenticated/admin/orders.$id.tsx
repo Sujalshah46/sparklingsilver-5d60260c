@@ -23,11 +23,14 @@ import {
   Package,
   Bike,
   Ban,
+  Pencil,
 } from "lucide-react";
 import { updateOrderStatus } from "@/lib/admin.functions";
 import { moveItemsForward, cancelOrderItems } from "@/lib/shipments.functions";
+import { adjustOrderItems } from "@/lib/order-items-admin.functions";
 import { OrderStageTracker, type OrderStatus } from "@/components/admin/OrderStageTracker";
 import { nextStatus, rollupStatus, STATUS_LABEL, canSplitFrom, isActive, statusBadgeClass } from "@/lib/order-rollup";
+
 
 export const Route = createFileRoute("/_authenticated/admin/orders/$id")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Order") }] }),
@@ -71,9 +74,14 @@ function AdminOrderDetail() {
   const [notes, setNotes] = useState("");
   const [tracking, setTracking] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQty, setEditQty] = useState("");
+  const [editGross, setEditGross] = useState("");
   const update = useServerFn(updateOrderStatus);
   const move = useServerFn(moveItemsForward);
   const cancelItems = useServerFn(cancelOrderItems);
+  const adjust = useServerFn(adjustOrderItems);
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order", id],
@@ -183,6 +191,50 @@ function AdminOrderDetail() {
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Cancel failed"),
   });
+
+  const adjustMut = useMutation({
+    mutationFn: async (vars: { item_id: string; quantity: number; gross_weight: number | null }) =>
+      adjust({
+        data: {
+          order_id: id,
+          items: [
+            {
+              item_id: vars.item_id,
+              quantity: vars.quantity,
+              gross_weight: vars.gross_weight,
+            },
+          ],
+        },
+      }),
+    onSuccess: (res) => {
+      toast.success(res?.updated ? "Item updated" : "No changes");
+      setEditingId(null);
+      qc.invalidateQueries({ queryKey: ["admin-order", id] });
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Update failed"),
+  });
+
+  const startEdit = (it: ItemRow) => {
+    setEditingId(it.id);
+    setEditQty(String(it.quantity ?? 1));
+    setEditGross(it.gross_weight == null ? "" : String(Number(it.gross_weight)));
+  };
+
+  const saveEdit = (it: ItemRow) => {
+    const q = Math.floor(Number(editQty));
+    if (!Number.isFinite(q) || q < 1 || q > 999) {
+      toast.error("Quantity must be between 1 and 999");
+      return;
+    }
+    const g = editGross.trim() === "" ? null : Number(editGross);
+    if (g !== null && (!Number.isFinite(g) || g < 0)) {
+      toast.error("Gross weight must be a positive number");
+      return;
+    }
+    adjustMut.mutate({ item_id: it.id, quantity: q, gross_weight: g });
+  };
+
 
   if (isLoading)
     return (
@@ -335,6 +387,64 @@ function AdminOrderDetail() {
                         {it.remark}
                       </p>
                     )}
+                    {editingId === it.id ? (
+                      <div className="mt-2 space-y-2 rounded-lg border border-border bg-secondary/40 p-2">
+                        <div className="flex gap-2">
+                          <label className="flex-1 text-[10px] font-semibold uppercase text-muted-foreground">
+                            Qty
+                            <Input
+                              className="mt-1 h-8"
+                              type="number"
+                              min={1}
+                              max={999}
+                              value={editQty}
+                              onChange={(e) => setEditQty(e.target.value)}
+                            />
+                          </label>
+                          <label className="flex-1 text-[10px] font-semibold uppercase text-muted-foreground">
+                            Gross (g)
+                            <Input
+                              className="mt-1 h-8"
+                              type="number"
+                              min={0}
+                              step="0.001"
+                              value={editGross}
+                              onChange={(e) => setEditGross(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="h-8 flex-1 bg-burgundy hover:bg-burgundy/90"
+                            disabled={adjustMut.isPending}
+                            onClick={() => saveEdit(it)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 flex-1"
+                            disabled={adjustMut.isPending}
+                            onClick={() => setEditingId(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      isActive(it.status) && (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(it)}
+                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-burgundy"
+                        >
+                          <Pencil className="h-3 w-3" /> Edit qty / gross weight
+                        </button>
+                      )
+                    )}
+
                   </div>
                 </div>
               );
