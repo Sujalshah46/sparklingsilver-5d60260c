@@ -16,8 +16,6 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -35,8 +33,12 @@ import {
   Truck,
   Bike,
   PackageCheck,
-  XCircle,
+  Pencil,
+  Plus,
+  Minus,
+  Trash2,
 } from "lucide-react";
+
 
 
 export const Route = createFileRoute("/_authenticated/orders/$id")({
