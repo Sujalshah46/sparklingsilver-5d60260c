@@ -491,6 +491,64 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
             </DialogDescription>
           </DialogHeader>
 
+          {editable.length > 1 && (
+            <div className="rounded-lg border border-border bg-secondary/50 p-2">
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2 text-[11px] font-semibold">
+                  <Checkbox
+                    checked={allSelected}
+                    aria-label="Select all SKUs"
+                    onCheckedChange={(c) =>
+                      setSelected(c === true ? kept.map((i) => i.id) : [])
+                    }
+                  />
+                  {selected.length > 0 ? `${selected.length} selected` : "Select all"}
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={MAX_ITEM_QTY}
+                    placeholder="Qty"
+                    value={bulkQty}
+                    aria-label="Bulk quantity"
+                    onChange={(e) => setBulkQty(e.target.value)}
+                    className="h-7 w-16 rounded-md border border-border bg-background text-center text-sm font-semibold"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7"
+                    disabled={selected.length === 0 || !bulkQty}
+                    onClick={applyBulkQty}
+                  >
+                    Apply
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive"
+                    aria-label="Remove selected SKUs"
+                    disabled={selected.length === 0}
+                    onClick={() => {
+                      setRemoved((r) => [...new Set([...r, ...selected])]);
+                      setSelected([]);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Bulk update: tick SKUs, enter a quantity and tap Apply (each SKU stays within its
+                own min / stock limits).
+              </p>
+            </div>
+          )}
+
+
+
           <div className="max-h-[55vh] space-y-2 overflow-y-auto">
             {editable.map((i) => {
               const gone = removed.includes(i.id);
