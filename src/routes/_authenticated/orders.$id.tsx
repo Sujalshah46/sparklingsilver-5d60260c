@@ -10,6 +10,8 @@ import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { editOwnOrder } from "@/lib/order-edit.functions";
 import { BUYER_CANCELLABLE } from "@/lib/order-cancel";
+import { qtyLimits, clampQty, validateQty } from "@/lib/order-qty";
+
 
 import { toast } from "sonner";
 
