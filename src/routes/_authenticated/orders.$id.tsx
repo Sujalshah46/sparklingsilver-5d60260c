@@ -179,13 +179,15 @@ function OrderDetail() {
         )}
 
         {!isCancelled && (
-          <CancelPanel
+          <EditOrderPanel
             orderId={id}
             items={allItems.map((i) => ({
               id: i.id,
               status: i.status ?? status,
               label: i.product_sku || i.product_name,
               name: i.product_name,
+              quantity: i.quantity,
+              image_url: i.image_url,
             }))}
           />
         )}
