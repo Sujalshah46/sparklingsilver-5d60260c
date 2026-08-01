@@ -182,15 +182,17 @@ function AdminOrderDetail() {
   });
 
   const cancelMut = useMutation({
-    mutationFn: async () => cancelItems({ data: { order_id: id, item_ids: selected } }),
-    onSuccess: () => {
-      toast.success("Item(s) cancelled");
+    mutationFn: async (itemIds: string[]) =>
+      cancelItems({ data: { order_id: id, item_ids: itemIds } }),
+    onSuccess: (_d, itemIds) => {
+      toast.success(`${itemIds.length} SKU${itemIds.length > 1 ? "s" : ""} cancelled`);
       setSelected([]);
       qc.invalidateQueries({ queryKey: ["admin-order", id] });
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Cancel failed"),
   });
+
 
   const adjustMut = useMutation({
     mutationFn: async (vars: { item_id: string; quantity: number; gross_weight: number | null }) =>
@@ -435,15 +437,33 @@ function AdminOrderDetail() {
                       </div>
                     ) : (
                       isActive(it.status) && (
-                        <button
-                          type="button"
-                          onClick={() => startEdit(it)}
-                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-burgundy"
-                        >
-                          <Pencil className="h-3 w-3" /> Edit qty / gross weight
-                        </button>
+                        <div className="mt-2 flex flex-wrap items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(it)}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-burgundy"
+                          >
+                            <Pencil className="h-3 w-3" /> Edit qty / gross weight
+                          </button>
+                          <button
+                            type="button"
+                            disabled={cancelMut.isPending}
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Cancel SKU ${it.product_sku ?? it.product_name}? This cannot be undone.`,
+                                )
+                              )
+                                cancelMut.mutate([it.id]);
+                            }}
+                            className="inline-flex items-center gap-1 text-[11px] font-semibold text-destructive disabled:opacity-50"
+                          >
+                            <Ban className="h-3 w-3" /> Cancel this SKU
+                          </button>
+                        </div>
                       )
                     )}
+
 
                   </div>
                 </div>
@@ -592,10 +612,18 @@ function AdminOrderDetail() {
             <Button
               variant="outline"
               disabled={cancelMut.isPending}
-              onClick={() => cancelMut.mutate()}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Cancel ${selected.length} selected SKU${selected.length > 1 ? "s" : ""}? This cannot be undone.`,
+                  )
+                )
+                  cancelMut.mutate(selected);
+              }}
             >
-              <Ban className="mr-1 h-4 w-4" /> Cancel
+              <Ban className="mr-1 h-4 w-4" /> Cancel selected SKUs
             </Button>
+
           </div>
         </div>
       )}
