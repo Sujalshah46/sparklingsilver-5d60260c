@@ -386,7 +386,9 @@ type EditItem = {
   name: string;
   quantity: number;
   image_url: string | null;
+  product: ProductLimits | null;
 };
+
 
 const CANCELLABLE = new Set<string>(BUYER_CANCELLABLE as unknown as string[]);
 
