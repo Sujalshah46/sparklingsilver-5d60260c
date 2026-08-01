@@ -371,124 +371,166 @@ function ItemCard({
   );
 }
 
-type CancelItem = { id: string; status: string; label: string; name: string };
+type EditItem = {
+  id: string;
+  status: string;
+  label: string;
+  name: string;
+  quantity: number;
+  image_url: string | null;
+};
 
 const CANCELLABLE = new Set<string>(BUYER_CANCELLABLE as unknown as string[]);
 
 /**
- * Buyer-side "change my mind" panel: cancel individual SKUs or the whole order
- * as long as the items have not been confirmed by the team yet.
+ * Simple buyer-side "Edit order": change quantity or remove a SKU while the
+ * order is still un-confirmed. Removing every SKU cancels the order.
  */
-function CancelPanel({ orderId, items }: { orderId: string; items: CancelItem[] }) {
+function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[] }) {
   const qc = useQueryClient();
-  const cancelFn = useServerFn(cancelOwnOrderItems);
-  const [selected, setSelected] = useState<string[]>([]);
-  const [mode, setMode] = useState<null | "items" | "order">(null);
-  const [reason, setReason] = useState("");
+  const editFn = useServerFn(editOwnOrder);
+  const editable = items.filter((i) => CANCELLABLE.has(i.status));
+
+  const [open, setOpen] = useState(false);
+  const [qty, setQty] = useState<Record<string, number>>({});
+  const [removed, setRemoved] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const open = items.filter((i) => CANCELLABLE.has(i.status));
-  if (open.length === 0) return null;
+  if (editable.length === 0) return null;
 
-  const toggle = (id: string) =>
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+  const start = () => {
+    setQty(Object.fromEntries(editable.map((i) => [i.id, i.quantity])));
+    setRemoved([]);
+    setOpen(true);
+  };
 
-  const submit = async () => {
+  const changed =
+    removed.length > 0 || editable.some((i) => (qty[i.id] ?? i.quantity) !== i.quantity);
+
+  const save = async () => {
     setBusy(true);
     try {
-      const res = await cancelFn({
+      const res = await editFn({
         data: {
           order_id: orderId,
-          item_ids: mode === "items" ? selected : undefined,
-          reason: reason.trim() || null,
+          quantities: editable
+            .filter((i) => !removed.includes(i.id))
+            .map((i) => ({ item_id: i.id, quantity: qty[i.id] ?? i.quantity })),
+          remove_ids: removed,
         },
       });
       toast.success(
-        res.orderCancelled
-          ? "Your order has been cancelled."
-          : `${res.cancelled} item${res.cancelled > 1 ? "s" : ""} cancelled.`,
+        res.orderCancelled ? "Your order has been cancelled." : "Your order has been updated.",
       );
-      setMode(null);
-      setSelected([]);
-      setReason("");
+      setOpen(false);
       await qc.invalidateQueries({ queryKey: ["order", orderId] });
       await qc.invalidateQueries({ queryKey: ["orders"] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not cancel");
+      toast.error(e instanceof Error ? e.message : "Could not update order");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4">
-      <h3 className="font-serif text-base font-semibold">Need changes?</h3>
-      <p className="mt-1 text-[11px] text-muted-foreground">
-        You can cancel items or the entire order until we confirm it. Once confirmed, please reach us
-        on WhatsApp.
-      </p>
-
-      <div className="mt-3 space-y-2">
-        {open.map((i) => (
-          <label
-            key={i.id}
-            className="flex items-center gap-3 rounded-lg border border-border p-2 text-sm"
-          >
-            <Checkbox
-              checked={selected.includes(i.id)}
-              onCheckedChange={() => toggle(i.id)}
-              aria-label={`Select ${i.label}`}
-            />
-            <span className="min-w-0 flex-1">
-              <span className="block truncate font-medium">{i.name}</span>
-              <span className="text-[11px] text-muted-foreground">SKU {i.label}</span>
-            </span>
-            <Badge variant="secondary" className={`text-[10px] ${statusBadgeClass(i.status)}`}>
-              {ITEM_STATUS_LABEL[i.status] ?? i.status}
-            </Badge>
-          </label>
-        ))}
+    <section className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4">
+      <div>
+        <h3 className="font-serif text-base font-semibold">Need changes?</h3>
+        <p className="mt-0.5 text-[11px] text-muted-foreground">
+          Change quantity or remove items until we confirm your order.
+        </p>
       </div>
+      <Button size="sm" variant="outline" onClick={start} data-testid="edit-order">
+        <Pencil className="mr-1 h-4 w-4" /> Edit order
+      </Button>
 
-      <div className="mt-3 flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          disabled={selected.length === 0}
-          onClick={() => setMode("items")}
-        >
-          <XCircle className="mr-1 h-4 w-4" />
-          Cancel selected ({selected.length})
-        </Button>
-        <Button variant="destructive" size="sm" onClick={() => setMode("order")}>
-          Cancel entire order
-        </Button>
-      </div>
-
-      <Dialog open={mode !== null} onOpenChange={(o) => !o && setMode(null)}>
-        <DialogContent>
+      <Dialog open={open} onOpenChange={(o) => !o && setOpen(false)}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {mode === "order" ? "Cancel entire order?" : "Cancel selected items?"}
-            </DialogTitle>
+            <DialogTitle>Edit order</DialogTitle>
             <DialogDescription>
-              {mode === "order"
-                ? "All items that are not yet confirmed will be cancelled. This cannot be undone."
-                : `${selected.length} item(s) will be cancelled. This cannot be undone.`}
+              Adjust quantity or remove a SKU. Removing everything cancels the order.
             </DialogDescription>
           </DialogHeader>
-          <Textarea
-            value={reason}
-            maxLength={500}
-            onChange={(e) => setReason(e.target.value)}
-            placeholder="Reason (optional) — e.g. wrong size, want a different design"
-          />
+
+          <div className="max-h-[55vh] space-y-2 overflow-y-auto">
+            {editable.map((i) => {
+              const gone = removed.includes(i.id);
+              const q = qty[i.id] ?? i.quantity;
+              return (
+                <div
+                  key={i.id}
+                  className={`flex items-center gap-3 rounded-lg border border-border p-2 ${gone ? "opacity-50" : ""}`}
+                >
+                  <img
+                    src={resolveProductImage(i.image_url)}
+                    alt={i.name}
+                    width={40}
+                    height={40}
+                    className="h-10 w-10 rounded-md object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className={`truncate text-sm font-medium ${gone ? "line-through" : ""}`}>
+                      {i.name}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground">SKU {i.label}</p>
+                  </div>
+
+                  {gone ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setRemoved((r) => r.filter((x) => x !== i.id))}
+                    >
+                      Undo
+                    </Button>
+                  ) : (
+                    <>
+                      <div className="flex items-center gap-1">
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7"
+                          aria-label={`Decrease quantity for ${i.label}`}
+                          disabled={q <= 1}
+                          onClick={() => setQty((s) => ({ ...s, [i.id]: Math.max(1, q - 1) }))}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <span className="w-6 text-center text-sm font-semibold">{q}</span>
+                        <Button
+                          size="icon"
+                          variant="outline"
+                          className="h-7 w-7"
+                          aria-label={`Increase quantity for ${i.label}`}
+                          disabled={q >= 999}
+                          onClick={() => setQty((s) => ({ ...s, [i.id]: Math.min(999, q + 1) }))}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7 text-destructive"
+                        aria-label={`Remove ${i.label}`}
+                        onClick={() => setRemoved((r) => [...r, i.id])}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMode(null)} disabled={busy}>
-              Keep order
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+              Close
             </Button>
-            <Button variant="destructive" onClick={submit} disabled={busy}>
-              {busy ? "Cancelling…" : "Yes, cancel"}
+            <Button onClick={save} disabled={busy || !changed}>
+              {busy ? "Saving…" : "Save changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -496,3 +538,4 @@ function CancelPanel({ orderId, items }: { orderId: string; items: CancelItem[] 
     </section>
   );
 }
+
