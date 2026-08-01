@@ -248,6 +248,44 @@ function AdminOrders() {
     setPendingItemsOnly(false);
   };
 
+  const [exporting, setExporting] = useState(false);
+  /** Exports exactly what the current tab + filters show. */
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      const scope =
+        mode === "sku"
+          ? {
+              orderIds: [...new Set(skuFiltered.map((r) => r.order.id))],
+              itemIds: skuFiltered.map((r) => r.item.id),
+              label: `${tab}-sku-wise`,
+            }
+          : {
+              orderIds: filtered.map((o) => o.id),
+              itemIds:
+                tab === "all"
+                  ? undefined
+                  : filtered.flatMap((o) =>
+                      (o.order_items ?? [])
+                        .filter((i) => (i.status ?? o.status) === tab)
+                        .map((i) => i.id),
+                    ),
+              label: `${tab}-order-wise`,
+            };
+      if (scope.orderIds.length === 0) {
+        toast.error("Nothing to export in this view");
+        return;
+      }
+      const res = await exportOrdersExcel(scope);
+      toast.success(`Exported ${res.orders} orders · ${res.items} SKUs`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Export failed");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+
   return (
     <MobileShell title="Orders">
       <div className="p-4">
