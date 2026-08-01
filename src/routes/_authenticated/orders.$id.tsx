@@ -417,6 +417,8 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState<Record<string, number>>({});
   const [removed, setRemoved] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkQty, setBulkQty] = useState("");
   const [busy, setBusy] = useState(false);
 
   if (editable.length === 0) return null;
@@ -424,12 +426,33 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
   const start = () => {
     setQty(Object.fromEntries(editable.map((i) => [i.id, i.quantity])));
     setRemoved([]);
+    setSelected([]);
+    setBulkQty("");
     setOpen(true);
   };
 
   const kept = editable.filter((i) => !removed.includes(i.id));
+  const allSelected = kept.length > 0 && kept.every((i) => selected.includes(i.id));
   const changed =
     removed.length > 0 || editable.some((i) => (qty[i.id] ?? i.quantity) !== i.quantity);
+
+  /** Apply one quantity to every ticked SKU, clamped to each SKU's own limits. */
+  const applyBulkQty = () => {
+    const n = parseInt(bulkQty, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      toast.error("Enter a quantity of at least 1.");
+      return;
+    }
+    const targets = kept.filter((i) => selected.includes(i.id));
+    if (targets.length === 0) return;
+    setQty((s) => {
+      const next = { ...s };
+      for (const i of targets) next[i.id] = clampQty(n, qtyLimits(i.product, i.quantity));
+      return next;
+    });
+    toast.success(`Quantity updated for ${targets.length} SKU${targets.length > 1 ? "s" : ""}.`);
+  };
+
 
   const errorFor = (i: EditItem) => {
     const limits = qtyLimits(i.product, i.quantity);
