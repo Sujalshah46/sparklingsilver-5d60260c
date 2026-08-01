@@ -10,7 +10,10 @@ const input = z.object({
   order_id: z.string().uuid(),
   /** New quantities for items the buyer changed. */
   quantities: z
-    .array(z.object({ item_id: z.string().uuid(), quantity: z.number().int().min(1).max(999) }))
+    .array(
+      z.object({ item_id: z.string().uuid(), quantity: z.number().int().min(1).max(MAX_ITEM_QTY) }),
+    )
+
     .max(500)
     .optional(),
   /** Items the buyer removed from the order. */
