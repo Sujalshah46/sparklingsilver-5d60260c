@@ -425,12 +425,27 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
     setOpen(true);
   };
 
+  const kept = editable.filter((i) => !removed.includes(i.id));
   const changed =
     removed.length > 0 || editable.some((i) => (qty[i.id] ?? i.quantity) !== i.quantity);
 
+  const errorFor = (i: EditItem) => {
+    const limits = qtyLimits(i.product, i.quantity);
+    const q = qty[i.id] ?? i.quantity;
+    if (q > i.quantity && i.product?.in_stock === false)
+      return `${i.label} is out of stock — quantity cannot be increased.`;
+    return validateQty(q, limits, i.label);
+  };
+  const errors = kept.map(errorFor).filter((e): e is string => !!e);
+
   const save = async () => {
+    if (errors.length > 0) {
+      toast.error(errors[0]!);
+      return;
+    }
     setBusy(true);
     try {
+
       const res = await editFn({
         data: {
           order_id: orderId,
