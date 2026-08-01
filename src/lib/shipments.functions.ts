@@ -155,8 +155,11 @@ export const cancelOrderItems = createServerFn({ method: "POST" })
 
     const all = await loadOrderItems(supabase, data.order_id);
     const selected = all.filter((i) => data.item_ids.includes(i.id));
-    if (selected.length !== data.item_ids.length)
+    if (selected.length !== new Set(data.item_ids).size)
       throw new Error("An item does not belong to this order");
+    // Re-cancelling an already terminal item would write a bogus history row.
+    const fresh = selected.filter((i) => i.status !== "cancelled" && i.status !== "rejected");
+    if (fresh.length === 0) throw new Error("These items are already cancelled.");
 
     const { error } = await supabase
       .from("order_items")
@@ -165,12 +168,15 @@ export const cancelOrderItems = createServerFn({ method: "POST" })
         status_updated_at: new Date().toISOString(),
         shipment_id: null,
       } as never)
-      .in("id", data.item_ids);
+      .in(
+        "id",
+        fresh.map((i) => i.id),
+      );
     if (error) throw new Error(error.message);
 
     await recordHistory(
       supabase,
-      selected.map((s) => ({
+      fresh.map((s) => ({
         order_item_id: s.id,
         from_status: s.status,
         to_status: "cancelled",
@@ -195,13 +201,17 @@ export const updateShipment = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    // Patch only the fields actually sent, otherwise editing the courier alone
+    // silently wiped an existing tracking number (and vice-versa).
+    const patch: Record<string, unknown> = {};
+    if (data.tracking_number !== undefined) patch.tracking_number = data.tracking_number ?? null;
+    if (data.courier !== undefined) patch.courier = data.courier ?? null;
+    if (Object.keys(patch).length === 0) return { ok: true };
     const { error } = await supabase
       .from("shipments")
-      .update({
-        tracking_number: data.tracking_number ?? null,
-        courier: data.courier ?? null,
-      } as never)
+      .update(patch as never)
       .eq("id", data.shipment_id);
     if (error) throw new Error(error.message);
+
     return { ok: true };
   });
