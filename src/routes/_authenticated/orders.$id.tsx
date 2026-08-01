@@ -10,7 +10,9 @@ import { resolveProductImage } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { editOwnOrder } from "@/lib/order-edit.functions";
 import { BUYER_CANCELLABLE } from "@/lib/order-cancel";
-import { qtyLimits, clampQty, validateQty } from "@/lib/order-qty";
+import { qtyLimits, clampQty, validateQty, MAX_ITEM_QTY } from "@/lib/order-qty";
+import { Checkbox } from "@/components/ui/checkbox";
+
 
 
 import { toast } from "sonner";
@@ -417,6 +419,8 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState<Record<string, number>>({});
   const [removed, setRemoved] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [bulkQty, setBulkQty] = useState("");
   const [busy, setBusy] = useState(false);
 
   if (editable.length === 0) return null;
@@ -424,12 +428,33 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
   const start = () => {
     setQty(Object.fromEntries(editable.map((i) => [i.id, i.quantity])));
     setRemoved([]);
+    setSelected([]);
+    setBulkQty("");
     setOpen(true);
   };
 
   const kept = editable.filter((i) => !removed.includes(i.id));
+  const allSelected = kept.length > 0 && kept.every((i) => selected.includes(i.id));
   const changed =
     removed.length > 0 || editable.some((i) => (qty[i.id] ?? i.quantity) !== i.quantity);
+
+  /** Apply one quantity to every ticked SKU, clamped to each SKU's own limits. */
+  const applyBulkQty = () => {
+    const n = parseInt(bulkQty, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      toast.error("Enter a quantity of at least 1.");
+      return;
+    }
+    const targets = kept.filter((i) => selected.includes(i.id));
+    if (targets.length === 0) return;
+    setQty((s) => {
+      const next = { ...s };
+      for (const i of targets) next[i.id] = clampQty(n, qtyLimits(i.product, i.quantity));
+      return next;
+    });
+    toast.success(`Quantity updated for ${targets.length} SKU${targets.length > 1 ? "s" : ""}.`);
+  };
+
 
   const errorFor = (i: EditItem) => {
     const limits = qtyLimits(i.product, i.quantity);
@@ -491,6 +516,64 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
             </DialogDescription>
           </DialogHeader>
 
+          {editable.length > 1 && (
+            <div className="rounded-lg border border-border bg-secondary/50 p-2">
+              <div className="flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2 text-[11px] font-semibold">
+                  <Checkbox
+                    checked={allSelected}
+                    aria-label="Select all SKUs"
+                    onCheckedChange={(c) =>
+                      setSelected(c === true ? kept.map((i) => i.id) : [])
+                    }
+                  />
+                  {selected.length > 0 ? `${selected.length} selected` : "Select all"}
+                </label>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min={1}
+                    max={MAX_ITEM_QTY}
+                    placeholder="Qty"
+                    value={bulkQty}
+                    aria-label="Bulk quantity"
+                    onChange={(e) => setBulkQty(e.target.value)}
+                    className="h-7 w-16 rounded-md border border-border bg-background text-center text-sm font-semibold"
+                  />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-7"
+                    disabled={selected.length === 0 || !bulkQty}
+                    onClick={applyBulkQty}
+                  >
+                    Apply
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive"
+                    aria-label="Remove selected SKUs"
+                    disabled={selected.length === 0}
+                    onClick={() => {
+                      setRemoved((r) => [...new Set([...r, ...selected])]);
+                      setSelected([]);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Bulk update: tick SKUs, enter a quantity and tap Apply (each SKU stays within its
+                own min / stock limits).
+              </p>
+            </div>
+          )}
+
+
+
           <div className="max-h-[55vh] space-y-2 overflow-y-auto">
             {editable.map((i) => {
               const gone = removed.includes(i.id);
@@ -506,7 +589,18 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
                   className={`rounded-lg border p-2 ${gone ? "border-border opacity-50" : err ? "border-destructive" : "border-border"}`}
                 >
                   <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={selected.includes(i.id)}
+                      disabled={gone}
+                      aria-label={`Select ${i.label}`}
+                      onCheckedChange={(c) =>
+                        setSelected((s) =>
+                          c === true ? [...new Set([...s, i.id])] : s.filter((x) => x !== i.id),
+                        )
+                      }
+                    />
                     <img
+
                       src={resolveProductImage(i.image_url)}
                       alt={i.name}
                       width={40}
