@@ -55,20 +55,35 @@ export function validateMove(all: ItemRow[], itemIds: string[], to: ItemStatus):
 /**
  * Recompute the order's rollup column: the order sits at the LEAST progressed
  * active item stage, so it never reads "Delivered" while items are outstanding.
+ * When no active item remains the order itself is terminal (cancelled/rejected).
  */
 export async function syncOrderStatus(supabase: DB, orderId: string) {
   const items = await loadOrderItems(supabase, orderId);
   const active = items.filter((i) => isActive(i.status));
-  if (active.length === 0) return;
   const { PIPELINE } = await import("./order-rollup");
-  const least = active
-    .map((i) => i.status)
-    .sort((a, b) => PIPELINE.indexOf(a as ItemStatus) - PIPELINE.indexOf(b as ItemStatus))[0];
+
+  let next: string;
+  if (active.length === 0) {
+    if (items.length === 0) return;
+    // Every item is cancelled/rejected -> the order is too.
+    next = items.every((i) => i.status === "rejected") ? "rejected" : "cancelled";
+  } else {
+    // Statuses outside the linear pipeline (e.g. "ready") must not sort to the
+    // front via indexOf() === -1, which used to make the order read "Ready"
+    // while other items were still pending.
+    const rank = (s: string) => {
+      const i = PIPELINE.indexOf(s as ItemStatus);
+      return i < 0 ? PIPELINE.length : i;
+    };
+    next = active.map((i) => i.status).sort((a, b) => rank(a) - rank(b))[0];
+  }
+
   await supabase
     .from("orders")
-    .update({ status: least } as never)
+    .update({ status: next } as never)
     .eq("id", orderId);
 }
+
 
 export async function recordHistory(
   supabase: DB,
