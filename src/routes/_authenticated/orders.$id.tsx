@@ -87,7 +87,10 @@ function OrderDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(*, item_status_history(*)), shipments(*)")
+        .select(
+          "*, order_items(*, item_status_history(*), product:products(id, moq, stock_quantity, in_stock)), shipments(*)",
+        )
+
         .eq("id", id)
         .maybeSingle();
       return data;
