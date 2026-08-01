@@ -387,6 +387,64 @@ function AdminOrderDetail() {
                         {it.remark}
                       </p>
                     )}
+                    {editingId === it.id ? (
+                      <div className="mt-2 space-y-2 rounded-lg border border-border bg-secondary/40 p-2">
+                        <div className="flex gap-2">
+                          <label className="flex-1 text-[10px] font-semibold uppercase text-muted-foreground">
+                            Qty
+                            <Input
+                              className="mt-1 h-8"
+                              type="number"
+                              min={1}
+                              max={999}
+                              value={editQty}
+                              onChange={(e) => setEditQty(e.target.value)}
+                            />
+                          </label>
+                          <label className="flex-1 text-[10px] font-semibold uppercase text-muted-foreground">
+                            Gross (g)
+                            <Input
+                              className="mt-1 h-8"
+                              type="number"
+                              min={0}
+                              step="0.001"
+                              value={editGross}
+                              onChange={(e) => setEditGross(e.target.value)}
+                            />
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            className="h-8 flex-1 bg-burgundy hover:bg-burgundy/90"
+                            disabled={adjustMut.isPending}
+                            onClick={() => saveEdit(it)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="h-8 flex-1"
+                            disabled={adjustMut.isPending}
+                            onClick={() => setEditingId(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      isActive(it.status) && (
+                        <button
+                          type="button"
+                          onClick={() => startEdit(it)}
+                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-burgundy"
+                        >
+                          <Pencil className="h-3 w-3" /> Edit qty / gross weight
+                        </button>
+                      )
+                    )}
+
                   </div>
                 </div>
               );
