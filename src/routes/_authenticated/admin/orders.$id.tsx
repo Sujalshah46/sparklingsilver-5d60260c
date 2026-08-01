@@ -74,9 +74,14 @@ function AdminOrderDetail() {
   const [notes, setNotes] = useState("");
   const [tracking, setTracking] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editQty, setEditQty] = useState("");
+  const [editGross, setEditGross] = useState("");
   const update = useServerFn(updateOrderStatus);
   const move = useServerFn(moveItemsForward);
   const cancelItems = useServerFn(cancelOrderItems);
+  const adjust = useServerFn(adjustOrderItems);
+
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["admin-order", id],
