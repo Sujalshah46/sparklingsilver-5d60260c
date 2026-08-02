@@ -334,7 +334,15 @@ function ItemCard({
           <p className="mt-1 text-[11px] text-muted-foreground">
             <span className="font-semibold text-foreground">Gross:</span>{" "}
             {Number(item.gross_weight ?? 0).toFixed(3)} g
+            <span className="text-muted-foreground"> × {item.quantity}</span>
           </p>
+          <p className="mt-1 inline-flex items-baseline gap-1 rounded-md bg-emerald-50 px-2 py-1 text-emerald-800 ring-1 ring-emerald-200 dark:bg-emerald-500/15 dark:text-emerald-200 dark:ring-emerald-500/30">
+            <span className="text-[10px] font-semibold uppercase tracking-wide">SKU total</span>
+            <span className="text-sm font-bold tabular-nums">
+              {(Number(item.gross_weight ?? 0) * (item.quantity ?? 1)).toFixed(3)} g
+            </span>
+          </p>
+
           {item.remark && (
             <p className="mt-1 whitespace-pre-wrap rounded-md bg-secondary p-2 text-[11px]">
               <span className="font-semibold">Item Remarks: </span>
