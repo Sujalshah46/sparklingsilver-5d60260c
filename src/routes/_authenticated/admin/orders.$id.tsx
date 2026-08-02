@@ -480,9 +480,15 @@ function AdminOrderDetail() {
               );
             })}
           </div>
-          <p className="mt-2 text-right text-xs font-semibold">
-            Total (g): {totalGrams.toFixed(3)}
-          </p>
+          <div className="mt-3 flex items-baseline justify-end gap-2 rounded-lg bg-emerald-600 px-4 py-3 text-white">
+            <span className="text-xs font-semibold uppercase tracking-wide text-emerald-50">
+              Total gross weight
+            </span>
+            <span className="text-2xl font-bold tabular-nums sm:text-3xl">
+              {totalGrams.toFixed(3)} g
+            </span>
+          </div>
+
         </section>
 
         {shipments.length > 0 && (
