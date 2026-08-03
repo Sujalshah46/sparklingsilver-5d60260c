@@ -45,6 +45,21 @@ function AccountPage() {
     onSuccess: () => { toast.success("Signed out"); navigate({ to: "/", replace: true }); },
   });
 
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const requestDelete = useServerFn(deleteOwnAccount);
+  const deleteAccount = useMutation({
+    mutationFn: async () => { await requestDelete({ data: {} }); },
+    onSuccess: async () => {
+      setDeleteOpen(false);
+      toast.success("Your account has been deleted.");
+      await supabase.auth.signOut();
+      navigate({ to: "/", replace: true });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Could not delete account"),
+  });
+
+
   const initials = (profile?.full_name || user?.email || "U").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
 
   return (
