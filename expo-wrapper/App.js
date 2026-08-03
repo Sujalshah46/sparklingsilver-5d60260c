@@ -84,11 +84,18 @@ async function registerForPushNotificationsAsync() {
 }
 
 export default function App() {
-  // Screenshot / screen-recording protection.
-  // Android: FLAG_SECURE blocks screenshots and recordings outright.
-  // iOS: the OS gives no way to block a screenshot, so we detect it and cover
-  // the content with a privacy shield the moment one is taken.
-  const [screenshotBlocked, setScreenshotBlocked] = useState(false);
+  // Capture protection, applied globally (the whole app is one WebView screen,
+  // so this covers every screen at all times).
+  //  * Android: FLAG_SECURE blocks screenshots AND screen recording outright,
+  //    and also blacks out the app-switcher thumbnail.
+  //  * iOS: the OS does not permit blocking capture, so we (a) shield the
+  //    content the instant a screenshot is taken, (b) shield it for as long as
+  //    a screen recording / AirPlay mirroring session is active, and (c) shield
+  //    it whenever the app leaves the foreground so the app-switcher snapshot
+  //    and any background capture show nothing.
+  const [captureShield, setCaptureShield] = useState(null); // 'screenshot' | 'recording' | 'background'
+  const recordingRef = useRef(false);
+  const flashTimerRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
@@ -97,12 +104,28 @@ export default function App() {
     };
     enable();
 
+    const showFlash = () => {
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      setCaptureShield('screenshot');
+      flashTimerRef.current = setTimeout(() => {
+        if (!mounted) return;
+        setCaptureShield(recordingRef.current ? 'recording' : null);
+      }, 4000);
+    };
+
     // Re-assert on every foreground: some OEM flows drop the secure flag.
+    // While not active, cover the content so the OS snapshot is blank (iOS).
     const appSub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') enable();
+      if (state === 'active') {
+        enable();
+        setCaptureShield(recordingRef.current ? 'recording' : null);
+      } else if (Platform.OS === 'ios') {
+        setCaptureShield('background');
+      }
     });
 
     let captureSub = null;
+    let recordingSub = null;
     (async () => {
       try {
         const perm = await ScreenCapture.requestPermissionsAsync?.();
@@ -112,22 +135,41 @@ export default function App() {
       }
       if (!mounted) return;
       try {
-        captureSub = ScreenCapture.addScreenshotListener(() => {
-          setScreenshotBlocked(true);
-          setTimeout(() => setScreenshotBlocked(false), 4000);
-        });
+        captureSub = ScreenCapture.addScreenshotListener(showFlash);
       } catch {
         /* listener unavailable */
+      }
+      // Screen-recording / mirroring observer (iOS). Feature-detected so the
+      // app keeps working on runtimes that don't expose it.
+      try {
+        const addRecordingListener =
+          ScreenCapture.addScreenRecordingListener ??
+          ScreenCapture.addScreenCaptureListener;
+        if (typeof addRecordingListener === 'function') {
+          recordingSub = addRecordingListener((event) => {
+            const active =
+              typeof event === 'boolean'
+                ? event
+                : (event?.isCaptured ?? event?.isBeingCaptured ?? true);
+            recordingRef.current = !!active;
+            setCaptureShield(active ? 'recording' : null);
+          });
+        }
+      } catch {
+        /* observer unavailable */
       }
     })();
 
     return () => {
       mounted = false;
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
       appSub.remove();
       captureSub?.remove?.();
+      recordingSub?.remove?.();
       ScreenCapture.allowScreenCaptureAsync('ss-global').catch(() => {});
     };
   }, []);
+
 
   const webViewRef = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
