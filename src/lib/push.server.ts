@@ -87,11 +87,13 @@ async function sendToUserIds(userIds: string[], payload: Payload) {
   if (userIds.length === 0) return;
   await sendExpoPush(userIds, payload);
 
+  if (!webPushReady) return;
   const { data: subs } = await supabaseAdmin
     .from("push_subscriptions")
     .select("endpoint, p256dh, auth")
     .in("user_id", userIds);
   if (!subs || subs.length === 0) return;
+
 
 
   const body = JSON.stringify(payload);
