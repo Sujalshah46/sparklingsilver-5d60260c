@@ -3,10 +3,14 @@
   "short_name": "Sparkling",
   "description": "Where Every Piece Tells a Story",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#FAF7F2",
   "theme_color": "#6D1F2E",
   "icons": [
-    { "src": "/favicon.ico", "sizes": "any", "type": "image/x-icon" }
+    { "src": "/favicon.ico", "sizes": "16x16 32x32 48x48 64x64", "type": "image/x-icon" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ]
 }
