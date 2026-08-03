@@ -90,6 +90,8 @@ function AccountPage() {
 
         <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
+          <Row to="/privacy" icon={ShieldCheck} label="Privacy Policy" />
+          <Row to="/terms" icon={FileText} label="Terms of Use" />
           <Row icon={Info} label="About Sparkling Silver" hint="v1.0" />
         </section>
 
@@ -108,6 +110,41 @@ function AccountPage() {
           <LogOut className="mr-2 h-4 w-4" /> Sign Out
         </Button>
 
+        {!isAdmin && (
+          <Button
+            variant="ghost"
+            className="mt-2 w-full text-xs text-muted-foreground hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete my account
+          </Button>
+        )}
+
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete your account?</DialogTitle>
+              <DialogDescription>
+                This closes your Sparkling Silver account permanently. Your cart, wishlist
+                and saved details are removed and you will no longer be able to sign in.
+                Past order records are kept only as required for tax and accounting law.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+                Keep my account
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteAccount.isPending}
+                onClick={() => deleteAccount.mutate()}
+              >
+                {deleteAccount.isPending ? "Deleting…" : "Delete account"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
           Sparkling Silver · BIS Hallmarked · Made with love in India
         </p>
@@ -115,6 +152,7 @@ function AccountPage() {
     </MobileShell>
   );
 }
+
 
 function QuickLink({ to, icon: Icon, label }: { to: string; icon: typeof MapPin; label: string }) {
   return (
