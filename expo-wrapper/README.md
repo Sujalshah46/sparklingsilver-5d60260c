@@ -120,8 +120,7 @@ Still to do in App Store Connect (cannot be done from code):
 2. **Support URL** → `https://sparklingsilver.in/contact`,
    **Privacy Policy URL** → `https://sparklingsilver.in/privacy`.
 3. **Age rating**, category (Shopping), and copyright.
-
-6. **APNs key** uploaded via `eas credentials` before the production build,
+4. **APNs key** uploaded via `eas credentials` before the production build,
    then `eas build -p ios --profile production && eas submit -p ios`.
 
 Note: the app is a wholesale B2B catalogue with no in-app payment, so no
