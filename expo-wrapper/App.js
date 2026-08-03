@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  AppState,
   BackHandler,
   Linking,
   Platform,
@@ -12,7 +13,7 @@ import {
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
-import { usePreventScreenCapture } from 'expo-screen-capture';
+import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
@@ -83,7 +84,50 @@ async function registerForPushNotificationsAsync() {
 }
 
 export default function App() {
-  usePreventScreenCapture();
+  // Screenshot / screen-recording protection.
+  // Android: FLAG_SECURE blocks screenshots and recordings outright.
+  // iOS: the OS gives no way to block a screenshot, so we detect it and cover
+  // the content with a privacy shield the moment one is taken.
+  const [screenshotBlocked, setScreenshotBlocked] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const enable = () => {
+      ScreenCapture.preventScreenCaptureAsync('ss-global').catch(() => {});
+    };
+    enable();
+
+    // Re-assert on every foreground: some OEM flows drop the secure flag.
+    const appSub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') enable();
+    });
+
+    let captureSub = null;
+    (async () => {
+      try {
+        const perm = await ScreenCapture.requestPermissionsAsync?.();
+        if (perm && perm.status !== 'granted') return;
+      } catch {
+        /* not required on all platforms */
+      }
+      if (!mounted) return;
+      try {
+        captureSub = ScreenCapture.addScreenshotListener(() => {
+          setScreenshotBlocked(true);
+          setTimeout(() => setScreenshotBlocked(false), 4000);
+        });
+      } catch {
+        /* listener unavailable */
+      }
+    })();
+
+    return () => {
+      mounted = false;
+      appSub.remove();
+      captureSub?.remove?.();
+      ScreenCapture.allowScreenCaptureAsync('ss-global').catch(() => {});
+    };
+  }, []);
 
   const webViewRef = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
@@ -278,6 +322,15 @@ export default function App() {
                 }}
                 style={styles.webview}
               />
+              {screenshotBlocked && (
+                <View style={styles.shield}>
+                  <Text style={styles.shieldTitle}>Screenshots are not allowed</Text>
+                  <Text style={styles.shieldBody}>
+                    Sparkling Silver catalogue images and pricing are confidential.
+                    Please do not capture or record this screen.
+                  </Text>
+                </View>
+              )}
               {loading && (
                 <View style={styles.loadingOverlay} pointerEvents="none">
                   <ActivityIndicator size="large" color="#6D1F2E" />
@@ -304,6 +357,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FAF7F2',
+  },
+  shield: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    backgroundColor: '#6D1F2E',
+  },
+  shieldTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#ffffff',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  shieldBody: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#F3E6E9',
+    textAlign: 'center',
   },
   errorBox: {
     flex: 1,
