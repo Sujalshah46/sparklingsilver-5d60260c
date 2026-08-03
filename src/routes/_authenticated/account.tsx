@@ -8,10 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin, Bell, Globe, HelpCircle, Info, LogOut, ChevronRight,
-  ShoppingBag, Heart, Gift, UserCog, ShieldCheck
+  ShoppingBag, Heart, Gift, UserCog, ShieldCheck, Trash2, FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteOwnAccount } from "@/lib/account.functions";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: pageTitle("My Account") }] }),
