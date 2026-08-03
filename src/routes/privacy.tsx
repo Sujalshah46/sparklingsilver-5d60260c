@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
-import { WHATSAPP_NUMBER_DISPLAY } from "@/lib/site";
+import { WHATSAPP_NUMBER } from "@/lib/site";
 
 const TITLE = pageTitle("Privacy Policy");
 const DESC = pageDescription(
@@ -97,7 +97,7 @@ function PrivacyPage() {
         <p>
           You can request deletion of your buyer account and its associated personal data at any
           time. Email <strong>arikafactory@gmail.com</strong> or message us on WhatsApp at{" "}
-          <strong>{WHATSAPP_NUMBER_DISPLAY}</strong> from your registered contact, with the subject
+          <strong>{WHATSAPP_NUMBER}</strong> from your registered contact, with the subject
           "Delete my account".
         </p>
         <p>
@@ -125,7 +125,7 @@ function PrivacyPage() {
         <p>
           If this policy changes we will update the date above. For any privacy question, contact
           Sparkling Silver, Singur, Hooghly, West Bengal 712409, India — arikafactory@gmail.com,{" "}
-          {WHATSAPP_NUMBER_DISPLAY}.
+          {WHATSAPP_NUMBER}.
         </p>
       </Section>
     </main>

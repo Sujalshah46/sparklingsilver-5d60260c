@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
-import { WHATSAPP_NUMBER_DISPLAY } from "@/lib/site";
+import { WHATSAPP_NUMBER } from "@/lib/site";
 
 const TITLE = pageTitle("Terms of Use");
 const DESC = pageDescription(
@@ -92,7 +92,7 @@ function TermsPage() {
       <Section heading="Governing law and contact">
         <p>
           These terms are governed by the laws of India, with jurisdiction in West Bengal. Questions:
-          arikafactory@gmail.com or {WHATSAPP_NUMBER_DISPLAY}.
+          arikafactory@gmail.com or {WHATSAPP_NUMBER}.
         </p>
       </Section>
     </main>
