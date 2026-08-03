@@ -364,15 +364,22 @@ export default function App() {
                 }}
                 style={styles.webview}
               />
-              {screenshotBlocked && (
+              {captureShield && (
                 <View style={styles.shield}>
-                  <Text style={styles.shieldTitle}>Screenshots are not allowed</Text>
+                  <Text style={styles.shieldTitle}>
+                    {captureShield === 'recording'
+                      ? 'Screen recording is not allowed'
+                      : 'Screen capture is not allowed'}
+                  </Text>
                   <Text style={styles.shieldBody}>
                     Sparkling Silver catalogue images and pricing are confidential.
-                    Please do not capture or record this screen.
+                    {captureShield === 'recording'
+                      ? ' Stop the recording or mirroring session to continue browsing.'
+                      : ' Please do not capture or record this screen.'}
                   </Text>
                 </View>
               )}
+
               {loading && (
                 <View style={styles.loadingOverlay} pointerEvents="none">
                   <ActivityIndicator size="large" color="#6D1F2E" />
