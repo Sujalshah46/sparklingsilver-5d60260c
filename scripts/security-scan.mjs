@@ -50,6 +50,19 @@ function dependencyScan() {
     return;
   }
 
+  if (!report.vulnerabilities) {
+    const msg =
+      'dependency scan produced no vulnerability data (registry audit endpoint unavailable)';
+    if (process.env.SECURITY_SCAN_ALLOW_AUDIT_SKIP === '1') {
+      console.log(`dependency scan: SKIPPED — ${msg}`);
+      return;
+    }
+    failures.push(msg);
+    return;
+  }
+
+
+
   const vulns = Object.values(report.vulnerabilities ?? {}).filter((v) =>
     ['high', 'critical'].includes(v.severity),
   );
