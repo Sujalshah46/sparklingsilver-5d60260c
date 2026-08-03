@@ -93,20 +93,34 @@ Verified in code:
   location / mic / photo-library permissions are explicitly blocked.
 - Icon is 1024×1024 with no alpha channel; splash is 1284×2778.
 
+Done for you (no action needed):
+
+1. **Demo reviewer account** — a dedicated buyer account is live, with a fixed
+   password, profile already completed and a default delivery address, so the
+   reviewer lands straight on the catalogue (no onboarding, no forced password
+   change). Paste these into **App Review Information → Sign-In Required**:
+
+   ```
+   Email:    appstore.review@sparklingsilver.in
+   Password: AppleReview@2026
+   ```
+
+   Notes field suggestion: "Wholesale B2B catalogue. Accounts are created by the
+   admin; there is no public sign-up. No in-app payment — orders are quotes
+   fulfilled offline. Push notifications deliver order-status updates."
+   Do not delete or deactivate this account in Admin → Users.
+2. **App Privacy questionnaire** — exact answers are in
+   `expo-wrapper/APP-STORE-PRIVACY.md`; copy them field by field.
+3. **iPad** — `supportsTablet: false`, so **no iPad screenshots are required**.
+   Only 6.9" and 6.5" iPhone screenshots are needed.
+
 Still to do in App Store Connect (cannot be done from code):
 
-1. **Demo account in App Review notes.** The app is sign-in-only, so review
-   *will* be rejected without credentials. Paste a buyer username + password
-   (not the admin account) into "App Review Information → Sign-In required".
-2. **App Privacy questionnaire** — declare: Contact Info (name, email, phone,
-   address), Identifiers (device push token), Purchases/Order history,
-   Usage Data. Linked to identity, used for App Functionality. No tracking.
-3. **Screenshots** for 6.9" and 6.5" iPhone (and 12.9" iPad, since
-   `supportsTablet: true` — either provide iPad screenshots or set
-   `supportsTablet: false` before submitting).
-4. **Support URL** → `https://sparklingsilver.in/contact`,
+1. **Screenshots** for 6.9" and 6.5" iPhone.
+2. **Support URL** → `https://sparklingsilver.in/contact`,
    **Privacy Policy URL** → `https://sparklingsilver.in/privacy`.
-5. **Age rating**, category (Shopping), and copyright.
+3. **Age rating**, category (Shopping), and copyright.
+
 6. **APNs key** uploaded via `eas credentials` before the production build,
    then `eas build -p ios --profile production && eas submit -p ios`.
 
