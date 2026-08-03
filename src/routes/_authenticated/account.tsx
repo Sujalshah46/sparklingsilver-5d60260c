@@ -8,10 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   MapPin, Bell, Globe, HelpCircle, Info, LogOut, ChevronRight,
-  ShoppingBag, Heart, Gift, UserCog, ShieldCheck
+  ShoppingBag, Heart, Gift, UserCog, ShieldCheck, Trash2, FileText
 } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { deleteOwnAccount } from "@/lib/account.functions";
+import {
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from "@/components/ui/dialog";
+
 
 export const Route = createFileRoute("/_authenticated/account")({
   head: () => ({ meta: [{ title: pageTitle("My Account") }] }),
@@ -37,6 +44,21 @@ function AccountPage() {
     mutationFn: async () => { await supabase.auth.signOut(); },
     onSuccess: () => { toast.success("Signed out"); navigate({ to: "/", replace: true }); },
   });
+
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const requestDelete = useServerFn(deleteOwnAccount);
+  const deleteAccount = useMutation({
+    mutationFn: async () => { await requestDelete({ data: {} }); },
+    onSuccess: async () => {
+      setDeleteOpen(false);
+      toast.success("Your account has been deleted.");
+      await supabase.auth.signOut();
+      navigate({ to: "/", replace: true });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Could not delete account"),
+  });
+
 
   const initials = (profile?.full_name || user?.email || "U").split(" ").map((s) => s[0]).join("").slice(0, 2).toUpperCase();
 
@@ -68,6 +90,8 @@ function AccountPage() {
 
         <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
+          <Row to="/privacy" icon={ShieldCheck} label="Privacy Policy" />
+          <Row to="/terms" icon={FileText} label="Terms of Use" />
           <Row icon={Info} label="About Sparkling Silver" hint="v1.0" />
         </section>
 
@@ -86,6 +110,41 @@ function AccountPage() {
           <LogOut className="mr-2 h-4 w-4" /> Sign Out
         </Button>
 
+        {!isAdmin && (
+          <Button
+            variant="ghost"
+            className="mt-2 w-full text-xs text-muted-foreground hover:text-destructive"
+            onClick={() => setDeleteOpen(true)}
+          >
+            <Trash2 className="mr-2 h-3.5 w-3.5" /> Delete my account
+          </Button>
+        )}
+
+        <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete your account?</DialogTitle>
+              <DialogDescription>
+                This closes your Sparkling Silver account permanently. Your cart, wishlist
+                and saved details are removed and you will no longer be able to sign in.
+                Past order records are kept only as required for tax and accounting law.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDeleteOpen(false)}>
+                Keep my account
+              </Button>
+              <Button
+                variant="destructive"
+                disabled={deleteAccount.isPending}
+                onClick={() => deleteAccount.mutate()}
+              >
+                {deleteAccount.isPending ? "Deleting…" : "Delete account"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <p className="mt-6 text-center text-[11px] text-muted-foreground">
           Sparkling Silver · BIS Hallmarked · Made with love in India
         </p>
@@ -93,6 +152,7 @@ function AccountPage() {
     </MobileShell>
   );
 }
+
 
 function QuickLink({ to, icon: Icon, label }: { to: string; icon: typeof MapPin; label: string }) {
   return (

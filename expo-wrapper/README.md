@@ -68,3 +68,48 @@ Before submitting:
   push tokens are not issued in Expo Go on iOS).
 - Optional: set an `EXPO_ACCESS_TOKEN` secret in the backend to use an authenticated
   Expo push channel with higher rate limits.
+
+## iOS App Store submission checklist
+
+Verified in code:
+
+- **Guideline 4.2 (minimum functionality)** — native push notifications
+  (`expo-notifications`), Expo push token registration, Android notification
+  channel, notification-tap deep linking, badge clearing, native back-gesture /
+  hardware-back handling, pull-to-refresh, and screen-capture protection.
+- **Guideline 2.1 (completeness)** — offline / server-error screen with a
+  "Try again" button instead of a blank WebView, plus a launch spinner.
+- **External links** — `wa.me`, `tel:`, `mailto:` and Instagram open in the
+  system app via `Linking` (`onShouldStartLoadWithRequest` + `onOpenWindow`);
+  first-party hosts stay in the WebView.
+- **Guideline 5.1.1(v) (account deletion)** — Account → "Delete my account"
+  deletes the buyer account in-app (no email/phone step required).
+- **Guideline 5.1.1 / 5.1.2 (privacy)** — `/privacy` and `/terms` are
+  reachable without signing in and linked from the sign-in footer and the
+  Account screen.
+- **Encryption** — `ITSAppUsesNonExemptEncryption: false` is set, so no export
+  compliance questionnaire on each upload.
+- **Permissions** — only camera (with a usage string) and notifications;
+  location / mic / photo-library permissions are explicitly blocked.
+- Icon is 1024×1024 with no alpha channel; splash is 1284×2778.
+
+Still to do in App Store Connect (cannot be done from code):
+
+1. **Demo account in App Review notes.** The app is sign-in-only, so review
+   *will* be rejected without credentials. Paste a buyer username + password
+   (not the admin account) into "App Review Information → Sign-In required".
+2. **App Privacy questionnaire** — declare: Contact Info (name, email, phone,
+   address), Identifiers (device push token), Purchases/Order history,
+   Usage Data. Linked to identity, used for App Functionality. No tracking.
+3. **Screenshots** for 6.9" and 6.5" iPhone (and 12.9" iPad, since
+   `supportsTablet: true` — either provide iPad screenshots or set
+   `supportsTablet: false` before submitting).
+4. **Support URL** → `https://sparklingsilver.in/contact`,
+   **Privacy Policy URL** → `https://sparklingsilver.in/privacy`.
+5. **Age rating**, category (Shopping), and copyright.
+6. **APNs key** uploaded via `eas credentials` before the production build,
+   then `eas build -p ios --profile production && eas submit -p ios`.
+
+Note: the app is a wholesale B2B catalogue with no in-app payment, so no
+In-App Purchase is required (Guideline 3.1.1 does not apply — orders are
+quotes fulfilled offline). Keep it that way, or IAP rules kick in.
