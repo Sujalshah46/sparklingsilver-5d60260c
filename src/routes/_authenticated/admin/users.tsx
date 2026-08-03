@@ -8,11 +8,13 @@ import {
   adminListResetRequests,
   adminCreateUser,
   adminResetPassword,
+  adminSetPassword,
   adminSetUserStatus,
   adminSendCredentials,
   adminResolveResetRequest,
   adminDeleteUser,
 } from "@/lib/users.functions";
+
 import { MobileShell } from "@/components/MobileShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,12 +115,28 @@ function AdminUsersPage() {
 
 function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; onShowCreds: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
   const reset = useServerFn(adminResetPassword);
+  const setPassword = useServerFn(adminSetPassword);
   const setStatus = useServerFn(adminSetUserStatus);
   const del = useServerFn(adminDeleteUser);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwValue, setPwValue] = useState("");
+
+  const onSetPassword = async () => {
+    setBusy(true);
+    try {
+      await setPassword({ data: { user_id: u.id, password: pwValue, force_change: false } });
+      toast.success("Password set");
+      setPwOpen(false);
+      setPwValue("");
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
 
   const onReset = async () => {
+
     setBusy(true);
     try {
       const r = await reset({ data: { user_id: u.id } });
@@ -170,6 +188,12 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
       </div>
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={busy} onClick={onReset}><KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password</Button>
+        {!u.is_admin && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => setPwOpen(true)}>
+            <KeyRound className="mr-1 h-3.5 w-3.5" /> Set password
+          </Button>
+        )}
+
         <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
           <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
         </Button>
@@ -185,8 +209,36 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           </Button>
         )}
       </div>
+      <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set an exact password</DialogTitle>
+            <DialogDescription>
+              Use this for stable logins such as the App Store / Play Store review
+              demo account. The user will not be asked to change it on first login.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor={`pw-${u.id}`}>New password (min 8 characters)</Label>
+            <Input
+              id={`pw-${u.id}`}
+              value={pwValue}
+              onChange={(e) => setPwValue(e.target.value)}
+              placeholder="e.g. AppleReview@2026"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwOpen(false)} disabled={busy}>Cancel</Button>
+            <Button onClick={onSetPassword} disabled={busy || pwValue.trim().length < 8}>
+              Save password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
+
           <DialogHeader>
             <DialogTitle>Delete this user?</DialogTitle>
             <DialogDescription>

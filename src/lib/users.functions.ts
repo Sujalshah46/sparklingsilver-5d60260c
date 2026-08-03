@@ -90,7 +90,45 @@ export const adminCreateUser = createServerFn({ method: "POST" })
     return { ok: true, user_id: created.user.id, username, email: data.email, password };
   });
 
+/**
+ * Set an exact password for a buyer account (used for stable logins such as the
+ * App Store / Play Store review demo account). Optionally skips the
+ * force-change-on-first-login step so the reviewer lands straight in the app.
+ */
+export const adminSetPassword = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        password: z.string().min(8).max(72),
+        force_change: z.boolean().optional(),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await ensureAdmin(supabase, userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await supabaseAdmin.auth.admin.updateUserById(data.user_id, {
+      password: data.password,
+    });
+    if (error) throw new Error(error.message);
+    await supabaseAdmin
+      .from("profiles")
+      .update({ must_change_password: data.force_change ?? false })
+      .eq("id", data.user_id);
+    await supabaseAdmin.from("user_activity_log").insert({
+      user_id: data.user_id,
+      actor_id: userId,
+      action: "admin_set_password",
+      meta: { force_change: data.force_change ?? false },
+    });
+    return { ok: true };
+  });
+
 export const adminResetPassword = createServerFn({ method: "POST" })
+
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
