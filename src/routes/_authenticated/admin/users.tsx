@@ -209,7 +209,34 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           </Button>
         )}
       </div>
-      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+      <Dialog open={pwOpen} onOpenChange={setPwOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Set an exact password</DialogTitle>
+            <DialogDescription>
+              Use this for stable logins such as the App Store / Play Store review
+              demo account. The user will not be asked to change it on first login.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor={`pw-${u.id}`}>New password (min 8 characters)</Label>
+            <Input
+              id={`pw-${u.id}`}
+              value={pwValue}
+              onChange={(e) => setPwValue(e.target.value)}
+              placeholder="e.g. AppleReview@2026"
+              autoComplete="off"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPwOpen(false)} disabled={busy}>Cancel</Button>
+            <Button onClick={onSetPassword} disabled={busy || pwValue.trim().length < 8}>
+              Save password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete this user?</DialogTitle>
