@@ -1,8 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   BackHandler,
+  Linking,
   Platform,
+  Pressable,
   StyleSheet,
+  Text,
   View,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
@@ -14,6 +18,28 @@ import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 
 const SITE_URL = 'https://sparklingsilver.in';
+// Hosts that stay inside the WebView (the app itself + its auth/CDN origins).
+const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
+
+function isInternalUrl(url) {
+  try {
+    const { protocol, hostname } = new URL(url);
+    if (protocol !== 'http:' && protocol !== 'https:') return false;
+    return INTERNAL_HOST_SUFFIXES.some(
+      (h) => hostname === h || hostname.endsWith(`.${h}`),
+    );
+  } catch {
+    return false;
+  }
+}
+
+async function openExternal(url) {
+  try {
+    await Linking.openURL(url);
+  } catch (err) {
+    console.warn('could not open url externally', url, err);
+  }
+}
 
 // Native foreground presentation — real OS notifications, not web push.
 Notifications.setNotificationHandler({
@@ -62,6 +88,9 @@ export default function App() {
   const webViewRef = useRef(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [pushToken, setPushToken] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const webReadyRef = useRef(false);
   const pendingUrlRef = useRef(null);
 
@@ -162,37 +191,100 @@ export default function App() {
     [post, pushToken, sendToken],
   );
 
+  // WhatsApp / tel: / mailto: / Instagram must leave the WebView, otherwise
+  // those buttons silently do nothing (a common App Review rejection).
+  const onShouldStartLoad = useCallback((request) => {
+    const url = request?.url ?? '';
+    if (!url || url === 'about:blank') return true;
+    if (isInternalUrl(url)) return true;
+    openExternal(url);
+    return false;
+  }, []);
+
+  const retry = useCallback(() => {
+    setLoadError(null);
+    setLoading(true);
+    webReadyRef.current = false;
+    setReloadKey((k) => k + 1);
+  }, []);
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
         <StatusBar style="dark" />
         <View style={styles.contentContainer}>
-          <WebView
-            ref={webViewRef}
-            source={{ uri: SITE_URL }}
-            originWhitelist={['*']}
-            javaScriptEnabled
-            domStorageEnabled
-            databaseEnabled
-            cacheEnabled={true}
-            cacheMode="LOAD_DEFAULT"
-            sharedCookiesEnabled
-            thirdPartyCookiesEnabled
-            allowsBackForwardNavigationGestures
-            pullToRefreshEnabled={true}
-            androidHardwareAccelerationDisabled={false}
-            overScrollMode="never"
-            showsVerticalScrollIndicator={false}
-            showsHorizontalScrollIndicator={false}
-            startInLoadingState={false}
-            onMessage={onWebMessage}
-            onNavigationStateChange={(nav) => {
-              setCanGoBack(nav.canGoBack);
-              // A full page load resets the injected bridge state.
-              if (nav.loading) webReadyRef.current = false;
-            }}
-            style={styles.webview}
-          />
+          {loadError ? (
+            <View style={styles.errorBox}>
+              <Text style={styles.errorTitle}>Can’t reach Sparkling Silver</Text>
+              <Text style={styles.errorBody}>
+                Please check your internet connection and try again.
+              </Text>
+              <Pressable style={styles.retryBtn} onPress={retry} accessibilityRole="button">
+                <Text style={styles.retryText}>Try again</Text>
+              </Pressable>
+            </View>
+          ) : (
+            <>
+              <WebView
+                key={reloadKey}
+                ref={webViewRef}
+                source={{ uri: SITE_URL }}
+                originWhitelist={['*']}
+                javaScriptEnabled
+                domStorageEnabled
+                databaseEnabled
+                cacheEnabled={true}
+                cacheMode="LOAD_DEFAULT"
+                sharedCookiesEnabled
+                thirdPartyCookiesEnabled
+                allowsBackForwardNavigationGestures
+                pullToRefreshEnabled={true}
+                androidHardwareAccelerationDisabled={false}
+                overScrollMode="never"
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+                startInLoadingState={false}
+                setSupportMultipleWindows={false}
+                onMessage={onWebMessage}
+                onShouldStartLoadWithRequest={onShouldStartLoad}
+                onOpenWindow={(event) => {
+                  const url = event?.nativeEvent?.targetUrl;
+                  if (!url) return;
+                  if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
+                    `window.location.assign(${JSON.stringify(url)});true;`,
+                  );
+                  else openExternal(url);
+                }}
+                onLoadStart={() => setLoading(true)}
+                onLoadEnd={() => setLoading(false)}
+                onError={({ nativeEvent }) => {
+                  setLoading(false);
+                  setLoadError(nativeEvent?.description ?? 'load failed');
+                }}
+                onHttpError={({ nativeEvent }) => {
+                  // Only a failed main-document load should surface the error UI.
+                  if (
+                    nativeEvent?.url?.startsWith(SITE_URL) &&
+                    nativeEvent?.statusCode >= 500
+                  ) {
+                    setLoading(false);
+                    setLoadError(`server error ${nativeEvent.statusCode}`);
+                  }
+                }}
+                onNavigationStateChange={(nav) => {
+                  setCanGoBack(nav.canGoBack);
+                  // A full page load resets the injected bridge state.
+                  if (nav.loading) webReadyRef.current = false;
+                }}
+                style={styles.webview}
+              />
+              {loading && (
+                <View style={styles.loadingOverlay} pointerEvents="none">
+                  <ActivityIndicator size="large" color="#6D1F2E" />
+                </View>
+              )}
+            </>
+          )}
         </View>
       </SafeAreaView>
     </SafeAreaProvider>
@@ -203,4 +295,41 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   contentContainer: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1, backgroundColor: '#ffffff' },
+  loadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FAF7F2',
+  },
+  errorBox: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 32,
+    backgroundColor: '#FAF7F2',
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1f1f1f',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  errorBody: {
+    fontSize: 14,
+    color: '#5b5b5b',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryBtn: {
+    backgroundColor: '#6D1F2E',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 999,
+  },
+  retryText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
 });
