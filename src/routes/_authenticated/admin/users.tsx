@@ -115,12 +115,28 @@ function AdminUsersPage() {
 
 function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; onShowCreds: (c: { username: string; email: string; password: string; user_id: string }) => void }) {
   const reset = useServerFn(adminResetPassword);
+  const setPassword = useServerFn(adminSetPassword);
   const setStatus = useServerFn(adminSetUserStatus);
   const del = useServerFn(adminDeleteUser);
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pwOpen, setPwOpen] = useState(false);
+  const [pwValue, setPwValue] = useState("");
+
+  const onSetPassword = async () => {
+    setBusy(true);
+    try {
+      await setPassword({ data: { user_id: u.id, password: pwValue, force_change: false } });
+      toast.success("Password set");
+      setPwOpen(false);
+      setPwValue("");
+      onDone();
+    } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
+    finally { setBusy(false); }
+  };
 
   const onReset = async () => {
+
     setBusy(true);
     try {
       const r = await reset({ data: { user_id: u.id } });
