@@ -188,6 +188,12 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
       </div>
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={busy} onClick={onReset}><KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password</Button>
+        {!u.is_admin && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => setPwOpen(true)}>
+            <KeyRound className="mr-1 h-3.5 w-3.5" /> Set password
+          </Button>
+        )}
+
         <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
           <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
         </Button>
