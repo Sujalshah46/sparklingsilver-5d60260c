@@ -6,15 +6,29 @@ import webpush from "web-push";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 let configured = false;
+let webPushReady = false;
+/**
+ * Configures web-push. Never throws: missing VAPID keys must not stop native
+ * (Expo) notifications from going out.
+ */
 function configure() {
   if (configured) return;
-  webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT || "mailto:admin@sparklingjewellers.com",
-    process.env.VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!,
-  );
   configured = true;
+  try {
+    const pub = process.env.VAPID_PUBLIC_KEY;
+    const priv = process.env.VAPID_PRIVATE_KEY;
+    if (!pub || !priv) return;
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || "mailto:admin@sparklingjewellers.com",
+      pub,
+      priv,
+    );
+    webPushReady = true;
+  } catch (err) {
+    console.error("web-push configure failed", err);
+  }
 }
+
 
 type Payload = { title: string; body: string; url?: string; tag?: string };
 
