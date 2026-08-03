@@ -1,0 +1,5 @@
+{
+  "_comment": "Reviewed exceptions for scripts/security-scan.mjs. 'advisories' = npm package names with an accepted high/critical advisory. 'secretMatches' = repo-relative files exempt from the secret-exposure grep. Keep both lists empty unless a finding has been explicitly reviewed.",
+  "advisories": [],
+  "secretMatches": []
+}

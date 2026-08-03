@@ -1,0 +1,46 @@
+name: Security Gate
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'expo-wrapper/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'scripts/security-scan.mjs'
+      - '.github/workflows/security-scan.yml'
+  pull_request:
+    paths:
+      - 'expo-wrapper/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'package-lock.json'
+      - 'src/**'
+      - 'scripts/security-scan.mjs'
+      - '.github/workflows/security-scan.yml'
+  workflow_call:
+
+jobs:
+  security-gate:
+    name: Dependency + secret-exposure scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: 📥 Install dependencies (no scripts)
+        run: npm ci --ignore-scripts || npm install --ignore-scripts --no-audit --no-fund
+
+      - name: 🔒 Run security gate
+        run: node scripts/security-scan.mjs
+
+      - name: 🔒 Run security gate for mobile wrapper
+        working-directory: expo-wrapper
+        run: npm audit --omit=dev --audit-level=high
