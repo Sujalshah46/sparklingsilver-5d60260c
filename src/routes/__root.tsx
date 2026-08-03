@@ -191,6 +191,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <OnboardingGate />
+      <NativePushBridge />
+
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );
