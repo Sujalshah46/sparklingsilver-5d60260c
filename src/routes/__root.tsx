@@ -10,6 +10,8 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { OnboardingGate } from "@/components/OnboardingGate";
+import { NativePushBridge } from "@/components/NativePushBridge";
+
 
 
 import { supabase } from "@/integrations/supabase/client";
@@ -189,6 +191,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <Outlet />
       <OnboardingGate />
+      <NativePushBridge />
+
       <Toaster position="top-center" richColors />
     </QueryClientProvider>
   );

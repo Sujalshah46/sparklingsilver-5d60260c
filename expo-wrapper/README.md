@@ -44,3 +44,27 @@ eas build -p android --profile preview
 - Pull-to-refresh and Android hardware back are wired up.
 - Cookies and localStorage persist, so login on the web app carries over.
 - If you change `SITE_URL` in `App.js`, restart the dev server.
+
+## Native push notifications (satisfies iOS Guideline 4.2)
+
+The wrapper now registers for real OS notifications through `expo-notifications`
+(APNs on iOS, FCM on Android) — web push inside a WebView never fires on iOS.
+
+Flow:
+1. On launch the app asks for the notification permission and fetches an Expo push token.
+2. The token is injected into the WebView; `NativePushBridge` in the web app saves it
+   against the signed-in user (`expo_push_tokens` table).
+3. Server-side order events call `notifyAdmins` / `notifyUser`, which fan out to
+   Expo's push service (and web push for desktop browsers).
+4. Tapping a notification deep-links into the right page inside the WebView, and the
+   app badge is cleared on open.
+
+Before submitting:
+- `cd expo-wrapper && npm install`
+- iOS: create an APNs key in the Apple Developer portal and upload it with
+  `eas credentials` (Expo needs it to deliver to production builds).
+- Android: EAS provisions FCM automatically for managed credentials.
+- Build with `eas build -p ios` / `eas build -p android` (a dev-client or store build —
+  push tokens are not issued in Expo Go on iOS).
+- Optional: set an `EXPO_ACCESS_TOKEN` secret in the backend to use an authenticated
+  Expo push channel with higher rate limits.
