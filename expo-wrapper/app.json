@@ -25,7 +25,10 @@
       },
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "Camera access is used to scan product barcodes and QR codes in the admin catalogue tools."
+        "NSCameraUsageDescription": "Camera access is used to scan product barcodes and QR codes in the admin catalogue tools.",
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -36,8 +39,11 @@
       "package": "com.sparklingsilver.app",
       "versionCode": 1,
       "permissions": [
+        "android.permission.CAMERA",
         "android.permission.INTERNET",
-        "android.permission.CAMERA"
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE"
       ],
       "blockedPermissions": [
         "android.permission.RECORD_AUDIO",
@@ -45,7 +51,8 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE"
-      ]
+      ],
+      "useNextNotificationsApi": true
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -54,6 +61,21 @@
       "eas": {
         "projectId": "417fc100-3d56-45d9-9208-01dd5c241e31"
       }
-    }
+    },
+    "notification": {
+      "icon": "./assets/adaptive-icon.png",
+      "color": "#6D1F2E",
+      "iosDisplayInForeground": true
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/adaptive-icon.png",
+          "color": "#6D1F2E",
+          "mode": "production"
+        }
+      ]
+    ]
   }
 }
