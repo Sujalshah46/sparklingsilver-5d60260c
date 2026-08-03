@@ -44,3 +44,40 @@ export const removePushSubscription = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+/** Native (Expo) device token registration — used by the iOS/Android wrapper. */
+const expoInput = z.object({
+  token: z.string().min(10).max(300),
+  platform: z.string().max(20).optional().nullable(),
+  device_name: z.string().max(120).optional().nullable(),
+});
+
+export const saveExpoPushToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => expoInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.from("expo_push_tokens").upsert(
+      {
+        token: data.token,
+        user_id: context.userId,
+        platform: data.platform ?? null,
+        device_name: data.device_name ?? null,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "token" },
+    );
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const removeExpoPushToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ token: z.string().min(10).max(300) }).parse(d))
+  .handler(async ({ data, context }) => {
+    await context.supabase
+      .from("expo_push_tokens")
+      .delete()
+      .eq("token", data.token)
+      .eq("user_id", context.userId);
+    return { ok: true };
+  });
