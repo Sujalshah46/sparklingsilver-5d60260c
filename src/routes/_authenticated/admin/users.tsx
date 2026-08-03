@@ -236,8 +236,9 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
         <DialogContent>
+
           <DialogHeader>
             <DialogTitle>Delete this user?</DialogTitle>
             <DialogDescription>
