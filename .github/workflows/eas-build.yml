@@ -8,9 +8,14 @@ on:
       - 'expo-wrapper/**'
 
 jobs:
+  security-gate:
+    uses: ./.github/workflows/security-scan.yml
+
   build:
+    needs: security-gate
     runs-on: ubuntu-latest
     steps:
+
       - name: 🏗 Checkout repository
         uses: actions/checkout@v4
 
