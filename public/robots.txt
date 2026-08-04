@@ -25,7 +25,10 @@ Disallow: /search?*
 Disallow: /upload
 Disallow: /dashboard
 Disallow: /tmp-*
+Allow: /sitemap.xml
 Disallow: /*.json
+Disallow: /*.xml
+
 
 # Specific rules for aggressive bots
 User-agent: MJ12bot
