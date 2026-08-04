@@ -45,6 +45,7 @@ Disallow: /
 
 # Rate limiting
 Crawl-delay: 1
+Request-rate: 1/10s
 
 # Sitemap location
 Sitemap: https://www.sparklingsilver.in/sitemap.xml
