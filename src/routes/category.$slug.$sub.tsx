@@ -254,15 +254,19 @@ function SubcategoryPage() {
         {items.length === 0 ? (
           <p className="py-20 text-center text-[#888]">No products in this subcategory yet.</p>
         ) : (
-          <div ref={gridRef} className={gridClass}>
-            {items.map((p, i) => (
-              <div key={p.id} data-card data-idx={i}>
-                <CatalogueCard p={p} compact={view === "compact"} priority={i < 2} />
-              </div>
-            ))}
-          </div>
+          <>
+            <div ref={gridRef} className={gridClass}>
+              {shown.map((p, i) => (
+                <div key={p.id} data-card data-idx={i}>
+                  <CatalogueCard p={p} compact={view === "compact"} priority={i < 2} />
+                </div>
+              ))}
+            </div>
+            {renderCount < items.length && <div ref={sentinelRef} className="h-16" aria-hidden />}
+          </>
         )}
       </div>
+
 
       {total > 0 && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[112px] z-20 flex justify-center">
