@@ -144,6 +144,12 @@ function RootComponent() {
   const router = useRouter();
 
   useEffect(() => {
+    void import("@/lib/performance").then((m) => m.logPerformanceMetrics());
+  }, []);
+
+
+
+  useEffect(() => {
     let cancelled = false;
 
     const enforceAuth = async () => {
