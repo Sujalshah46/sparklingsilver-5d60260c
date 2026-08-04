@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
+import { CARD_COLUMNS } from "@/lib/product-columns";
 import {
   Sheet,
   SheetContent,
