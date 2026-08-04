@@ -147,6 +147,23 @@ function SubcategoryPage() {
     return arr;
   }, [data, sort, filters]);
 
+  // Windowed rendering: mount cards in chunks instead of all 500 at once.
+  const CHUNK = 48;
+  const [renderCount, setRenderCount] = useState(CHUNK);
+  useEffect(() => { setRenderCount(CHUNK); }, [items.length, sort, filters]);
+  const shown = useMemo(() => items.slice(0, renderCount), [items, renderCount]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || renderCount >= items.length) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) setRenderCount((c) => Math.min(c + CHUNK, items.length));
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [renderCount, items.length]);
+
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   useEffect(() => {
@@ -164,7 +181,7 @@ function SubcategoryPage() {
     }, { threshold: 0.3 });
     cards.forEach((c) => io.observe(c));
     return () => io.disconnect();
-  }, [items.length, view]);
+  }, [shown.length, view]);
 
   if (!data) return null;
 
