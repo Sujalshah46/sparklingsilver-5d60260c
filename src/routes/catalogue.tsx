@@ -47,7 +47,7 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
       const visibleIds = categories.map((c) => c.id);
       let qb = supabase
         .from("products")
-        .select("*", { count: "exact" })
+        .select(CARD_COLUMNS, { count: "exact" })
         .in("category_id", visibleIds);
       if (onlyNew) {
         qb = qb.eq("homepage_featured", true).order("homepage_featured_order", { ascending: true });
