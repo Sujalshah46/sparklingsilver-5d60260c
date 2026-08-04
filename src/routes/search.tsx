@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CARD_COLUMNS } from "@/lib/product-columns";
 import { MobileShell } from "@/components/MobileShell";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X } from "lucide-react";
@@ -46,11 +47,11 @@ function SearchPage() {
       const hiddenIds = (hiddenCats ?? []).map((c) => c.id as string);
       let query = supabase
         .from("products")
-        .select("*")
+        .select(CARD_COLUMNS)
         .or(`name.ilike.${pattern},sku.ilike.${pattern},description.ilike.${pattern}`);
       if (hiddenIds.length) query = query.not("category_id", "in", `(${hiddenIds.join(",")})`);
-      const { data } = await query;
-      return (data ?? []) as ProductCardData[];
+      const { data } = await query.limit(60);
+      return (data ?? []) as unknown as ProductCardData[];
     },
   });
 

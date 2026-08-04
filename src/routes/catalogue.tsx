@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategoryTile } from "@/components/CategoryTile";
 import { PREMIUM_CATEGORY_IMAGES, resolveProductImage } from "@/lib/product-images";
+import { CARD_COLUMNS } from "@/lib/product-columns";
 import { useQuery } from "@tanstack/react-query";
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
@@ -47,7 +48,7 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
       const visibleIds = categories.map((c) => c.id);
       let qb = supabase
         .from("products")
-        .select("*", { count: "exact" })
+        .select(CARD_COLUMNS, { count: "exact" })
         .in("category_id", visibleIds);
       if (onlyNew) {
         qb = qb.eq("homepage_featured", true).order("homepage_featured_order", { ascending: true });

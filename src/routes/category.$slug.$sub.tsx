@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
+import { CARD_COLUMNS } from "@/lib/product-columns";
 import {
   Sheet,
   SheetContent,
@@ -39,14 +40,14 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
       if (!sub) return null;
       const { data: products } = await supabase
         .from("products")
-        .select("*")
+        .select(CARD_COLUMNS)
         .eq("category_id", cat.id as string)
         .eq("subcategory_id", sub.id as string)
         .limit(500);
       return {
         category: cat,
         subcategory: sub,
-        products: (products ?? []) as CatalogueCardData[],
+        products: (products ?? []) as unknown as CatalogueCardData[],
       };
     },
   });
@@ -146,6 +147,23 @@ function SubcategoryPage() {
     return arr;
   }, [data, sort, filters]);
 
+  // Windowed rendering: mount cards in chunks instead of all 500 at once.
+  const CHUNK = 48;
+  const [renderCount, setRenderCount] = useState(CHUNK);
+  useEffect(() => { setRenderCount(CHUNK); }, [items.length, sort, filters]);
+  const shown = useMemo(() => items.slice(0, renderCount), [items, renderCount]);
+
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || renderCount >= items.length) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0]?.isIntersecting) setRenderCount((c) => Math.min(c + CHUNK, items.length));
+    }, { rootMargin: "600px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [renderCount, items.length]);
+
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   useEffect(() => {
@@ -163,7 +181,7 @@ function SubcategoryPage() {
     }, { threshold: 0.3 });
     cards.forEach((c) => io.observe(c));
     return () => io.disconnect();
-  }, [items.length, view]);
+  }, [shown.length, view]);
 
   if (!data) return null;
 
@@ -236,15 +254,19 @@ function SubcategoryPage() {
         {items.length === 0 ? (
           <p className="py-20 text-center text-[#888]">No products in this subcategory yet.</p>
         ) : (
-          <div ref={gridRef} className={gridClass}>
-            {items.map((p, i) => (
-              <div key={p.id} data-card data-idx={i}>
-                <CatalogueCard p={p} compact={view === "compact"} priority={i < 2} />
-              </div>
-            ))}
-          </div>
+          <>
+            <div ref={gridRef} className={gridClass}>
+              {shown.map((p, i) => (
+                <div key={p.id} data-card data-idx={i}>
+                  <CatalogueCard p={p} compact={view === "compact"} priority={i < 2} />
+                </div>
+              ))}
+            </div>
+            {renderCount < items.length && <div ref={sentinelRef} className="h-16" aria-hidden />}
+          </>
         )}
       </div>
+
 
       {total > 0 && (
         <div className="pointer-events-none fixed inset-x-0 bottom-[112px] z-20 flex justify-center">

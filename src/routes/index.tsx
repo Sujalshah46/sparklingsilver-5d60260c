@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CARD_COLUMNS } from "@/lib/product-columns";
 import { MobileShell } from "@/components/MobileShell";
 
 import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCard";
@@ -28,7 +29,7 @@ const homeQuery = queryOptions({
     const [featuredRes, categoriesRes, countsRes] = await Promise.all([
       supabase
         .from("products")
-        .select("*")
+        .select(CARD_COLUMNS)
         .eq("homepage_featured", true)
         .order("homepage_featured_order", { ascending: true })
         .limit(10),
