@@ -28,6 +28,8 @@ Disallow: /tmp-*
 Allow: /sitemap.xml
 Disallow: /*.json
 Disallow: /*.xml
+Crawl-delay: 1
+Request-rate: 1/10s
 
 
 # Specific rules for aggressive bots
