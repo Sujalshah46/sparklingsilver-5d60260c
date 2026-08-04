@@ -40,14 +40,14 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
       if (!sub) return null;
       const { data: products } = await supabase
         .from("products")
-        .select("*")
+        .select(CARD_COLUMNS)
         .eq("category_id", cat.id as string)
         .eq("subcategory_id", sub.id as string)
         .limit(500);
       return {
         category: cat,
         subcategory: sub,
-        products: (products ?? []) as CatalogueCardData[],
+        products: (products ?? []) as unknown as CatalogueCardData[],
       };
     },
   });
