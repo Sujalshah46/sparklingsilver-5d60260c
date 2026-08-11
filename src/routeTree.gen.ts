@@ -197,12 +197,16 @@ const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
   id: '/users',
   path: '/users',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/admin/users.lazy').then((d) => d.Route),
+)
 const AuthenticatedAdminScanRoute = AuthenticatedAdminScanRouteImport.update({
   id: '/scan',
   path: '/scan',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_authenticated/admin/scan.lazy').then((d) => d.Route),
+)
 const AuthenticatedAdminReportsRoute =
   AuthenticatedAdminReportsRouteImport.update({
     id: '/reports',
@@ -226,7 +230,9 @@ const AuthenticatedAdminInventoryRoute =
     id: '/inventory',
     path: '/inventory',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/inventory.lazy').then((d) => d.Route),
+  )
 const AuthenticatedAdminImageQualityPreviewRoute =
   AuthenticatedAdminImageQualityPreviewRouteImport.update({
     id: '/image-quality-preview',
@@ -250,19 +256,31 @@ const AuthenticatedAdminCategoriesRoute =
     id: '/categories',
     path: '/categories',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/categories.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AuthenticatedAdminProductsIndexRoute =
   AuthenticatedAdminProductsIndexRouteImport.update({
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedAdminProductsRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/products.index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AuthenticatedAdminOrdersIndexRoute =
   AuthenticatedAdminOrdersIndexRouteImport.update({
     id: '/orders/',
     path: '/orders/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/orders.index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ApiPublicHooksLowStockDigestRoute =
   ApiPublicHooksLowStockDigestRouteImport.update({
     id: '/api/public/hooks/low-stock-digest',
@@ -274,7 +292,11 @@ const AuthenticatedAdminProductsIdRoute =
     id: '/$id',
     path: '/$id',
     getParentRoute: () => AuthenticatedAdminProductsRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/products.$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const AuthenticatedAdminOrdersIdRoute =
   AuthenticatedAdminOrdersIdRouteImport.update({
     id: '/orders/$id',
