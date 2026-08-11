@@ -188,7 +188,7 @@ function AdminDashboard() {
             <QuickAction to="/admin/image-backfill" icon={Images} label="Image variants" badge={stats?.missingVariantsCount} />
             <QuickAction to="/admin/users" icon={UserCog} label="Buyer accounts" />
             <QuickAction to="/admin/reports" icon={FileSpreadsheet} label="Reports" />
-            <QuickAction to="/admin/pipeline/upscale" icon={ScanLine} label="Upscale Pipeline" />
+            <QuickAction to="/admin/pipeline_upscale" icon={ScanLine} label="Upscale Pipeline" />
           </div>
         </div>
 
