@@ -31,7 +31,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { openWhatsAppUrl } from "@/lib/site";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/users")({
-  head: () => ({ meta: [{ title: pageTitle("Admin — Users") }] }),
   component: AdminUsersPage,
 });
 

@@ -17,7 +17,6 @@ import { adjustStock, bulkApplyInventory } from "@/lib/inventory.functions";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/inventory")({
-  head: () => ({ meta: [{ title: pageTitle("Admin — Inventory") }] }),
   component: InventoryPage,
 });
 
