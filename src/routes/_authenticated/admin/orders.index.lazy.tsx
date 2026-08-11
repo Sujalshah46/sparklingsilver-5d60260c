@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,7 +15,7 @@ import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup
 import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/admin/orders/")({
+export const Route = createLazyFileRoute("/_authenticated/admin/orders/")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Orders") }] }),
   component: AdminOrders,
 });

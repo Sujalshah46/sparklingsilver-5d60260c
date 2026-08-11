@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -15,7 +15,7 @@ import { setProductFlag } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
-export const Route = createFileRoute("/_authenticated/admin/products/")({
+export const Route = createLazyFileRoute("/_authenticated/admin/products/")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Products") }] }),
   component: ProductsAdmin,
 });
