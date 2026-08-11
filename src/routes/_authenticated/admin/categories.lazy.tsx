@@ -12,7 +12,6 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { setCategoryImage, clearCategoryImage } from "@/lib/categories.functions";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/categories")({
-  head: () => ({ meta: [{ title: pageTitle("Admin — Category Images") }] }),
   component: AdminCategories,
 });
 

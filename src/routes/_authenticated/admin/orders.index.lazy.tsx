@@ -16,7 +16,6 @@ import { resolveProductImage } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/orders/")({
-  head: () => ({ meta: [{ title: pageTitle("Admin — Orders") }] }),
   component: AdminOrders,
 });
 

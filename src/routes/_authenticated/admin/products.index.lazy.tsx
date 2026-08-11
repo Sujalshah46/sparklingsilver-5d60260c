@@ -16,7 +16,6 @@ import { getErrorMessage } from "@/lib/errors";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/products/")({
-  head: () => ({ meta: [{ title: pageTitle("Admin — Products") }] }),
   component: ProductsAdmin,
 });
 
