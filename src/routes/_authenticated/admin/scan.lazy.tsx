@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
 import { lookupByBarcode, scanAdjustStock, scanCreateProduct, scanEditProduct } from "@/lib/scan.functions";
 import { Camera, CameraOff, Minus, Plus, ScanLine, Search, PackagePlus, Pencil, X, Repeat } from "lucide-react";
 
-export const Route = createFileRoute("/_authenticated/admin/scan")({
+export const Route = createLazyFileRoute("/_authenticated/admin/scan")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Scan Inventory") }] }),
   component: ScanPage,
 });

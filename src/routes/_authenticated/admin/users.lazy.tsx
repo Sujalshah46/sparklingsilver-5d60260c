@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -30,7 +30,7 @@ import { formatDate } from "@/lib/format";
 import { supabase } from "@/integrations/supabase/client";
 import { openWhatsAppUrl } from "@/lib/site";
 
-export const Route = createFileRoute("/_authenticated/admin/users")({
+export const Route = createLazyFileRoute("/_authenticated/admin/users")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Users") }] }),
   component: AdminUsersPage,
 });

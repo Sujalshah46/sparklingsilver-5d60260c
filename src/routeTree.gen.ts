@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -36,12 +38,9 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as CategorySlugSubRouteImport } from './routes/category.$slug.$sub'
 import { Route as ApiPublicAdminBulkLinkImagesRouteImport } from './routes/api/public/admin-bulk-link-images'
 import { Route as AuthenticatedOrdersIdRouteImport } from './routes/_authenticated/orders.$id'
-import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin/users'
-import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin/reports'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
 import { Route as AuthenticatedAdminPipeline_upscaleRouteImport } from './routes/_authenticated/admin/pipeline_upscale'
-import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminImageQualityPreviewRouteImport } from './routes/_authenticated/admin/image-quality-preview'
 import { Route as AuthenticatedAdminImageBackfillRouteImport } from './routes/_authenticated/admin/image-backfill'
 import { Route as AuthenticatedAdminHomepageFeaturedRouteImport } from './routes/_authenticated/admin/homepage-featured'
@@ -54,6 +53,16 @@ import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminInventoryImportRouteImport } from './routes/_authenticated/admin/inventory.import'
 import { Route as AuthenticatedAdminInventoryAuditRouteImport } from './routes/_authenticated/admin/inventory.audit'
 import { Route as AuthenticatedAdminInventoryIdRouteImport } from './routes/_authenticated/admin/inventory.$id'
+
+const AuthenticatedAdminUsersLazyRouteImport = createFileRoute(
+  '/_authenticated/admin/users',
+)()
+const AuthenticatedAdminScanLazyRouteImport = createFileRoute(
+  '/_authenticated/admin/scan',
+)()
+const AuthenticatedAdminInventoryLazyRouteImport = createFileRoute(
+  '/_authenticated/admin/inventory',
+)()
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -177,6 +186,30 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminUsersLazyRoute =
+  AuthenticatedAdminUsersLazyRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/users.lazy').then((d) => d.Route),
+  )
+const AuthenticatedAdminScanLazyRoute =
+  AuthenticatedAdminScanLazyRouteImport.update({
+    id: '/scan',
+    path: '/scan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/scan.lazy').then((d) => d.Route),
+  )
+const AuthenticatedAdminInventoryLazyRoute =
+  AuthenticatedAdminInventoryLazyRouteImport.update({
+    id: '/inventory',
+    path: '/inventory',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/inventory.lazy').then((d) => d.Route),
+  )
 const CategorySlugSubRoute = CategorySlugSubRouteImport.update({
   id: '/category/$slug/$sub',
   path: '/category/$slug/$sub',
@@ -192,16 +225,6 @@ const AuthenticatedOrdersIdRoute = AuthenticatedOrdersIdRouteImport.update({
   id: '/orders/$id',
   path: '/orders/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminScanRoute = AuthenticatedAdminScanRouteImport.update({
-  id: '/scan',
-  path: '/scan',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
 const AuthenticatedAdminReportsRoute =
   AuthenticatedAdminReportsRouteImport.update({
@@ -219,12 +242,6 @@ const AuthenticatedAdminPipeline_upscaleRoute =
   AuthenticatedAdminPipeline_upscaleRouteImport.update({
     id: '/pipeline_upscale',
     path: '/pipeline_upscale',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminInventoryRoute =
-  AuthenticatedAdminInventoryRouteImport.update({
-    id: '/inventory',
-    path: '/inventory',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminImageQualityPreviewRoute =
@@ -285,19 +302,19 @@ const AuthenticatedAdminInventoryImportRoute =
   AuthenticatedAdminInventoryImportRouteImport.update({
     id: '/import',
     path: '/import',
-    getParentRoute: () => AuthenticatedAdminInventoryRoute,
+    getParentRoute: () => AuthenticatedAdminInventoryLazyRoute,
   } as any)
 const AuthenticatedAdminInventoryAuditRoute =
   AuthenticatedAdminInventoryAuditRouteImport.update({
     id: '/audit',
     path: '/audit',
-    getParentRoute: () => AuthenticatedAdminInventoryRoute,
+    getParentRoute: () => AuthenticatedAdminInventoryLazyRoute,
   } as any)
 const AuthenticatedAdminInventoryIdRoute =
   AuthenticatedAdminInventoryIdRouteImport.update({
     id: '/$id',
     path: '/$id',
-    getParentRoute: () => AuthenticatedAdminInventoryRoute,
+    getParentRoute: () => AuthenticatedAdminInventoryLazyRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -325,15 +342,15 @@ export interface FileRoutesByFullPath {
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
   '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
-  '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
-  '/admin/scan': typeof AuthenticatedAdminScanRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
+  '/admin/inventory': typeof AuthenticatedAdminInventoryLazyRouteWithChildren
+  '/admin/scan': typeof AuthenticatedAdminScanLazyRoute
+  '/admin/users': typeof AuthenticatedAdminUsersLazyRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
@@ -370,14 +387,14 @@ export interface FileRoutesByTo {
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
   '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
-  '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
-  '/admin/scan': typeof AuthenticatedAdminScanRoute
-  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
+  '/admin/inventory': typeof AuthenticatedAdminInventoryLazyRouteWithChildren
+  '/admin/scan': typeof AuthenticatedAdminScanLazyRoute
+  '/admin/users': typeof AuthenticatedAdminUsersLazyRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug': typeof CategorySlugIndexRoute
@@ -417,15 +434,15 @@ export interface FileRoutesById {
   '/_authenticated/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
   '/_authenticated/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/_authenticated/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
-  '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
   '/_authenticated/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
-  '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
-  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/orders/$id': typeof AuthenticatedOrdersIdRoute
   '/api/public/admin-bulk-link-images': typeof ApiPublicAdminBulkLinkImagesRoute
   '/category/$slug/$sub': typeof CategorySlugSubRoute
+  '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryLazyRouteWithChildren
+  '/_authenticated/admin/scan': typeof AuthenticatedAdminScanLazyRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersLazyRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/category/$slug/': typeof CategorySlugIndexRoute
@@ -465,15 +482,15 @@ export interface FileRouteTypes {
     | '/admin/homepage-featured'
     | '/admin/image-backfill'
     | '/admin/image-quality-preview'
-    | '/admin/inventory'
     | '/admin/pipeline_upscale'
     | '/admin/products'
     | '/admin/reports'
-    | '/admin/scan'
-    | '/admin/users'
     | '/orders/$id'
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
+    | '/admin/inventory'
+    | '/admin/scan'
+    | '/admin/users'
     | '/admin/'
     | '/orders/'
     | '/category/$slug/'
@@ -510,14 +527,14 @@ export interface FileRouteTypes {
     | '/admin/homepage-featured'
     | '/admin/image-backfill'
     | '/admin/image-quality-preview'
-    | '/admin/inventory'
     | '/admin/pipeline_upscale'
     | '/admin/reports'
-    | '/admin/scan'
-    | '/admin/users'
     | '/orders/$id'
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
+    | '/admin/inventory'
+    | '/admin/scan'
+    | '/admin/users'
     | '/admin'
     | '/orders'
     | '/category/$slug'
@@ -556,15 +573,15 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/homepage-featured'
     | '/_authenticated/admin/image-backfill'
     | '/_authenticated/admin/image-quality-preview'
-    | '/_authenticated/admin/inventory'
     | '/_authenticated/admin/pipeline_upscale'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/reports'
-    | '/_authenticated/admin/scan'
-    | '/_authenticated/admin/users'
     | '/_authenticated/orders/$id'
     | '/api/public/admin-bulk-link-images'
     | '/category/$slug/$sub'
+    | '/_authenticated/admin/inventory'
+    | '/_authenticated/admin/scan'
+    | '/_authenticated/admin/users'
     | '/_authenticated/admin/'
     | '/_authenticated/orders/'
     | '/category/$slug/'
@@ -768,6 +785,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersLazyRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/scan': {
+      id: '/_authenticated/admin/scan'
+      path: '/scan'
+      fullPath: '/admin/scan'
+      preLoaderRoute: typeof AuthenticatedAdminScanLazyRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/inventory': {
+      id: '/_authenticated/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AuthenticatedAdminInventoryLazyRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/category/$slug/$sub': {
       id: '/category/$slug/$sub'
       path: '/category/$slug/$sub'
@@ -789,20 +827,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin/users': {
-      id: '/_authenticated/admin/users'
-      path: '/users'
-      fullPath: '/admin/users'
-      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/scan': {
-      id: '/_authenticated/admin/scan'
-      path: '/scan'
-      fullPath: '/admin/scan'
-      preLoaderRoute: typeof AuthenticatedAdminScanRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/reports': {
       id: '/_authenticated/admin/reports'
       path: '/reports'
@@ -822,13 +846,6 @@ declare module '@tanstack/react-router' {
       path: '/pipeline_upscale'
       fullPath: '/admin/pipeline_upscale'
       preLoaderRoute: typeof AuthenticatedAdminPipeline_upscaleRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/inventory': {
-      id: '/_authenticated/admin/inventory'
-      path: '/inventory'
-      fullPath: '/admin/inventory'
-      preLoaderRoute: typeof AuthenticatedAdminInventoryRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/image-quality-preview': {
@@ -899,44 +916,24 @@ declare module '@tanstack/react-router' {
       path: '/import'
       fullPath: '/admin/inventory/import'
       preLoaderRoute: typeof AuthenticatedAdminInventoryImportRouteImport
-      parentRoute: typeof AuthenticatedAdminInventoryRoute
+      parentRoute: typeof AuthenticatedAdminInventoryLazyRoute
     }
     '/_authenticated/admin/inventory/audit': {
       id: '/_authenticated/admin/inventory/audit'
       path: '/audit'
       fullPath: '/admin/inventory/audit'
       preLoaderRoute: typeof AuthenticatedAdminInventoryAuditRouteImport
-      parentRoute: typeof AuthenticatedAdminInventoryRoute
+      parentRoute: typeof AuthenticatedAdminInventoryLazyRoute
     }
     '/_authenticated/admin/inventory/$id': {
       id: '/_authenticated/admin/inventory/$id'
       path: '/$id'
       fullPath: '/admin/inventory/$id'
       preLoaderRoute: typeof AuthenticatedAdminInventoryIdRouteImport
-      parentRoute: typeof AuthenticatedAdminInventoryRoute
+      parentRoute: typeof AuthenticatedAdminInventoryLazyRoute
     }
   }
 }
-
-interface AuthenticatedAdminInventoryRouteChildren {
-  AuthenticatedAdminInventoryIdRoute: typeof AuthenticatedAdminInventoryIdRoute
-  AuthenticatedAdminInventoryAuditRoute: typeof AuthenticatedAdminInventoryAuditRoute
-  AuthenticatedAdminInventoryImportRoute: typeof AuthenticatedAdminInventoryImportRoute
-}
-
-const AuthenticatedAdminInventoryRouteChildren: AuthenticatedAdminInventoryRouteChildren =
-  {
-    AuthenticatedAdminInventoryIdRoute: AuthenticatedAdminInventoryIdRoute,
-    AuthenticatedAdminInventoryAuditRoute:
-      AuthenticatedAdminInventoryAuditRoute,
-    AuthenticatedAdminInventoryImportRoute:
-      AuthenticatedAdminInventoryImportRoute,
-  }
-
-const AuthenticatedAdminInventoryRouteWithChildren =
-  AuthenticatedAdminInventoryRoute._addFileChildren(
-    AuthenticatedAdminInventoryRouteChildren,
-  )
 
 interface AuthenticatedAdminProductsRouteChildren {
   AuthenticatedAdminProductsIdRoute: typeof AuthenticatedAdminProductsIdRoute
@@ -954,17 +951,37 @@ const AuthenticatedAdminProductsRouteWithChildren =
     AuthenticatedAdminProductsRouteChildren,
   )
 
+interface AuthenticatedAdminInventoryLazyRouteChildren {
+  AuthenticatedAdminInventoryIdRoute: typeof AuthenticatedAdminInventoryIdRoute
+  AuthenticatedAdminInventoryAuditRoute: typeof AuthenticatedAdminInventoryAuditRoute
+  AuthenticatedAdminInventoryImportRoute: typeof AuthenticatedAdminInventoryImportRoute
+}
+
+const AuthenticatedAdminInventoryLazyRouteChildren: AuthenticatedAdminInventoryLazyRouteChildren =
+  {
+    AuthenticatedAdminInventoryIdRoute: AuthenticatedAdminInventoryIdRoute,
+    AuthenticatedAdminInventoryAuditRoute:
+      AuthenticatedAdminInventoryAuditRoute,
+    AuthenticatedAdminInventoryImportRoute:
+      AuthenticatedAdminInventoryImportRoute,
+  }
+
+const AuthenticatedAdminInventoryLazyRouteWithChildren =
+  AuthenticatedAdminInventoryLazyRoute._addFileChildren(
+    AuthenticatedAdminInventoryLazyRouteChildren,
+  )
+
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCategoriesRoute: typeof AuthenticatedAdminCategoriesRoute
   AuthenticatedAdminHomepageFeaturedRoute: typeof AuthenticatedAdminHomepageFeaturedRoute
   AuthenticatedAdminImageBackfillRoute: typeof AuthenticatedAdminImageBackfillRoute
   AuthenticatedAdminImageQualityPreviewRoute: typeof AuthenticatedAdminImageQualityPreviewRoute
-  AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRouteWithChildren
   AuthenticatedAdminPipeline_upscaleRoute: typeof AuthenticatedAdminPipeline_upscaleRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
-  AuthenticatedAdminScanRoute: typeof AuthenticatedAdminScanRoute
-  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+  AuthenticatedAdminInventoryLazyRoute: typeof AuthenticatedAdminInventoryLazyRouteWithChildren
+  AuthenticatedAdminScanLazyRoute: typeof AuthenticatedAdminScanLazyRoute
+  AuthenticatedAdminUsersLazyRoute: typeof AuthenticatedAdminUsersLazyRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
   AuthenticatedAdminOrdersIdRoute: typeof AuthenticatedAdminOrdersIdRoute
   AuthenticatedAdminOrdersIndexRoute: typeof AuthenticatedAdminOrdersIndexRoute
@@ -978,15 +995,15 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminImageBackfillRoute: AuthenticatedAdminImageBackfillRoute,
     AuthenticatedAdminImageQualityPreviewRoute:
       AuthenticatedAdminImageQualityPreviewRoute,
-    AuthenticatedAdminInventoryRoute:
-      AuthenticatedAdminInventoryRouteWithChildren,
     AuthenticatedAdminPipeline_upscaleRoute:
       AuthenticatedAdminPipeline_upscaleRoute,
     AuthenticatedAdminProductsRoute:
       AuthenticatedAdminProductsRouteWithChildren,
     AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
-    AuthenticatedAdminScanRoute: AuthenticatedAdminScanRoute,
-    AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+    AuthenticatedAdminInventoryLazyRoute:
+      AuthenticatedAdminInventoryLazyRouteWithChildren,
+    AuthenticatedAdminScanLazyRoute: AuthenticatedAdminScanLazyRoute,
+    AuthenticatedAdminUsersLazyRoute: AuthenticatedAdminUsersLazyRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
     AuthenticatedAdminOrdersIdRoute: AuthenticatedAdminOrdersIdRoute,
     AuthenticatedAdminOrdersIndexRoute: AuthenticatedAdminOrdersIndexRoute,
@@ -1048,13 +1065,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

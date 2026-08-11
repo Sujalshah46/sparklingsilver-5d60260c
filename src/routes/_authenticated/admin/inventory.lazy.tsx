@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import { adjustStock, bulkApplyInventory } from "@/lib/inventory.functions";
 import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
 
-export const Route = createFileRoute("/_authenticated/admin/inventory")({
+export const Route = createLazyFileRoute("/_authenticated/admin/inventory")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Inventory") }] }),
   component: InventoryPage,
 });
