@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -49,11 +51,14 @@ import { Route as AuthenticatedAdminCategoriesRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminProductsIndexRouteImport } from './routes/_authenticated/admin/products.index'
 import { Route as AuthenticatedAdminOrdersIndexRouteImport } from './routes/_authenticated/admin/orders.index'
 import { Route as ApiPublicHooksLowStockDigestRouteImport } from './routes/api/public/hooks/low-stock-digest'
-import { Route as AuthenticatedAdminProductsIdRouteImport } from './routes/_authenticated/admin/products.$id'
 import { Route as AuthenticatedAdminOrdersIdRouteImport } from './routes/_authenticated/admin/orders.$id'
 import { Route as AuthenticatedAdminInventoryImportRouteImport } from './routes/_authenticated/admin/inventory.import'
 import { Route as AuthenticatedAdminInventoryAuditRouteImport } from './routes/_authenticated/admin/inventory.audit'
 import { Route as AuthenticatedAdminInventoryIdRouteImport } from './routes/_authenticated/admin/inventory.$id'
+
+const AuthenticatedAdminProductsIdLazyRouteImport = createFileRoute(
+  '/_authenticated/admin/products/$id',
+)()
 
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
@@ -269,17 +274,21 @@ const AuthenticatedAdminOrdersIndexRoute =
     path: '/orders/',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminProductsIdLazyRoute =
+  AuthenticatedAdminProductsIdLazyRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminProductsRoute,
+  } as any).lazy(() =>
+    import('./routes/_authenticated/admin/products.$id.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const ApiPublicHooksLowStockDigestRoute =
   ApiPublicHooksLowStockDigestRouteImport.update({
     id: '/api/public/hooks/low-stock-digest',
     path: '/api/public/hooks/low-stock-digest',
     getParentRoute: () => rootRouteImport,
-  } as any)
-const AuthenticatedAdminProductsIdRoute =
-  AuthenticatedAdminProductsIdRouteImport.update({
-    id: '/$id',
-    path: '/$id',
-    getParentRoute: () => AuthenticatedAdminProductsRoute,
   } as any)
 const AuthenticatedAdminOrdersIdRoute =
   AuthenticatedAdminOrdersIdRouteImport.update({
@@ -347,8 +356,8 @@ export interface FileRoutesByFullPath {
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
   '/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
-  '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/admin/products/$id': typeof AuthenticatedAdminProductsIdLazyRoute
   '/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
   '/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
 }
@@ -391,8 +400,8 @@ export interface FileRoutesByTo {
   '/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
   '/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
-  '/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/admin/products/$id': typeof AuthenticatedAdminProductsIdLazyRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersIndexRoute
   '/admin/products': typeof AuthenticatedAdminProductsIndexRoute
 }
@@ -439,8 +448,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/inventory/audit': typeof AuthenticatedAdminInventoryAuditRoute
   '/_authenticated/admin/inventory/import': typeof AuthenticatedAdminInventoryImportRoute
   '/_authenticated/admin/orders/$id': typeof AuthenticatedAdminOrdersIdRoute
-  '/_authenticated/admin/products/$id': typeof AuthenticatedAdminProductsIdRoute
   '/api/public/hooks/low-stock-digest': typeof ApiPublicHooksLowStockDigestRoute
+  '/_authenticated/admin/products/$id': typeof AuthenticatedAdminProductsIdLazyRoute
   '/_authenticated/admin/orders/': typeof AuthenticatedAdminOrdersIndexRoute
   '/_authenticated/admin/products/': typeof AuthenticatedAdminProductsIndexRoute
 }
@@ -487,8 +496,8 @@ export interface FileRouteTypes {
     | '/admin/inventory/audit'
     | '/admin/inventory/import'
     | '/admin/orders/$id'
-    | '/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/admin/products/$id'
     | '/admin/orders/'
     | '/admin/products/'
   fileRoutesByTo: FileRoutesByTo
@@ -531,8 +540,8 @@ export interface FileRouteTypes {
     | '/admin/inventory/audit'
     | '/admin/inventory/import'
     | '/admin/orders/$id'
-    | '/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/admin/products/$id'
     | '/admin/orders'
     | '/admin/products'
   id:
@@ -578,8 +587,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/inventory/audit'
     | '/_authenticated/admin/inventory/import'
     | '/_authenticated/admin/orders/$id'
-    | '/_authenticated/admin/products/$id'
     | '/api/public/hooks/low-stock-digest'
+    | '/_authenticated/admin/products/$id'
     | '/_authenticated/admin/orders/'
     | '/_authenticated/admin/products/'
   fileRoutesById: FileRoutesById
@@ -879,19 +888,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminOrdersIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/products/$id': {
+      id: '/_authenticated/admin/products/$id'
+      path: '/$id'
+      fullPath: '/admin/products/$id'
+      preLoaderRoute: typeof AuthenticatedAdminProductsIdLazyRouteImport
+      parentRoute: typeof AuthenticatedAdminProductsRoute
+    }
     '/api/public/hooks/low-stock-digest': {
       id: '/api/public/hooks/low-stock-digest'
       path: '/api/public/hooks/low-stock-digest'
       fullPath: '/api/public/hooks/low-stock-digest'
       preLoaderRoute: typeof ApiPublicHooksLowStockDigestRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/admin/products/$id': {
-      id: '/_authenticated/admin/products/$id'
-      path: '/$id'
-      fullPath: '/admin/products/$id'
-      preLoaderRoute: typeof AuthenticatedAdminProductsIdRouteImport
-      parentRoute: typeof AuthenticatedAdminProductsRoute
     }
     '/_authenticated/admin/orders/$id': {
       id: '/_authenticated/admin/orders/$id'
@@ -945,13 +954,14 @@ const AuthenticatedAdminInventoryRouteWithChildren =
   )
 
 interface AuthenticatedAdminProductsRouteChildren {
-  AuthenticatedAdminProductsIdRoute: typeof AuthenticatedAdminProductsIdRoute
+  AuthenticatedAdminProductsIdLazyRoute: typeof AuthenticatedAdminProductsIdLazyRoute
   AuthenticatedAdminProductsIndexRoute: typeof AuthenticatedAdminProductsIndexRoute
 }
 
 const AuthenticatedAdminProductsRouteChildren: AuthenticatedAdminProductsRouteChildren =
   {
-    AuthenticatedAdminProductsIdRoute: AuthenticatedAdminProductsIdRoute,
+    AuthenticatedAdminProductsIdLazyRoute:
+      AuthenticatedAdminProductsIdLazyRoute,
     AuthenticatedAdminProductsIndexRoute: AuthenticatedAdminProductsIndexRoute,
   }
 

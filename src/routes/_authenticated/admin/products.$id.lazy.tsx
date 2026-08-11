@@ -1,5 +1,5 @@
 import { pageTitle } from "@/lib/seo";
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createLazyFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { createProduct, updateProduct } from "@/lib/products.functions";
 import { getErrorMessage } from "@/lib/errors";
 
-export const Route = createFileRoute("/_authenticated/admin/products/$id")({
+export const Route = createLazyFileRoute("/_authenticated/admin/products/$id")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Product") }] }),
   component: ProductForm,
 });
