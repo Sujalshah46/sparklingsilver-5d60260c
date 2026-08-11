@@ -137,6 +137,7 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          product_count: number | null
           slug: string
           sort_order: number | null
         }
@@ -146,6 +147,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name: string
+          product_count?: number | null
           slug: string
           sort_order?: number | null
         }
@@ -155,6 +157,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          product_count?: number | null
           slug?: string
           sort_order?: number | null
         }
