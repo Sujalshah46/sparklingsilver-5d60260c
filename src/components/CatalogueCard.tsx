@@ -114,7 +114,7 @@ export function CatalogueCard({
         >
           <Heart className="h-3.5 w-3.5" />
         </button>
-        <div className="ruler-frame aspect-square w-full bg-[#F5F5F3]">
+        <div className="ruler-frame relative aspect-square w-full bg-[#F5F5F3]">
           <img
             src={src}
             srcSet={srcSet}
@@ -128,7 +128,6 @@ export function CatalogueCard({
             className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
-
         </div>
 
       </Link>

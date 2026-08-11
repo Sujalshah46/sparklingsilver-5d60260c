@@ -23,10 +23,9 @@ const homeQuery = queryOptions({
   staleTime: 5 * 60_000,
   gcTime: 30 * 60_000,
   queryFn: async () => {
-    // 3 parallel round-trips total: featured products, visible categories,
-    // and a single RPC returning all category counts (replaces N head-count
-    // queries).
-    const [featuredRes, categoriesRes, countsRes] = await Promise.all([
+    // TTFB optimization: Fetch featured products and visible categories in parallel.
+    // product_count is now cached on the category row via DB trigger.
+    const [featuredRes, categoriesRes] = await Promise.all([
       supabase
         .from("products")
         .select(CARD_COLUMNS)
@@ -35,16 +34,13 @@ const homeQuery = queryOptions({
         .limit(10),
       supabase
         .from("categories")
-        .select("id,slug,name,sort_order,image_url")
+        .select("id,slug,name,sort_order,image_url,product_count")
         .in("slug", HOME_SLUGS as unknown as string[])
         .order("sort_order"),
-      supabase.rpc("get_category_product_counts", { _slugs: HOME_SLUGS as unknown as string[] }),
     ]);
-    const categories = (categoriesRes.data ?? []) as CategoryRow[];
-    const countRows = (countsRes.data ?? []) as Array<{ slug: string; product_count: number }>;
-    const countsBySlug = new Map(countRows.map((r) => [r.slug, Number(r.product_count) || 0]));
+    const categories = (categoriesRes.data ?? []) as (CategoryRow & { product_count: number })[];
     const counts = new Map<string, number>(
-      categories.map((c) => [c.id, countsBySlug.get(c.slug) ?? 0]),
+      categories.map((c) => [c.id, Number(c.product_count) || 0]),
     );
     let total = 0;
     for (const n of counts.values()) total += n;

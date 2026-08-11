@@ -121,7 +121,7 @@ function CategoryPage() {
           <ChevronLeft className="h-5 w-5" />
         </button>
         <h1 className="text-[16px] font-bold uppercase tracking-[0.08em] text-[#1A1A1A]">
-          {data.category.name} <span className="font-normal text-[#777]">({data.subcategories.length})</span>
+          {data.category.name} <span className="font-normal text-[#777]">({data.category.product_count ?? data.subcategories.length})</span>
         </h1>
       </div>
 
