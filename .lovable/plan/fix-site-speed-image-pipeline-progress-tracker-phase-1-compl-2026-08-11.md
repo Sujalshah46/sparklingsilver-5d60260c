@@ -11,9 +11,9 @@
 ## 2. Image Pipeline Progress Tracker
 - **Status**: [SHIPPED UI]
 - **Implementation**:
-    - Created `/admin/pipeline_upscale` with real-time progress bar, status badges, and log output.
+    - Created `/admin/pipeline/upscale` with real-time progress bar, status badges, and log output.
     - Linked the tracker from the Admin Dashboard for quick access.
-    - Resolved TanStack Router crawling error by renaming dot-separated route file to `pipeline_upscale.tsx`.
+    - *Next step*: Connect the UI to the actual upscaling process file (`/tmp/antique-ls-batch1/progress.json`).
 
 ## 3. Image Variants (Lighthouse LCP/FCP)
 - **Status**: [IN PROGRESS]

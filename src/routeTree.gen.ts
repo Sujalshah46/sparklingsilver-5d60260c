@@ -40,6 +40,7 @@ import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminScanRouteImport } from './routes/_authenticated/admin/scan'
 import { Route as AuthenticatedAdminReportsRouteImport } from './routes/_authenticated/admin/reports'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin/products'
+import { Route as AuthenticatedAdminPipeline_upscaleRouteImport } from './routes/_authenticated/admin/pipeline_upscale'
 import { Route as AuthenticatedAdminInventoryRouteImport } from './routes/_authenticated/admin/inventory'
 import { Route as AuthenticatedAdminImageQualityPreviewRouteImport } from './routes/_authenticated/admin/image-quality-preview'
 import { Route as AuthenticatedAdminImageBackfillRouteImport } from './routes/_authenticated/admin/image-backfill'
@@ -214,6 +215,12 @@ const AuthenticatedAdminProductsRoute =
     path: '/products',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminPipeline_upscaleRoute =
+  AuthenticatedAdminPipeline_upscaleRouteImport.update({
+    id: '/pipeline_upscale',
+    path: '/pipeline_upscale',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminInventoryRoute =
   AuthenticatedAdminInventoryRouteImport.update({
     id: '/inventory',
@@ -319,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
+  '/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/scan': typeof AuthenticatedAdminScanRoute
@@ -363,6 +371,7 @@ export interface FileRoutesByTo {
   '/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
+  '/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/admin/scan': typeof AuthenticatedAdminScanRoute
   '/admin/users': typeof AuthenticatedAdminUsersRoute
@@ -409,6 +418,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/image-backfill': typeof AuthenticatedAdminImageBackfillRoute
   '/_authenticated/admin/image-quality-preview': typeof AuthenticatedAdminImageQualityPreviewRoute
   '/_authenticated/admin/inventory': typeof AuthenticatedAdminInventoryRouteWithChildren
+  '/_authenticated/admin/pipeline_upscale': typeof AuthenticatedAdminPipeline_upscaleRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRouteWithChildren
   '/_authenticated/admin/reports': typeof AuthenticatedAdminReportsRoute
   '/_authenticated/admin/scan': typeof AuthenticatedAdminScanRoute
@@ -456,6 +466,7 @@ export interface FileRouteTypes {
     | '/admin/image-backfill'
     | '/admin/image-quality-preview'
     | '/admin/inventory'
+    | '/admin/pipeline_upscale'
     | '/admin/products'
     | '/admin/reports'
     | '/admin/scan'
@@ -500,6 +511,7 @@ export interface FileRouteTypes {
     | '/admin/image-backfill'
     | '/admin/image-quality-preview'
     | '/admin/inventory'
+    | '/admin/pipeline_upscale'
     | '/admin/reports'
     | '/admin/scan'
     | '/admin/users'
@@ -545,6 +557,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/image-backfill'
     | '/_authenticated/admin/image-quality-preview'
     | '/_authenticated/admin/inventory'
+    | '/_authenticated/admin/pipeline_upscale'
     | '/_authenticated/admin/products'
     | '/_authenticated/admin/reports'
     | '/_authenticated/admin/scan'
@@ -804,6 +817,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductsRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/pipeline_upscale': {
+      id: '/_authenticated/admin/pipeline_upscale'
+      path: '/pipeline_upscale'
+      fullPath: '/admin/pipeline_upscale'
+      preLoaderRoute: typeof AuthenticatedAdminPipeline_upscaleRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/inventory': {
       id: '/_authenticated/admin/inventory'
       path: '/inventory'
@@ -940,6 +960,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminImageBackfillRoute: typeof AuthenticatedAdminImageBackfillRoute
   AuthenticatedAdminImageQualityPreviewRoute: typeof AuthenticatedAdminImageQualityPreviewRoute
   AuthenticatedAdminInventoryRoute: typeof AuthenticatedAdminInventoryRouteWithChildren
+  AuthenticatedAdminPipeline_upscaleRoute: typeof AuthenticatedAdminPipeline_upscaleRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRouteWithChildren
   AuthenticatedAdminReportsRoute: typeof AuthenticatedAdminReportsRoute
   AuthenticatedAdminScanRoute: typeof AuthenticatedAdminScanRoute
@@ -959,6 +980,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
       AuthenticatedAdminImageQualityPreviewRoute,
     AuthenticatedAdminInventoryRoute:
       AuthenticatedAdminInventoryRouteWithChildren,
+    AuthenticatedAdminPipeline_upscaleRoute:
+      AuthenticatedAdminPipeline_upscaleRoute,
     AuthenticatedAdminProductsRoute:
       AuthenticatedAdminProductsRouteWithChildren,
     AuthenticatedAdminReportsRoute: AuthenticatedAdminReportsRoute,
