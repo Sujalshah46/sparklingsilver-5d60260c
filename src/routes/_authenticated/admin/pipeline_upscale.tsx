@@ -9,7 +9,7 @@ import { CheckCircle2, XCircle, Loader2, Play, Pause, RotateCcw, LayoutList } fr
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-export const Route = createFileRoute("/_authenticated/admin/pipeline/upscale" as any)({
+export const Route = createFileRoute("/_authenticated/admin/pipeline_upscale")({
   component: UpscalePipelinePage,
 });
 
