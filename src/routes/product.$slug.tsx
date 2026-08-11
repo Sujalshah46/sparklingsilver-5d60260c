@@ -177,7 +177,6 @@ function ProductPage() {
           onLoad={() => setHiResLoaded(true)}
           className="relative h-full w-full object-contain"
         />
-
       </div>
 
 
