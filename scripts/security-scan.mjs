@@ -144,7 +144,7 @@ function secretScan() {
         failures.push(`server-only secret ${secret} referenced in client-reachable ${rel}`);
       }
     }
-    if (/import\.meta\.env\.(?!(VITE_|DEV\b|PROD\b|MODE\b|SSR\b|BASE_URL\b))[A-Z_]+/.test(source)) {
+    if (/import\.meta\.env\.(?!VITE_)[A-Z_]+/.test(source)) {
       failures.push(`non-VITE_ env var read from browser code in ${rel}`);
     }
   }

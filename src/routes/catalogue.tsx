@@ -26,10 +26,13 @@ type CatalogProduct = CatalogueCardData & { category_id: string; homepage_featur
 
 const PAGE_SIZE = 30;
 
-import { getCatalogueCategories } from "@/lib/categories.functions";
-
 async function fetchVisibleCategories() {
-  return getCatalogueCategories();
+  const { data } = await supabase
+    .from("categories")
+    .select("*")
+    .in("slug", ["antique", "cz"])
+    .order("sort_order");
+  return data ?? [];
 }
 
 const catalogInfiniteQuery = (onlyNew: boolean) =>

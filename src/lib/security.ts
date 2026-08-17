@@ -16,22 +16,17 @@ const csrfTokenStore = new Set<string>();
 export function addSecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
 
-  const isDev = process.env['NODE_ENV'] !== "production";
-
-  // Content Security Policy - Prevents XSS attacks.
-  // 'unsafe-inline' is required: SSR hydration, the auth gate, the theme init
-  // script and JSON-LD are all inline <script> tags. 'unsafe-eval' only in dev
-  // (Vite HMR client). frame-ancestors must allow the Lovable preview/editor.
+  // Content Security Policy - Prevents XSS attacks
   headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; ` +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' https://fonts.gstatic.com data:; " +
-      "connect-src 'self' ws: wss: https://*.supabase.co wss://*.supabase.co https://wa.me https://stripe.com; " +
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://wa.me https://stripe.com; " +
       "frame-src 'self' https://js.stripe.com; " +
-      "frame-ancestors 'self' https://*.lovable.app https://*.lovableproject.com https://*.lovable.dev; " +
+      "frame-ancestors 'none'; " +
       "base-uri 'self'; " +
       "form-action 'self'",
   );
@@ -39,12 +34,14 @@ export function addSecurityHeaders(response: Response): Response {
   // Prevent MIME type sniffing
   headers.set("X-Content-Type-Options", "nosniff");
 
+  // Clickjacking protection
+  headers.set("X-Frame-Options", "SAMEORIGIN");
+
   // Referrer Policy
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
   // Strict Transport Security (HSTS) - Forces HTTPS
   headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
-
 
   // Permissions Policy
   headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
@@ -63,49 +60,29 @@ export function addSecurityHeaders(response: Response): Response {
  * Rate Limiting
  * Prevents brute force attacks and DoS
  */
-export async function checkRateLimit(
+export function checkRateLimit(
   identifier: string,
   maxAttempts = 5,
   windowMs: number = 15 * 60 * 1000, // 15 minutes
-): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
+): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
-  const windowStart = new Date(now - windowMs).toISOString();
+  const existing = rateLimitStore.get(identifier);
 
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // Count attempts in this window
-    const { count, error } = await supabaseAdmin
-      .from("rate_limit_log")
-      .select("id", { count: "exact", head: true })
-      .eq("identifier", identifier)
-      .gte("created_at", windowStart);
-
-    if (error) throw error;
-
-    const attemptsCount = count ?? 0;
-
-    if (attemptsCount >= maxAttempts) {
-      return { allowed: false, remaining: 0, resetTime: now + windowMs };
-    }
-
-    // Log this attempt
-    const { error: insErr } = await supabaseAdmin.from("rate_limit_log").insert({
-      identifier,
-      created_at: new Date(now).toISOString(),
-    });
-
-    if (insErr) throw insErr;
-
-    return {
-      allowed: true,
-      remaining: maxAttempts - attemptsCount - 1,
-      resetTime: now + windowMs,
-    };
-  } catch (err) {
-    console.error("[checkRateLimit] persistent store failed, allowing request:", err);
-    return { allowed: true, remaining: 1, resetTime: now + windowMs };
+  if (!existing || now > existing.resetTime) {
+    rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
+    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs };
   }
+
+  if (existing.count >= maxAttempts) {
+    return { allowed: false, remaining: 0, resetTime: existing.resetTime };
+  }
+
+  existing.count++;
+  return {
+    allowed: true,
+    remaining: maxAttempts - existing.count,
+    resetTime: existing.resetTime,
+  };
 }
 
 /**
@@ -195,9 +172,8 @@ export function getCORSHeaders(origin?: string): Record<string, string> {
     "https://www.sparklingsilver.in",
     "https://sparklingsilver.in",
     "https://sparklingsilver.lovable.app",
-    ...(process.env.NODE_ENV === "development"
-      ? ["http://localhost:8080", "http://localhost:5173"]
-      : []),
+    "http://localhost:8080",
+    "http://localhost:5173",
   ];
 
   const isAllowed = !!origin && allowedOrigins.includes(origin);

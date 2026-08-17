@@ -31,23 +31,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
     return response;
   }
 
-  const err = consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`);
-  console.error(err);
-
-  // Log SSR swallowed error to database
-  try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("user_activity_log").insert({
-      action: "server_ssr_swallowed_error",
-      meta: {
-        message: err instanceof Error ? err.message : String(err),
-        stack: err instanceof Error ? err.stack : undefined,
-      },
-    });
-  } catch (logErr) {
-    console.error("Failed to write SSR error to DB:", logErr);
-  }
-
+  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
   return new Response(renderErrorPage(), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -63,22 +47,6 @@ export default {
       return addSecurityHeaders(response);
     } catch (error) {
       console.error(error, sanitizeErrorMessage(error));
-
-      // Log server crash exception to database
-      try {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin.from("user_activity_log").insert({
-          action: "server_crash_error",
-          meta: {
-            message: error instanceof Error ? error.message : String(error),
-            stack: error instanceof Error ? error.stack : undefined,
-            url: request.url,
-          },
-        });
-      } catch (logErr) {
-        console.error("Failed to write crash error to DB:", logErr);
-      }
-
       return addSecurityHeaders(
         new Response(renderErrorPage(), {
           status: 500,
