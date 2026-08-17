@@ -1,7 +1,17 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { checkRateLimit, getClientIP } from "./security";
 
 const emailSchema = z.string().trim().email().max(255);
+
+/** Per-IP throttle for the unauthenticated admin-reset endpoints below. */
+async function throttleByIP(bucket: string, maxAttempts: number) {
+  const request = getRequest();
+  const ip = request ? getClientIP(request) : "unknown";
+  const { allowed } = await checkRateLimit(`${bucket}:${ip}`, maxAttempts, 15 * 60 * 1000);
+  if (!allowed) throw new Error("Too many requests. Please try again later.");
+}
 
 function escapeHtml(s: string) {
   return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -17,6 +27,8 @@ const GENERIC = { ok: true as const };
 export const isAdminEmail = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ email: emailSchema }).parse(d))
   .handler(async ({ data }) => {
+    // Prevents scripted enumeration of which emails hold the admin role.
+    await throttleByIP("admin-email-probe", 20);
     const email = data.email.toLowerCase();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: prof } = await supabaseAdmin
@@ -42,6 +54,7 @@ export const isAdminEmail = createServerFn({ method: "POST" })
 export const requestAdminResetCode = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ email: emailSchema }).parse(d))
   .handler(async ({ data }) => {
+    await throttleByIP("admin-reset-request", 10);
     const email = data.email.toLowerCase();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { hashCode } = await import("./admin-reset.server");
@@ -124,6 +137,7 @@ export const confirmAdminResetCode = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data }) => {
+    await throttleByIP("admin-reset-confirm", 20);
     const email = data.email.toLowerCase();
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { hashCode } = await import("./admin-reset.server");

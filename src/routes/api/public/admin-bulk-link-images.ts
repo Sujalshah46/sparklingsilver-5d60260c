@@ -1,17 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
+
+const bodySchema = z.object({
+  items: z
+    .array(z.object({ sku: z.string().trim().min(1).max(120), storage_path: z.string().trim().min(1).max(500) }))
+    .min(1)
+    .max(200),
+});
 
 export const Route = createFileRoute("/api/public/admin-bulk-link-images")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const secret = request.headers.get("x-cron-secret");
-        if (secret !== process.env.CRON_SECRET) {
+        const expected = process.env.CRON_SECRET;
+        if (!expected) {
+          console.error("[admin-bulk-link-images] CRON_SECRET not configured");
+          return new Response("Server misconfigured", { status: 500 });
+        }
+        const provided = request.headers.get("x-cron-secret") ?? "";
+        const a = Buffer.from(provided);
+        const b = Buffer.from(expected);
+        if (a.length !== b.length) {
           return new Response("Forbidden", { status: 403 });
         }
-        const payload = (await request.json()) as {
-          items: Array<{ sku: string; storage_path: string }>;
-        };
+        const { timingSafeEqual } = await import("node:crypto");
+        if (!timingSafeEqual(a, b)) {
+          return new Response("Forbidden", { status: 403 });
+        }
+
+        const parsed = bodySchema.safeParse(await request.json().catch(() => null));
+        if (!parsed.success) {
+          return new Response("Invalid request body", { status: 400 });
+        }
+        const payload = parsed.data;
         const admin = createClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!,
