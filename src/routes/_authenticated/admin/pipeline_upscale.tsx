@@ -156,7 +156,7 @@ function UpscalePipelinePage() {
           <h2 className="font-serif font-semibold text-lg">Batch Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {items.map((item) => (
-              <div key={item.sku} className="flex flex-col p-3 rounded-lg border border-border bg-card space-y-2">
+              <div key={item.sku} className="flex flex-col p-3 rounded-lg border border-border bg-card space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="font-mono text-xs font-bold">{item.sku}</div>
@@ -175,6 +175,48 @@ function UpscalePipelinePage() {
                      </Button>
                   )}
                 </div>
+
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div className="space-y-1">
+                    <p className="text-[9px] uppercase text-muted-foreground font-semibold">Current Bust</p>
+                    <div className="aspect-square bg-slate-100 rounded border border-slate-200 overflow-hidden relative group">
+                      {item.original_filename ? (
+                        <img 
+                          src={item.original_filename} 
+                          alt="Current" 
+                          className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-400 italic">No image</div>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[9px] uppercase text-muted-foreground font-semibold">Upscaled (v7)</p>
+                    <div className="aspect-square bg-slate-900 rounded border border-slate-800 overflow-hidden flex flex-col items-center justify-center relative group">
+                      {item.status === "completed" ? (
+                        <img 
+                          src={item.original_filename?.replace('.jpg', '_upscale.webp')} 
+                          alt="Upscaled" 
+                          className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                        />
+                      ) : item.status === "processing" ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="h-5 w-5 text-teal animate-spin" />
+                          <span className="text-[8px] text-slate-400 animate-pulse">Processing...</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1 opacity-20">
+                          <div className="w-8 h-10 border-2 border-slate-700 rounded-t-full relative">
+                            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-4 h-1 bg-slate-700 rounded-full" />
+                          </div>
+                          <span className="text-[8px] text-slate-600 uppercase font-bold tracking-tighter">Tall Emerald</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
                 {item.status === "failed" && item.error && (
                   <div className="text-[10px] text-red-500 bg-red-50 p-2 rounded border border-red-100 font-mono">
                     <p className="font-bold">Error: {item.error}</p>
