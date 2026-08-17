@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.update_category_product_count() FROM PUBLIC, anon, authenticated;
