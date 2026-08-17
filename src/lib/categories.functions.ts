@@ -76,3 +76,21 @@ export const clearCategoryImage = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+export const getCatalogueCategories = createServerFn({ method: "GET" })
+  .handler(async () => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("categories")
+      .select("*")
+      .in("slug", ["antique", "cz"])
+      .order("sort_order");
+
+    if (error) throw new Error(error.message);
+
+    const { setResponseHeader } = await import("@tanstack/react-start/server");
+    setResponseHeader("Cache-Control", "public, max-age=3600");
+
+    return data ?? [];
+  });
+

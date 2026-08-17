@@ -210,25 +210,57 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const userListInput = z.object({
+  page: z.number().int().min(1).default(1),
+  limit: z.number().int().min(1).max(100).default(20),
+  search: z.string().optional(),
+});
+
 export const adminListUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => userListInput.parse(d))
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
-    const { data, error } = await supabase
+
+    const { getPaginationRange } = await import("./pagination");
+    const { from, to, limit } = getPaginationRange(data.page, data.limit);
+
+    let query = supabase
       .from("profiles")
-      .select("id, username, business_name, contact_person, email, mobile, status, must_change_password, created_at")
-      .neq("status", "deleted")
-      .order("created_at", { ascending: false });
+      .select("id, username, business_name, contact_person, email, mobile, status, must_change_password, created_at", { count: "exact" })
+      .neq("status", "deleted");
+
+    if (data.search) {
+      const safeSearch = data.search.trim().replace(/[\\%_,()*"']/g, (c) => `\\${c}`);
+      const pattern = `%${safeSearch}%`;
+      query = query.or(`business_name.ilike.${pattern},contact_person.ilike.${pattern},email.ilike.${pattern},mobile.ilike.${pattern}`);
+    }
+
+    const { data: rows, count, error } = await query
+      .order("created_at", { ascending: false })
+      .range(from, to);
+
     if (error) throw new Error(error.message);
-    const rows = data ?? [];
-    const ids = rows.map((r: any) => r.id);
+
+    const list = rows ?? [];
+    const ids = list.map((r: any) => r.id);
     let adminIds = new Set<string>();
     if (ids.length) {
       const { data: roles } = await supabase.from("user_roles").select("user_id").eq("role", "admin").in("user_id", ids);
       adminIds = new Set((roles ?? []).map((r: any) => r.user_id));
     }
-    return rows.map((r: any) => ({ ...r, is_admin: adminIds.has(r.id) }));
+
+    const users = list.map((r: any) => ({ ...r, is_admin: adminIds.has(r.id) }));
+    const total = count ?? 0;
+
+    return {
+      users,
+      total,
+      pages: Math.ceil(total / limit),
+      page: data.page,
+      limit,
+    };
   });
 
 export const adminListResetRequests = createServerFn({ method: "GET" })
