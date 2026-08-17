@@ -43,7 +43,7 @@ function UpscalePipelinePage() {
         .select("sku, image_url")
         .ilike("sku", "AR(LS)-%")
         .order("sku", { ascending: true })
-        .limit(91);
+        .limit(100);
 
       if (data) {
         setItems(data.map(d => ({ 
@@ -89,7 +89,7 @@ function UpscalePipelinePage() {
         <header className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-serif font-bold">Antique Long Set Upscale</h1>
-            <p className="text-sm text-muted-foreground">Standardizing 91 SKUs to v7 Pipeline</p>
+            <p className="text-sm text-muted-foreground">Standardizing 100 SKUs to v7 Pipeline</p>
           </div>
           <div className="flex gap-2">
             {!isRunning ? (
