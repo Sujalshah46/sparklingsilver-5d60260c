@@ -82,12 +82,13 @@ function AdminUsersPage() {
 
           <TabsContent value="users" className="space-y-2">
             {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
-            {(users.data ?? []).map((u: UserRow) => (
+            {((users.data?.users ?? []) as UserRow[]).map((u: UserRow) => (
               <UserCard key={u.id} u={u} onDone={invalidate} onShowCreds={setCredsView} />
             ))}
-            {users.data && users.data.length === 0 && (
+            {users.data && (users.data.users ?? []).length === 0 && (
               <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No users yet. Tap New to create one.</p>
             )}
+
           </TabsContent>
 
           <TabsContent value="requests" className="space-y-2">

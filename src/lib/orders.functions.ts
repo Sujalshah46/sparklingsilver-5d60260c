@@ -173,7 +173,7 @@ export const getCart = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
 
-    const { data: items } = await supabase
+    const { data: items, error } = await supabase
       .from("cart_items")
       .select(
         "id, quantity, size, remark, " +
@@ -182,23 +182,46 @@ export const getCart = createServerFn({ method: "GET" })
       .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
-    if (!items) return { items: [], total: 0 };
+    if (error) throw new Error(error.message);
 
-    const subtotal = items.reduce((s, it) => s + Number((it.products as any).price) * it.quantity, 0);
+    type CartRow = {
+      id: string;
+      quantity: number;
+      size: string | null;
+      remark: string | null;
+      products: {
+        id: string;
+        name: string;
+        sku: string | null;
+        price: number | string;
+        image_url: string | null;
+        gross_weight: number | string | null;
+        net_weight: number | string | null;
+      };
+    };
+
+    const rows = (items ?? []) as unknown as CartRow[];
+
+    if (rows.length === 0) {
+      return { items: [], subtotal: 0, gst: 0, total: 0, itemCount: 0 };
+    }
+
+    const subtotal = rows.reduce((s, it) => s + Number(it.products.price) * it.quantity, 0);
     const gst = Math.round(subtotal * 0.03 * 100) / 100;
     const total = Math.round((subtotal + gst) * 100) / 100;
 
     return {
-      items: items.map((it) => ({
+      items: rows.map((it) => ({
         id: it.id,
         quantity: it.quantity,
         size: it.size,
         remark: it.remark,
-        product: (it.products as any),
+        product: it.products,
       })),
       subtotal,
       gst,
       total,
-      itemCount: items.length,
+      itemCount: rows.length,
     };
   });
+

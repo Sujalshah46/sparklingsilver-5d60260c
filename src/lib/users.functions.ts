@@ -218,7 +218,7 @@ const userListInput = z.object({
 
 export const adminListUsers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => userListInput.parse(d))
+  .inputValidator((d: unknown) => userListInput.parse(d ?? {}))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);

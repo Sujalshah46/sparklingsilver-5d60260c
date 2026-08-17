@@ -229,7 +229,7 @@ const inventoryListInput = z.object({
 
 export const getAdminInventory = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => inventoryListInput.parse(d))
+  .inputValidator((d: unknown) => inventoryListInput.parse(d ?? {}))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
