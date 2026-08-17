@@ -50,9 +50,18 @@ function InventoryPage() {
     queryFn: () => fetchInventory({ data: { page, search: q || undefined, filter, limit: 20 } }),
   });
 
-  const products = data?.products ?? [];
+  type InvRow = {
+    id: string;
+    name: string;
+    sku: string;
+    image_url: string | null;
+    stock_quantity: number | null;
+    low_stock_threshold: number | null;
+  };
+  const products = (data?.products ?? []) as InvRow[];
   const counts = data?.counts ?? { all: 0, low: 0, out: 0 };
   const filtered = products;
+
 
   useEffect(() => {
     const ch = supabase.channel("inv-products")
