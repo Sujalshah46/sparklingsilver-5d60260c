@@ -19,8 +19,9 @@ interface NotificationJob {
 // In-memory queue for immediate processing
 const notificationQueue: NotificationJob[] = [];
 
-// Worker: Process queue every 5 seconds
+// Worker: Process queue every 5 seconds and clean up rate limit logs hourly
 let workerInterval: any = null;
+let cleanupInterval: any = null;
 
 async function startWorker() {
   if (workerInterval) return;
@@ -41,6 +42,21 @@ async function startWorker() {
       }
     }
   }, 5000);
+
+  // Hourly cleanup of rate limit logs older than 24 hours
+  cleanupInterval = setInterval(async () => {
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { error } = await supabaseAdmin
+        .from("rate_limit_log")
+        .delete()
+        .lt("created_at", windowStart);
+      if (error) console.error("[push-queue] Rate limit log cleanup failed:", error);
+    } catch (e) {
+      console.error("[push-queue] Failed to clean up rate limit logs:", e);
+    }
+  }, 60 * 60 * 1000);
 }
 
 // Start worker immediately on server load

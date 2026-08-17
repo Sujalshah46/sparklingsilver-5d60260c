@@ -20,7 +20,7 @@ export function addSecurityHeaders(response: Response): Response {
   headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
+      "script-src 'self' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' https://fonts.gstatic.com data:; " +
@@ -60,29 +60,49 @@ export function addSecurityHeaders(response: Response): Response {
  * Rate Limiting
  * Prevents brute force attacks and DoS
  */
-export function checkRateLimit(
+export async function checkRateLimit(
   identifier: string,
   maxAttempts = 5,
   windowMs: number = 15 * 60 * 1000, // 15 minutes
-): { allowed: boolean; remaining: number; resetTime: number } {
+): Promise<{ allowed: boolean; remaining: number; resetTime: number }> {
   const now = Date.now();
-  const existing = rateLimitStore.get(identifier);
+  const windowStart = new Date(now - windowMs).toISOString();
 
-  if (!existing || now > existing.resetTime) {
-    rateLimitStore.set(identifier, { count: 1, resetTime: now + windowMs });
-    return { allowed: true, remaining: maxAttempts - 1, resetTime: now + windowMs };
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    // Count attempts in this window
+    const { count, error } = await supabaseAdmin
+      .from("rate_limit_log")
+      .select("id", { count: "exact", head: true })
+      .eq("identifier", identifier)
+      .gte("created_at", windowStart);
+
+    if (error) throw error;
+
+    const attemptsCount = count ?? 0;
+
+    if (attemptsCount >= maxAttempts) {
+      return { allowed: false, remaining: 0, resetTime: now + windowMs };
+    }
+
+    // Log this attempt
+    const { error: insErr } = await supabaseAdmin.from("rate_limit_log").insert({
+      identifier,
+      created_at: new Date(now).toISOString(),
+    });
+
+    if (insErr) throw insErr;
+
+    return {
+      allowed: true,
+      remaining: maxAttempts - attemptsCount - 1,
+      resetTime: now + windowMs,
+    };
+  } catch (err) {
+    console.error("[checkRateLimit] persistent store failed, allowing request:", err);
+    return { allowed: true, remaining: 1, resetTime: now + windowMs };
   }
-
-  if (existing.count >= maxAttempts) {
-    return { allowed: false, remaining: 0, resetTime: existing.resetTime };
-  }
-
-  existing.count++;
-  return {
-    allowed: true,
-    remaining: maxAttempts - existing.count,
-    resetTime: existing.resetTime,
-  };
 }
 
 /**
@@ -172,8 +192,9 @@ export function getCORSHeaders(origin?: string): Record<string, string> {
     "https://www.sparklingsilver.in",
     "https://sparklingsilver.in",
     "https://sparklingsilver.lovable.app",
-    "http://localhost:8080",
-    "http://localhost:5173",
+    ...(process.env.NODE_ENV === "development"
+      ? ["http://localhost:8080", "http://localhost:5173"]
+      : []),
   ];
 
   const isAllowed = !!origin && allowedOrigins.includes(origin);
