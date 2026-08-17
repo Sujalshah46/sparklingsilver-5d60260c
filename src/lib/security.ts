@@ -16,17 +16,22 @@ const csrfTokenStore = new Set<string>();
 export function addSecurityHeaders(response: Response): Response {
   const headers = new Headers(response.headers);
 
-  // Content Security Policy - Prevents XSS attacks
+  const isDev = process.env['NODE_ENV'] !== "production";
+
+  // Content Security Policy - Prevents XSS attacks.
+  // 'unsafe-inline' is required: SSR hydration, the auth gate, the theme init
+  // script and JSON-LD are all inline <script> tags. 'unsafe-eval' only in dev
+  // (Vite HMR client). frame-ancestors must allow the Lovable preview/editor.
   headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      "script-src 'self' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
+      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; ` +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' https://fonts.gstatic.com data:; " +
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://wa.me https://stripe.com; " +
+      "connect-src 'self' ws: wss: https://*.supabase.co wss://*.supabase.co https://wa.me https://stripe.com; " +
       "frame-src 'self' https://js.stripe.com; " +
-      "frame-ancestors 'none'; " +
+      "frame-ancestors 'self' https://*.lovable.app https://*.lovableproject.com https://*.lovable.dev; " +
       "base-uri 'self'; " +
       "form-action 'self'",
   );
@@ -34,14 +39,12 @@ export function addSecurityHeaders(response: Response): Response {
   // Prevent MIME type sniffing
   headers.set("X-Content-Type-Options", "nosniff");
 
-  // Clickjacking protection
-  headers.set("X-Frame-Options", "SAMEORIGIN");
-
   // Referrer Policy
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
 
   // Strict Transport Security (HSTS) - Forces HTTPS
   headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+
 
   // Permissions Policy
   headers.set("Permissions-Policy", "geolocation=(), microphone=(), camera=(), payment=()");
