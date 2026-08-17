@@ -40,13 +40,17 @@ function UpscalePipelinePage() {
       // For now, we'll use a representative set based on the recent audit
       const { data } = await supabase
         .from("products")
-        .select("sku")
+        .select("sku, main_image")
         .ilike("sku", "AR(LS)-%")
         .order("sku", { ascending: true })
-        .limit(91); // The identified count
+        .limit(91);
 
       if (data) {
-        setItems(data.map(d => ({ sku: d.sku, status: "pending" })));
+        setItems(data.map(d => ({ 
+          sku: d.sku, 
+          status: "pending",
+          original_filename: d.main_image || undefined
+        })));
       }
     }
     fetchTargetSkus();
