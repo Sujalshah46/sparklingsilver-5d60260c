@@ -19,6 +19,7 @@ interface SkuProgress {
   sku: string;
   status: UpscaleStatus;
   error?: string;
+  original_filename?: string;
   audit?: {
     bust_color: boolean;
     logo_patch: boolean;
@@ -39,13 +40,17 @@ function UpscalePipelinePage() {
       // For now, we'll use a representative set based on the recent audit
       const { data } = await supabase
         .from("products")
-        .select("sku")
+        .select("sku, image_url")
         .ilike("sku", "AR(LS)-%")
         .order("sku", { ascending: true })
-        .limit(91); // The identified count
+        .limit(91);
 
       if (data) {
-        setItems(data.map(d => ({ sku: d.sku, status: "pending" })));
+        setItems(data.map(d => ({ 
+          sku: d.sku, 
+          status: "pending",
+          original_filename: d.image_url || undefined
+        })));
       }
     }
     fetchTargetSkus();
@@ -151,20 +156,32 @@ function UpscalePipelinePage() {
           <h2 className="font-serif font-semibold text-lg">Batch Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {items.map((item) => (
-              <div key={item.sku} className="flex items-center justify-between p-3 rounded-lg border border-border bg-card">
-                <div className="flex items-center gap-3">
-                  <div className="font-mono text-xs font-bold">{item.sku}</div>
-                  <StatusBadge status={item.status} />
-                </div>
-                {item.status === "completed" && (
-                  <div className="flex gap-1">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+              <div key={item.sku} className="flex flex-col p-3 rounded-lg border border-border bg-card space-y-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="font-mono text-xs font-bold">{item.sku}</div>
+                    <StatusBadge status={item.status} />
                   </div>
-                )}
-                {item.status === "failed" && (
-                   <Button size="icon" variant="ghost" className="h-6 w-6">
-                     <RotateCcw className="h-3 w-3" />
-                   </Button>
+                  {item.status === "completed" && (
+                    <div className="flex gap-1">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                    </div>
+                  )}
+                  {item.status === "failed" && (
+                     <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
+                       setItems(prev => prev.map(p => p.sku === item.sku ? { ...p, status: 'pending', error: undefined } : p));
+                     }}>
+                       <RotateCcw className="h-3 w-3" />
+                     </Button>
+                  )}
+                </div>
+                {item.status === "failed" && item.error && (
+                  <div className="text-[10px] text-red-500 bg-red-50 p-2 rounded border border-red-100 font-mono">
+                    <p className="font-bold">Error: {item.error}</p>
+                    {item.original_filename && (
+                      <p className="mt-1 text-slate-500 italic">Source: {item.original_filename}</p>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
