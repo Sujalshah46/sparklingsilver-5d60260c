@@ -40,7 +40,7 @@ function UpscalePipelinePage() {
       // For now, we'll use a representative set based on the recent audit
       const { data } = await supabase
         .from("products")
-        .select("sku, main_image")
+        .select("sku, image_url")
         .ilike("sku", "AR(LS)-%")
         .order("sku", { ascending: true })
         .limit(91);
@@ -49,7 +49,7 @@ function UpscalePipelinePage() {
         setItems(data.map(d => ({ 
           sku: d.sku, 
           status: "pending",
-          original_filename: d.main_image || undefined
+          original_filename: d.image_url || undefined
         })));
       }
     }
