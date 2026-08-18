@@ -66,9 +66,11 @@
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
       ],
-      "useNextNotificationsApi": true
+      "useNextNotificationsApi": true,
+      "allowBackup": false
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -92,7 +94,20 @@
           "mode": "production"
         }
       ],
-      "expo-screen-capture"
+      "expo-screen-capture",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36,
+            "buildToolsVersion": "36.0.0",
+            "ndkVersion": "27.1.12297006",
+            "minifyEnabled": true,
+            "shrinkResources": true
+          }
+        }
+      ]
     ]
   }
 }
