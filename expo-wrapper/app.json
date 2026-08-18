@@ -69,11 +69,6 @@
     "web": {
       "favicon": "./assets/icon.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "417fc100-3d56-45d9-9208-01dd5c241e31"
-      }
-    },
     "plugins": [
       [
         "expo-notifications",
@@ -105,6 +100,11 @@
           }
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "9f3a0161-70df-4852-b627-3b19524c2488"
+      }
+    }
   }
 }
