@@ -259,3 +259,6 @@
 
 /* Mobile-safe-area padding for bottom nav */
 @utility pb-safe-nav { padding-bottom: calc(5rem + env(safe-area-inset-bottom)); }
+
+/* Globally hide the Lovable platform badge */
+#lovable-badge { display: none !important; }
