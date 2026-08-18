@@ -8,11 +8,6 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "primaryColor": "#6D1F2E",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#FAF7F2"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -69,7 +64,6 @@
         "android.permission.WRITE_EXTERNAL_STORAGE",
         "android.permission.SYSTEM_ALERT_WINDOW"
       ],
-      "useNextNotificationsApi": true,
       "allowBackup": false
     },
     "web": {
@@ -80,21 +74,24 @@
         "projectId": "417fc100-3d56-45d9-9208-01dd5c241e31"
       }
     },
-    "notification": {
-      "icon": "./assets/adaptive-icon.png",
-      "color": "#6D1F2E",
-      "iosDisplayInForeground": true
-    },
     "plugins": [
       [
         "expo-notifications",
         {
           "icon": "./assets/adaptive-icon.png",
           "color": "#6D1F2E",
-          "mode": "production"
+          "mode": "production",
+          "iosDisplayInForeground": true
         }
       ],
-      "expo-screen-capture",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#FAF7F2"
+        }
+      ],
       [
         "expo-build-properties",
         {
