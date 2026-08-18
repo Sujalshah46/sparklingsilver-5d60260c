@@ -20,6 +20,7 @@ interface SkuProgress {
   status: UpscaleStatus;
   error?: string;
   original_filename?: string;
+  upscaled_url?: string; // New field to store actual upscaled URL
   audit?: {
     bust_color: boolean;
     logo_patch: boolean;
