@@ -219,7 +219,7 @@ function UpscalePipelinePage() {
                     <div className="aspect-square bg-slate-900 rounded border border-slate-800 overflow-hidden flex flex-col items-center justify-center relative group">
                       {item.status === "completed" ? (
                         <img 
-                          src={item.original_filename?.replace('.jpg', '_upscale.webp')} 
+                          src={item.upscaled_url || item.original_filename?.replace('.jpg', '_upscale.webp')} 
                           alt="Upscaled" 
                           className="w-full h-full object-cover transition-transform group-hover:scale-110"
                         />
