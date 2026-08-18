@@ -20,6 +20,7 @@ interface SkuProgress {
   status: UpscaleStatus;
   error?: string;
   original_filename?: string;
+  upscaled_url?: string; // New field to store actual upscaled URL
   audit?: {
     bust_color: boolean;
     logo_patch: boolean;
@@ -36,21 +37,26 @@ function UpscalePipelinePage() {
   // Fetch target SKUs (Antique Long Sets needing upscaling)
   useEffect(() => {
     async function fetchTargetSkus() {
-      // In a real scenario, we'd query the products table for SKUs matching the audit criteria
-      // For now, we'll use a representative set based on the recent audit
       const { data } = await supabase
         .from("products")
-        .select("sku, image_url")
+        .select("sku, image_url, image_variants")
         .ilike("sku", "AR(LS)-%")
         .order("sku", { ascending: true })
         .limit(100);
 
       if (data) {
-        setItems(data.map(d => ({ 
-          sku: d.sku, 
-          status: "pending",
-          original_filename: d.image_url || undefined
-        })));
+        setItems(data.map(d => {
+          const variants = d.image_variants as Record<string, string> | null;
+          // Check if any variant URL contains 'bust' or 'upscale'
+          const upscaledUrl = variants ? Object.values(variants).find(v => v.includes('bust') || v.includes('upscale')) : undefined;
+          
+          return { 
+            sku: d.sku, 
+            status: upscaledUrl ? "completed" : "pending",
+            original_filename: d.image_url || undefined,
+            upscaled_url: upscaledUrl
+          };
+        }));
       }
     }
     fetchTargetSkus();
@@ -213,7 +219,7 @@ function UpscalePipelinePage() {
                     <div className="aspect-square bg-slate-900 rounded border border-slate-800 overflow-hidden flex flex-col items-center justify-center relative group">
                       {item.status === "completed" ? (
                         <img 
-                          src={item.original_filename?.replace('.jpg', '_upscale.webp')} 
+                          src={item.upscaled_url || item.original_filename?.replace('.jpg', '_upscale.webp')} 
                           alt="Upscaled" 
                           className="w-full h-full object-cover transition-transform group-hover:scale-110"
                         />
