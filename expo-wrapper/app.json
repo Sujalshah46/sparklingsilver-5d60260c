@@ -62,7 +62,9 @@
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.READ_EXTERNAL_STORAGE",
         "android.permission.WRITE_EXTERNAL_STORAGE",
-        "android.permission.SYSTEM_ALERT_WINDOW"
+        "android.permission.SYSTEM_ALERT_WINDOW",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO"
       ],
       "allowBackup": false
     },
@@ -95,16 +97,11 @@
             "targetSdkVersion": 36,
             "buildToolsVersion": "36.0.0",
             "ndkVersion": "27.1.12297006",
-            "minifyEnabled": true,
-            "shrinkResources": true
+            "enableMinifyInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
           }
         }
       ]
-    ],
-    "extra": {
-      "eas": {
-        "projectId": "9f3a0161-70df-4852-b627-3b19524c2488"
-      }
-    }
+    ]
   }
 }
