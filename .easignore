@@ -1,0 +1,11 @@
+src/
+CZ/
+tmp-upload/
+app-store-submission/
+public/
+supabase/
+tests/
+*.mp4
+*.pdf
+.lovable/
+scripts/
