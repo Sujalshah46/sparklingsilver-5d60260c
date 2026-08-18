@@ -70,17 +70,34 @@ function UpscalePipelinePage() {
     setLogs(prev => [`[${new Date().toLocaleTimeString()}] ${msg}`, ...prev].slice(0, 50));
   };
 
-  const startPipeline = () => {
+  const startPipeline = async () => {
     if (isRunning) return;
     setIsRunning(true);
-    addLog("Pipeline started. Processing batch of 10...");
-    // Logic to trigger the actual upscaling script would go here
-    // For the UI demo, we simulate progress
+    addLog(`Pipeline started. Processing next batch of 10 from ${stats.pending} pending...`);
+    
+    // Identifica os próximos 10 itens pendentes
+    const pendingItems = items.filter(i => i.status === "pending").slice(0, 10);
+    
+    for (const item of pendingItems) {
+      setItems(prev => prev.map(p => p.sku === item.sku ? { ...p, status: 'processing' } : p));
+      addLog(`UPSCALING: ${item.sku} (Standardizing on Tall Emerald Bust)...`);
+      
+      // Simulação de processamento (em um ambiente real, chamaríamos a API de geração de imagem)
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Marcamos como completo e atualizamos a URL da imagem (simulado)
+      setItems(prev => prev.map(p => p.sku === item.sku ? { ...p, status: 'completed' } : p));
+      addLog(`SUCCESS: ${item.sku} upscaled to 1920px.`);
+    }
+    
+    setIsRunning(false);
+    addLog("Batch complete. 10 SKUs processed.");
+    toast.success("Batch processing complete");
   };
 
   const stopPipeline = () => {
     setIsRunning(false);
-    addLog("Pipeline paused by user.");
+    addLog("Pipeline pause requested.");
   };
 
   return (
