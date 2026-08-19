@@ -16,6 +16,8 @@ import { WebView } from 'react-native-webview';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import * as Network from 'expo-network';
+import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 
 const SITE_URL = 'https://sparklingsilver.in';
