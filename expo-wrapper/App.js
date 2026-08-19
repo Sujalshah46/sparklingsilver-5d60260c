@@ -514,6 +514,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   contentContainer: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1, backgroundColor: '#ffffff' },
+  offlineBanner: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#6D1F2E',
+  },
+  offlineText: {
+    color: '#ffffff',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
