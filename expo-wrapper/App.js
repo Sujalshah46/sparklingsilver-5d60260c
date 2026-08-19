@@ -93,12 +93,26 @@ export default function App() {
   //    a screen recording / AirPlay mirroring session is active, and (c) shield
   //    it whenever the app leaves the foreground so the app-switcher snapshot
   //    and any background capture show nothing.
+  // The web layer can exempt specific accounts (e.g. the App Store review
+  // account) from capture protection via an 'ss-web-capture-policy' message.
+  const [captureAllowed, setCaptureAllowed] = useState(false);
+  const captureAllowedRef = useRef(false);
   const [captureShield, setCaptureShield] = useState(null); // 'screenshot' | 'recording' | 'background'
   const recordingRef = useRef(false);
   const flashTimerRef = useRef(null);
 
   useEffect(() => {
     let mounted = true;
+    if (captureAllowed) {
+      // Exempt account: lift the secure flag and never shield the content.
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      recordingRef.current = false;
+      setCaptureShield(null);
+      ScreenCapture.allowScreenCaptureAsync('ss-global').catch(() => {});
+      return () => {
+        mounted = false;
+      };
+    }
     const enable = () => {
       ScreenCapture.preventScreenCaptureAsync('ss-global').catch(() => {});
     };
@@ -116,6 +130,10 @@ export default function App() {
     // Re-assert on every foreground: some OEM flows drop the secure flag.
     // While not active, cover the content so the OS snapshot is blank (iOS).
     const appSub = AppState.addEventListener('change', (state) => {
+      if (captureAllowedRef.current) {
+        setCaptureShield(null);
+        return;
+      }
       if (state === 'active') {
         enable();
         setCaptureShield(recordingRef.current ? 'recording' : null);
@@ -168,7 +186,7 @@ export default function App() {
       recordingSub?.remove?.();
       ScreenCapture.allowScreenCaptureAsync('ss-global').catch(() => {});
     };
-  }, []);
+  }, [captureAllowed]);
 
 
   const webViewRef = useRef(null);
@@ -263,6 +281,12 @@ export default function App() {
       try {
         msg = JSON.parse(event.nativeEvent.data);
       } catch {
+        return;
+      }
+      if (msg?.type === 'ss-web-capture-policy') {
+        const allow = !!msg.allow;
+        captureAllowedRef.current = allow;
+        setCaptureAllowed(allow);
         return;
       }
       if (msg?.type === 'ss-web-ready') {
