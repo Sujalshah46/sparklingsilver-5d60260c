@@ -11,6 +11,14 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD",
+      "fallbackToCacheTimeout": 3000
+    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.sparklingsilver.app",
