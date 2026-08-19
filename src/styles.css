@@ -262,3 +262,20 @@
 
 /* Globally hide the Lovable platform badge */
 #lovable-badge { display: none !important; }
+
+/* Prevent iOS pinch-zoom and auto-zoom on inputs; keep content fit to screen */
+html {
+  -webkit-text-size-adjust: 100%;
+  touch-action: pan-y;
+  overflow-x: hidden;
+}
+body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+input,
+textarea,
+select {
+  font-size: 16px; /* iOS auto-zoom threshold */
+}
+
