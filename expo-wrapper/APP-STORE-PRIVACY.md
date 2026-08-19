@@ -18,7 +18,7 @@ tracking in the app.
 | Product interaction / usage data (cart, wishlist, order activity log) | Yes | Yes | No | App Functionality |
 | User content (per-item order remarks) | Yes | Yes | No | App Functionality |
 | Precise/coarse location | No | — | — | permission is blocked in the build |
-| Photos / camera content | No | — | — | camera is used only for live barcode scanning by admins; nothing is stored |
+| Photos / camera content | No | — | — | camera is not used at all; the photo library is only opened by the user to pick a spreadsheet/image for catalogue import, and nothing is read in the background |
 | Health, financial, browsing history, contacts, search history, sensitive info | No | — | — | not collected |
 | Crash / performance data | No | — | — | no crash SDK bundled |
 
@@ -31,6 +31,13 @@ Notes for the reviewer form:
   and blocks further sign-in; only legally required order records are retained.
 - **Privacy Policy URL**: https://sparklingsilver.in/privacy
 - **Support URL**: https://sparklingsilver.in/contact
-- **Camera usage string** is already in `app.json`
-  (`NSCameraUsageDescription`) and location/mic/photo-library permissions are
-  explicitly blocked, so do **not** declare them.
+- **Camera is NOT declared.** The app bundles no camera module, so
+  `NSCameraUsageDescription` and the Android CAMERA permission were removed.
+- **Photo library** is declared (`NSPhotoLibraryUsageDescription`) only so the
+  in-app file picker used for catalogue import does not terminate; location,
+  microphone and camera permissions are explicitly blocked, so do **not**
+  declare them.
+- The bundled `PrivacyInfo.xcprivacy` manifest declares the data types in the
+  table above (name, email, phone, address, purchases, device ID, product
+  interaction, user content) with tracking = No; mirror that in App Store
+  Connect → App Privacy.
