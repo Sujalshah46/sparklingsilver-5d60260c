@@ -360,6 +360,11 @@ export default function App() {
                 contentInsetAdjustmentBehavior="never"
                 bounces={false}
                 directionalLockEnabled={true}
+                textZoom={100}
+                setBuiltInZoomControls={false}
+                setDisplayZoomControls={false}
+                injectedJavaScriptBeforeContentLoaded={VIEWPORT_LOCK_JS}
+                injectedJavaScriptBeforeContentLoadedForMainFrameOnly={true}
                 onMessage={onWebMessage}
                 onShouldStartLoadWithRequest={onShouldStartLoad}
                 onOpenWindow={(event) => {
