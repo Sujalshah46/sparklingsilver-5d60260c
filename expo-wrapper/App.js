@@ -16,6 +16,8 @@ import { WebView } from 'react-native-webview';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import * as Network from 'expo-network';
+import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 
 const SITE_URL = 'https://sparklingsilver.in';
@@ -216,6 +218,59 @@ export default function App() {
   const [reloadKey, setReloadKey] = useState(0);
   const webReadyRef = useRef(false);
   const pendingUrlRef = useRef(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const wasOfflineRef = useRef(false);
+
+  // Connectivity: show a banner while offline and auto-reload once the
+  // connection comes back so the WebView never sits on a dead page.
+  useEffect(() => {
+    let mounted = true;
+    let sub = null;
+    const apply = (state) => {
+      if (!mounted) return;
+      const online =
+        !!state?.isConnected && state?.isInternetReachable !== false;
+      setIsOffline(!online);
+      if (!online) {
+        wasOfflineRef.current = true;
+      } else if (wasOfflineRef.current) {
+        wasOfflineRef.current = false;
+        webReadyRef.current = false;
+        setLoadError(null);
+        webViewRef.current?.reload();
+      }
+    };
+
+    Network.getNetworkStateAsync().then(apply).catch(() => {});
+    try {
+      sub = Network.addNetworkStateListener?.(apply) ?? null;
+    } catch {
+      /* listener unavailable on this runtime */
+    }
+    return () => {
+      mounted = false;
+      sub?.remove?.();
+    };
+  }, []);
+
+  // Over-the-air updates: fetch and apply silently on cold start.
+  useEffect(() => {
+    if (__DEV__ || !Updates.isEnabled) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const result = await Updates.checkForUpdateAsync();
+        if (!mounted || !result.isAvailable) return;
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      } catch {
+        /* offline or no update channel configured — keep the bundled app */
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const post = useCallback((payload) => {
     const js = `(function(){try{var d=${JSON.stringify(
@@ -433,6 +488,15 @@ export default function App() {
                 </View>
               )}
 
+              {isOffline && (
+                <View style={styles.offlineBanner}>
+                  <Text style={styles.offlineText}>
+                    You’re offline — showing the last loaded page. We’ll refresh
+                    automatically when you’re back online.
+                  </Text>
+                </View>
+              )}
+
               {loading && (
                 <View style={styles.loadingOverlay} pointerEvents="none">
                   <ActivityIndicator size="large" color="#6D1F2E" />
@@ -450,6 +514,21 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   contentContainer: { flex: 1, backgroundColor: '#ffffff' },
   webview: { flex: 1, backgroundColor: '#ffffff' },
+  offlineBanner: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#6D1F2E',
+  },
+  offlineText: {
+    color: '#ffffff',
+    fontSize: 13,
+    lineHeight: 18,
+    textAlign: 'center',
+  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
