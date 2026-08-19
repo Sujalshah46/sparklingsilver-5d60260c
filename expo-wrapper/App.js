@@ -218,6 +218,59 @@ export default function App() {
   const [reloadKey, setReloadKey] = useState(0);
   const webReadyRef = useRef(false);
   const pendingUrlRef = useRef(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const wasOfflineRef = useRef(false);
+
+  // Connectivity: show a banner while offline and auto-reload once the
+  // connection comes back so the WebView never sits on a dead page.
+  useEffect(() => {
+    let mounted = true;
+    let sub = null;
+    const apply = (state) => {
+      if (!mounted) return;
+      const online =
+        !!state?.isConnected && state?.isInternetReachable !== false;
+      setIsOffline(!online);
+      if (!online) {
+        wasOfflineRef.current = true;
+      } else if (wasOfflineRef.current) {
+        wasOfflineRef.current = false;
+        webReadyRef.current = false;
+        setLoadError(null);
+        webViewRef.current?.reload();
+      }
+    };
+
+    Network.getNetworkStateAsync().then(apply).catch(() => {});
+    try {
+      sub = Network.addNetworkStateListener?.(apply) ?? null;
+    } catch {
+      /* listener unavailable on this runtime */
+    }
+    return () => {
+      mounted = false;
+      sub?.remove?.();
+    };
+  }, []);
+
+  // Over-the-air updates: fetch and apply silently on cold start.
+  useEffect(() => {
+    if (__DEV__ || !Updates.isEnabled) return;
+    let mounted = true;
+    (async () => {
+      try {
+        const result = await Updates.checkForUpdateAsync();
+        if (!mounted || !result.isAvailable) return;
+        await Updates.fetchUpdateAsync();
+        await Updates.reloadAsync();
+      } catch {
+        /* offline or no update channel configured — keep the bundled app */
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const post = useCallback((payload) => {
     const js = `(function(){try{var d=${JSON.stringify(
