@@ -22,6 +22,25 @@ const SITE_URL = 'https://sparklingsilver.in';
 // Hosts that stay inside the WebView (the app itself + its auth/CDN origins).
 const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
 
+// Runs before any page script: guarantees the document is laid out at the
+// device width even if a cached/older HTML shell ships a stale viewport tag,
+// so the UI always fits the screen with no horizontal panning.
+const VIEWPORT_LOCK_JS = `(function () {
+  function lock() {
+    var content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
+    var meta = document.querySelector('meta[name="viewport"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'viewport');
+      (document.head || document.documentElement).appendChild(meta);
+    }
+    if (meta.getAttribute('content') !== content) meta.setAttribute('content', content);
+  }
+  lock();
+  document.addEventListener('DOMContentLoaded', lock);
+})();
+true;`;
+
 function isInternalUrl(url) {
   try {
     const { protocol, hostname } = new URL(url);
@@ -360,6 +379,11 @@ export default function App() {
                 contentInsetAdjustmentBehavior="never"
                 bounces={false}
                 directionalLockEnabled={true}
+                textZoom={100}
+                setBuiltInZoomControls={false}
+                setDisplayZoomControls={false}
+                injectedJavaScriptBeforeContentLoaded={VIEWPORT_LOCK_JS}
+                injectedJavaScriptBeforeContentLoadedForMainFrameOnly={true}
                 onMessage={onWebMessage}
                 onShouldStartLoadWithRequest={onShouldStartLoad}
                 onOpenWindow={(event) => {
