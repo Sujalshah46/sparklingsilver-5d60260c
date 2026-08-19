@@ -15,6 +15,26 @@ declare global {
   }
 }
 
+/** Accounts exempt from screenshot / screen-recording protection. */
+const CAPTURE_EXEMPT_EMAILS = ["appstore.review@sparklingsilver.in"];
+
+function postCapturePolicy(allow: boolean) {
+  window.ReactNativeWebView?.postMessage(
+    JSON.stringify({ type: "ss-web-capture-policy", allow }),
+  );
+}
+
+/** Tells the native wrapper whether capture protection should be relaxed. */
+async function syncCapturePolicy() {
+  try {
+    const { data } = await supabase.auth.getSession();
+    const email = data.session?.user?.email?.toLowerCase() ?? null;
+    postCapturePolicy(!!email && CAPTURE_EXEMPT_EMAILS.includes(email));
+  } catch {
+    postCapturePolicy(false);
+  }
+}
+
 /**
  * Bridges the native iOS/Android wrapper to the web app.
  * The wrapper registers for real APNs/FCM notifications through Expo and hands
