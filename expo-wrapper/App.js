@@ -488,6 +488,15 @@ export default function App() {
                 </View>
               )}
 
+              {isOffline && (
+                <View style={styles.offlineBanner}>
+                  <Text style={styles.offlineText}>
+                    You’re offline — showing the last loaded page. We’ll refresh
+                    automatically when you’re back online.
+                  </Text>
+                </View>
+              )}
+
               {loading && (
                 <View style={styles.loadingOverlay} pointerEvents="none">
                   <ActivityIndicator size="large" color="#6D1F2E" />
