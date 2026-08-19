@@ -355,6 +355,11 @@ export default function App() {
                 showsHorizontalScrollIndicator={false}
                 startInLoadingState={false}
                 setSupportMultipleWindows={false}
+                scalesPageToFit={false}
+                automaticallyAdjustContentInsets={false}
+                contentInsetAdjustmentBehavior="never"
+                bounces={false}
+                directionalLockEnabled={true}
                 onMessage={onWebMessage}
                 onShouldStartLoadWithRequest={onShouldStartLoad}
                 onOpenWindow={(event) => {
