@@ -108,6 +108,9 @@ export function NativePushBridge() {
 
     // Re-register once the user signs in (token arrives before auth on cold start).
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED") {
+        void syncCapturePolicy();
+      }
       if (event !== "SIGNED_IN" && event !== "TOKEN_REFRESHED") return;
       const t = window.__SS_NATIVE__?.pushToken;
       if (t) void register(t, window.__SS_NATIVE__?.platform, window.__SS_NATIVE__?.deviceName);
@@ -115,6 +118,7 @@ export function NativePushBridge() {
 
     // Tell the wrapper the web layer is ready to receive the token.
     window.ReactNativeWebView?.postMessage(JSON.stringify({ type: "ss-web-ready" }));
+    void syncCapturePolicy();
 
     return () => {
       disposed = true;
