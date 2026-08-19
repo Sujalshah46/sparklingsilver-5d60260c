@@ -272,10 +272,24 @@ html {
 body {
   overflow-x: hidden;
   overscroll-behavior-x: none;
+  width: 100%;
+  max-width: 100%;
 }
 input,
 textarea,
 select {
   font-size: 16px; /* iOS auto-zoom threshold */
 }
+
+/* Safety net: media and wide blocks can never widen the viewport */
+img,
+video,
+svg,
+canvas,
+iframe,
+table,
+pre {
+  max-width: 100%;
+}
+
 
