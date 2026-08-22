@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
+import { useSignedImages } from "@/lib/useSignedImages";
 import { calculateTotalGrossWeight, calculateTotalPieces, type CartItem } from "@/lib/cart.helpers";
 
 import { Button } from "@/components/ui/button";
@@ -123,6 +124,12 @@ function CartPage() {
   const totalPieces = calculateTotalPieces(items);
   const totalGrossWt = calculateTotalGrossWeight(items);
 
+  // Short-lived (1 h) signed URLs for cart thumbnails.
+  const thumbSources = items.map((it) =>
+    cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants),
+  );
+  const { resolve: signThumb } = useSignedImages(thumbSources);
+
   return (
     <MobileShell title="Cart">
       <div className="p-4">
@@ -148,10 +155,10 @@ function CartPage() {
                         aria-label={`View ${it.product.name}`}
                         className="shrink-0"
                       >
-                        <img src={cartThumbSrc(it.product.image_url, it.product.image_variants as ImageVariants)} alt={it.product.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
+                        <img src={signThumb(cartThumbSrc(it.product.image_url, it.product.image_variants as ImageVariants))} alt={it.product.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
                       </Link>
                     ) : (
-                      <img src={cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants)} alt={it.product?.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
+                      <img src={signThumb(cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants))} alt={it.product?.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
                     )}
                     <div className="flex min-w-0 flex-1 flex-col justify-between">
                       <div>
