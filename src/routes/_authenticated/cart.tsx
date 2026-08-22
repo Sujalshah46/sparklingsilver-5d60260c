@@ -15,6 +15,21 @@ import { toast } from "sonner";
 
 const REMARK_MAX_LENGTH = 500;
 
+/**
+ * Cart rows render 96px thumbnails, so never ship the full-resolution original
+ * (~950 KB). Prefer the pre-generated `thumb` WebP variant (~9 KB); otherwise
+ * fall back to an on-the-fly Storage transform at 2x the slot size.
+ */
+function cartThumbSrc(
+  imageUrl: string | null | undefined,
+  variants: ImageVariants,
+): string {
+  const variant = productVariantUrl(variants, "thumb");
+  if (variant) return resolveProductImage(variant);
+  const resolved = resolveProductImage(imageUrl);
+  return productThumbUrl(resolved, { width: 192, height: 192, quality: 70 });
+}
+
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: pageTitle("Cart") }] }),
   component: CartPage,
