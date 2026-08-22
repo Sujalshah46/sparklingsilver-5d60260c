@@ -129,8 +129,8 @@ function CartPage() {
   useEffect(() => {
     if (!user) return;
     qc.setQueryData(["cart-weight", user.id], totalGrossWt);
-    qc.setQueryData(["cart-count", user.id], totalPieces);
-  }, [qc, user, totalGrossWt, totalPieces]);
+    qc.setQueryData(["cart-count", user.id], items.length);
+  }, [qc, user, totalGrossWt, items.length]);
 
   // Short-lived (1 h) signed URLs for cart thumbnails.
   const thumbSources = items.map((it) =>
