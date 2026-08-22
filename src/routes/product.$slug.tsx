@@ -7,6 +7,7 @@ import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
 import { ProductGallery } from "@/components/ProductImageZoom";
+import { useSignedImages } from "@/lib/useSignedImages";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -126,6 +127,10 @@ function ProductPage() {
     ].filter(Boolean) as string[];
   }, [product]);
 
+  // Short-lived (1 h) signed URLs so scraped links stop working within the hour.
+  const { resolve: signImage } = useSignedImages(productImages);
+  const signedImages = useMemo(() => productImages.map((u) => signImage(u)), [productImages, signImage]);
+
 
   const addToCart = useMutation({
     mutationFn: async () => {
@@ -151,7 +156,7 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <ProductGallery images={productImages} alt={product.name} className="w-full" />
+      <ProductGallery images={signedImages} alt={product.name} className="w-full" />
 
 
       <div className="space-y-5 p-4">
