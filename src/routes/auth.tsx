@@ -72,7 +72,9 @@ function AuthPage() {
             Secure. Private. Trusted.
           </div>
 
-          <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-white/55">
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3 text-[11px] text-white/55">
+            <a href="/public/company-info" className="underline hover:text-white">Company Info &amp; Trade Enquiry</a>
+            <span aria-hidden>·</span>
             <a href="/privacy" className="underline hover:text-white">Privacy Policy</a>
             <span aria-hidden>·</span>
             <a href="/terms" className="underline hover:text-white">Terms of Use</a>

@@ -948,6 +948,51 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_enquiries: {
+        Row: {
+          business_name: string
+          business_type: string
+          city: string
+          consent: boolean
+          contact_person: string
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          business_type: string
+          city: string
+          consent?: boolean
+          contact_person: string
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          business_type?: string
+          city?: string
+          consent?: boolean
+          contact_person?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_log: {
         Row: {
           action: string

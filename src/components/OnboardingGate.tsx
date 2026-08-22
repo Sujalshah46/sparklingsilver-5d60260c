@@ -47,7 +47,7 @@ function Row({
   );
 }
 
-const EXEMPT_PREFIXES = ["/auth", "/reset-password", "/api/", "/change-password"];
+const EXEMPT_PREFIXES = ["/auth", "/reset-password", "/api/", "/change-password", "/public/"];
 
 export function OnboardingGate() {
   const router = useRouter();
