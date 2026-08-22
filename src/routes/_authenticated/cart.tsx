@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
-import { resolveProductImage } from "@/lib/product-images";
+import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,6 +14,21 @@ import { toast } from "sonner";
 
 
 const REMARK_MAX_LENGTH = 500;
+
+/**
+ * Cart rows render 96px thumbnails, so never ship the full-resolution original
+ * (~950 KB). Prefer the pre-generated `thumb` WebP variant (~9 KB); otherwise
+ * fall back to an on-the-fly Storage transform at 2x the slot size.
+ */
+function cartThumbSrc(
+  imageUrl: string | null | undefined,
+  variants: ImageVariants,
+): string {
+  const variant = productVariantUrl(variants, "thumb");
+  if (variant) return resolveProductImage(variant);
+  const resolved = resolveProductImage(imageUrl);
+  return productThumbUrl(resolved, { width: 192, height: 192, quality: 70 });
+}
 
 export const Route = createFileRoute("/_authenticated/cart")({
   head: () => ({ meta: [{ title: pageTitle("Cart") }] }),
@@ -30,7 +45,7 @@ function CartPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, remark, product:products(*)")
+        .select("id, quantity, size, remark, product:products(id, slug, name, sku, purity, gross_weight, image_url, image_variants)")
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
@@ -92,7 +107,7 @@ function CartPage() {
         ) : (
           <>
             <div className="space-y-3">
-              {items.map((it) => (
+              {items.map((it, idx) => (
                 <div key={it.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex gap-3">
                     {it.product?.slug ? (
@@ -102,10 +117,10 @@ function CartPage() {
                         aria-label={`View ${it.product.name}`}
                         className="shrink-0"
                       >
-                        <img src={resolveProductImage(it.product.image_url)} alt={it.product.name} width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 rounded-lg object-cover" />
+                        <img src={cartThumbSrc(it.product.image_url, it.product.image_variants as ImageVariants)} alt={it.product.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
                       </Link>
                     ) : (
-                      <img src={resolveProductImage(it.product?.image_url)} alt={it.product?.name} width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 rounded-lg object-cover" />
+                      <img src={cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants)} alt={it.product?.name} width={96} height={96} decoding="async" loading={idx < 3 ? "eager" : "lazy"} fetchPriority={idx < 3 ? "high" : "auto"} className="h-24 w-24 shrink-0 rounded-lg bg-muted object-cover" />
                     )}
                     <div className="flex min-w-0 flex-1 flex-col justify-between">
                       <div>
