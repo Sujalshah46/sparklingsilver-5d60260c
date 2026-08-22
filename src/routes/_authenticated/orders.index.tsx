@@ -29,9 +29,12 @@ function OrdersPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(id, product_name, product_sku, quantity, size, image_url, status)")
+        .select(
+          "id, order_no, status, created_at, order_items(id, product_name, product_sku, quantity, size, image_url, status)",
+        )
         .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
       return data ?? [];
     },
   });
