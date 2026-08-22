@@ -20,6 +20,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as PublicCompanyInfoRouteImport } from './routes/public.company-info'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
@@ -107,6 +108,11 @@ const IndexRoute = IndexRouteImport.update({
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PublicCompanyInfoRoute = PublicCompanyInfoRouteImport.update({
+  id: '/public/company-info',
+  path: '/public/company-info',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -387,6 +394,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -434,6 +442,7 @@ export interface FileRoutesById {
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -482,6 +491,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog/'
     | '/admin/categories'
     | '/admin/homepage-featured'
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog'
     | '/admin/categories'
     | '/admin/homepage-featured'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog/'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/homepage-featured'
@@ -613,6 +625,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   BlogSlugRoute: typeof BlogSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  PublicCompanyInfoRoute: typeof PublicCompanyInfoRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicAdminBulkLinkImagesRoute: typeof ApiPublicAdminBulkLinkImagesRoute
   CategorySlugSubRoute: typeof CategorySlugSubRoute
@@ -697,6 +710,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog/'
       preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/public/company-info': {
+      id: '/public/company-info'
+      path: '/public/company-info'
+      fullPath: '/public/company-info'
+      preLoaderRoute: typeof PublicCompanyInfoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/product/$slug': {
@@ -1061,6 +1081,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   BlogSlugRoute: BlogSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  PublicCompanyInfoRoute: PublicCompanyInfoRoute,
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicAdminBulkLinkImagesRoute: ApiPublicAdminBulkLinkImagesRoute,
   CategorySlugSubRoute: CategorySlugSubRoute,
