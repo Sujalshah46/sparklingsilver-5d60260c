@@ -95,10 +95,31 @@ function CartPage() {
               {items.map((it) => (
                 <div key={it.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex gap-3">
-                    <img src={resolveProductImage(it.product?.image_url)} alt={it.product?.name} width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 rounded-lg object-cover" />
+                    {it.product?.slug ? (
+                      <Link
+                        to="/product/$slug"
+                        params={{ slug: it.product.slug }}
+                        aria-label={`View ${it.product.name}`}
+                        className="shrink-0"
+                      >
+                        <img src={resolveProductImage(it.product.image_url)} alt={it.product.name} width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 rounded-lg object-cover" />
+                      </Link>
+                    ) : (
+                      <img src={resolveProductImage(it.product?.image_url)} alt={it.product?.name} width={96} height={96} loading="lazy" className="h-24 w-24 shrink-0 rounded-lg object-cover" />
+                    )}
                     <div className="flex min-w-0 flex-1 flex-col justify-between">
                       <div>
-                        <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product?.name}</p>
+                        {it.product?.slug ? (
+                          <Link
+                            to="/product/$slug"
+                            params={{ slug: it.product.slug }}
+                            className="block py-3 no-underline text-foreground"
+                          >
+                            <span className="line-clamp-1 font-serif text-sm font-semibold">{it.product.name}</span>
+                          </Link>
+                        ) : (
+                          <p className="line-clamp-1 font-serif text-sm font-semibold">{it.product?.name}</p>
+                        )}
                         <p className="text-[11px] text-muted-foreground">{it.product?.purity}{it.size ? ` · Size ${it.size}` : ""}</p>
                         <p className="mt-1 text-[11px] text-[#555]"><span className="font-semibold text-[#333]">Gross Wt:</span> {Number(it.product?.gross_weight ?? 0).toFixed(3)} g</p>
                       </div>
