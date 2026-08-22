@@ -124,6 +124,14 @@ function CartPage() {
   const totalPieces = calculateTotalPieces(items);
   const totalGrossWt = calculateTotalGrossWeight(items);
 
+  // The bottom bar reads its own ["cart-weight"] / ["cart-count"] queries, so keep
+  // them in sync with the optimistic local cart instead of waiting for a refetch.
+  useEffect(() => {
+    if (!user) return;
+    qc.setQueryData(["cart-weight", user.id], totalGrossWt);
+    qc.setQueryData(["cart-count", user.id], totalPieces);
+  }, [qc, user, totalGrossWt, totalPieces]);
+
   // Short-lived (1 h) signed URLs for cart thumbnails.
   const thumbSources = items.map((it) =>
     cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants),
