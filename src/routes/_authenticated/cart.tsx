@@ -30,7 +30,7 @@ function CartPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, remark, product:products(*)")
+        .select("id, quantity, size, remark, product:products(id, slug, name, sku, purity, gross_weight, image_url, image_variants)")
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
