@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { ProductGallery } from "@/components/ProductImageZoom";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
