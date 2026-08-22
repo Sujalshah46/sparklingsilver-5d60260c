@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
+import { calculateTotalGrossWeight, calculateTotalPieces, type CartItem } from "@/lib/cart.helpers";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +53,14 @@ function CartPage() {
     },
   });
 
+  const [items, setItems] = useState<CartItem[]>([]);
+
+  useEffect(() => {
+    if (data) {
+      setItems(data as unknown as CartItem[]);
+    }
+  }, [data]);
+
   const updateQty = useMutation({
     mutationFn: async ({ id, quantity }: { id: string; quantity: number }) => {
       const res = quantity < 1
@@ -59,9 +68,23 @@ function CartPage() {
         : await supabase.from("cart_items").update({ quantity }).eq("id", id);
       if (res.error) throw new Error(res.error.message);
     },
-    onError: (err: Error) => { toast.error(err.message); },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
+    onError: (err: Error) => {
+      toast.error(err.message);
+      qc.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cart"] });
+      qc.invalidateQueries({ queryKey: ["cart-count"] });
+    },
   });
+
+  const handleQtyChange = (id: string, quantity: number) => {
+    const nextItems = quantity < 1
+      ? items.filter((it) => it.id !== id)
+      : items.map((it) => (it.id === id ? { ...it, quantity } : it));
+    setItems(nextItems);
+    updateQty.mutate({ id, quantity });
+  };
 
   const updateRemark = useMutation({
     mutationFn: async ({ id, remark }: { id: string; remark: string }) => {
@@ -81,16 +104,24 @@ function CartPage() {
       const { error } = await supabase.from("cart_items").delete().eq("id", id);
       if (error) throw new Error(error.message);
     },
-    onError: (err: Error) => { toast.error(err.message); },
-    onSuccess: () => { toast.success("Removed"); qc.invalidateQueries({ queryKey: ["cart"] }); qc.invalidateQueries({ queryKey: ["cart-count"] }); },
+    onError: (err: Error) => {
+      toast.error(err.message);
+      qc.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onSuccess: () => {
+      toast.success("Removed");
+      qc.invalidateQueries({ queryKey: ["cart"] });
+      qc.invalidateQueries({ queryKey: ["cart-count"] });
+    },
   });
 
-  const items = data ?? [];
-  const totalPieces = items.reduce((n, it) => n + it.quantity, 0);
-  const totalGrossWt = items.reduce(
-    (s, it) => s + Number(it.product?.gross_weight ?? 0) * it.quantity,
-    0,
-  );
+  const handleRemove = (id: string) => {
+    setItems(items.filter((it) => it.id !== id));
+    remove.mutate(id);
+  };
+
+  const totalPieces = calculateTotalPieces(items);
+  const totalGrossWt = calculateTotalGrossWeight(items);
 
   return (
     <MobileShell title="Cart">
@@ -140,11 +171,11 @@ function CartPage() {
                       </div>
                       <div className="mt-2 flex items-center justify-between">
                         <div className="inline-flex items-center rounded-full border border-border">
-                          <button className="grid h-8 w-8 place-items-center" onClick={() => updateQty.mutate({ id: it.id, quantity: it.quantity - 1 })}><Minus className="h-3.5 w-3.5" /></button>
+                          <button className="grid h-8 w-8 place-items-center" onClick={() => handleQtyChange(it.id, it.quantity - 1)}><Minus className="h-3.5 w-3.5" /></button>
                           <span className="w-7 text-center text-sm font-semibold">{it.quantity}</span>
-                          <button className="grid h-8 w-8 place-items-center" onClick={() => updateQty.mutate({ id: it.id, quantity: it.quantity + 1 })}><Plus className="h-3.5 w-3.5" /></button>
+                          <button className="grid h-8 w-8 place-items-center" onClick={() => handleQtyChange(it.id, it.quantity + 1)}><Plus className="h-3.5 w-3.5" /></button>
                         </div>
-                        <button onClick={() => remove.mutate(it.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => handleRemove(it.id)} className="text-muted-foreground hover:text-destructive"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </div>
                   </div>
