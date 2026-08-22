@@ -11,7 +11,7 @@ import { MapPin, Phone, Mail, MessageCircle, BadgeCheck, Instagram, CheckCircle2
 import { toast } from "sonner";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, INSTAGRAM_URL, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { pageTitle, pageDescription, descriptionTags } from "@/lib/seo";
-import { resolveProductImage } from "@/lib/product-images";
+import { PREMIUM_CATEGORY_IMAGES, categoryPlaceholder } from "@/lib/product-images";
 import { submitTradeEnquiry, tradeEnquirySchema } from "@/lib/trade-enquiry.functions";
 
 const TITLE = pageTitle("Company Profile & Trade Account Enquiry");
@@ -197,7 +197,7 @@ function CompanyInfoPage() {
           {(categories ?? []).map((c) => (
             <div key={c.id} className="overflow-hidden rounded-xl border bg-card">
               <img
-                src={resolveProductImage(c.image_url, c.slug)}
+                src={PREMIUM_CATEGORY_IMAGES[c.slug] || c.image_url || categoryPlaceholder}
                 alt={c.name}
                 width={300}
                 height={300}
