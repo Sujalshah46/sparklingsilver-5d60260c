@@ -124,6 +124,12 @@ function CartPage() {
   const totalPieces = calculateTotalPieces(items);
   const totalGrossWt = calculateTotalGrossWeight(items);
 
+  // Short-lived (1 h) signed URLs for cart thumbnails.
+  const thumbSources = items.map((it) =>
+    cartThumbSrc(it.product?.image_url, it.product?.image_variants as ImageVariants),
+  );
+  const { resolve: signThumb } = useSignedImages(thumbSources);
+
   return (
     <MobileShell title="Cart">
       <div className="p-4">
