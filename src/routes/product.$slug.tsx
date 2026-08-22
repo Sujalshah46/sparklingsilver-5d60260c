@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { ProductGallery } from "@/components/ProductImageZoom";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -115,18 +116,15 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
   const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
-  const rawImg = resolveProductImage(product.image_url);
-  const isRenderable = typeof rawImg === "string" && rawImg.includes("/storage/v1/");
-  const { imgSrc, imgSrcSet, lqipSrc } = useMemo(() => {
-    if (!isRenderable) return { imgSrc: rawImg, imgSrcSet: undefined as string | undefined, lqipSrc: rawImg };
-    return {
-      imgSrc: productThumbUrl(rawImg, { width: 800, quality: 70 }),
-      imgSrcSet: `${productThumbUrl(rawImg, { width: 800, quality: 70 })} 800w, ${productThumbUrl(rawImg, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(rawImg, { width: 1600, quality: 72 })} 1600w`,
-      // Same URL the grid tile just cached in the SW — paints instantly as LQIP.
-      lqipSrc: productThumbUrl(rawImg, { width: 300, quality: 55 }),
-    };
-  }, [rawImg, isRenderable]);
-  const [hiResLoaded, setHiResLoaded] = useState(false);
+  const productImages = useMemo(() => {
+    const variants = product.image_variants as
+      | { detail?: string; card?: string; thumb?: string; gallery?: string[] }
+      | null;
+    return [
+      variants?.detail ?? variants?.card ?? variants?.thumb ?? resolveProductImage(product.image_url),
+      ...(variants?.gallery ?? []),
+    ].filter(Boolean) as string[];
+  }, [product]);
 
 
   const addToCart = useMutation({
@@ -153,31 +151,7 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <div className="relative aspect-square w-full overflow-hidden bg-secondary">
-        {isRenderable && !hiResLoaded && (
-          <img
-            src={lqipSrc}
-            alt=""
-            aria-hidden
-            width={1024}
-            height={1024}
-            className="absolute inset-0 h-full w-full object-contain"
-            style={{ filter: "blur(6px)", transform: "scale(1.02)" }}
-          />
-        )}
-        <img
-          src={imgSrc}
-          srcSet={imgSrcSet}
-          sizes="(min-width:768px) 640px, 100vw"
-          alt={product.name}
-          width={1024}
-          height={1024}
-          decoding="async"
-          fetchPriority="high"
-          onLoad={() => setHiResLoaded(true)}
-          className="relative h-full w-full object-contain"
-        />
-      </div>
+      <ProductGallery images={productImages} alt={product.name} className="w-full" />
 
 
       <div className="space-y-5 p-4">
