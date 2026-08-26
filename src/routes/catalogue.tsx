@@ -140,24 +140,20 @@ function Catalogue() {
     return () => io.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Per-category design counts for the collection tiles
-  const { data: catCounts } = useQuery({
-    queryKey: ["catalogue-category-counts"],
-    staleTime: 10 * 60_000,
-    queryFn: async () => {
-      const entries = await Promise.all(
-        categories.map(async (c) => {
-          const { count } = await supabase
-            .from("products")
-            .select("id", { count: "exact", head: true })
-            .eq("category_id", c.id as string);
-          return [c.id as string, count ?? 0] as const;
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number>;
-    },
-    enabled: categories.length > 0,
-  });
+  // Per-category design counts come from the cached `product_count` column on
+  // the category row (maintained by a DB trigger). A head:true count aggregate
+  // on `products` returns 0 for anonymous visitors, which made every tile
+  // render "0 Designs" on the logged-out catalogue landing page.
+  const catCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        categories.map((c) => [
+          c.id as string,
+          Number((c as unknown as { product_count?: number | null }).product_count) || 0,
+        ]),
+      ) as Record<string, number>,
+    [categories],
+  );
 
   // Collections-only view for /catalogue (no product grid)
   if (!onlyNew) {
