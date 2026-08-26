@@ -137,7 +137,12 @@ export function CatalogueCard({
         
         <p><span className="font-semibold text-[#333]">Silver Purity:</span> {p.purity}</p>
       </div>
-      {showCart && (
+      {showCart && !user && (
+        <Link to="/auth" search={{ redirect: "/catalogue" }} className="block border-t border-[#EEE] px-2 py-2 text-center text-[11px] font-semibold text-burgundy underline underline-offset-2">
+          Login to view wholesale pricing
+        </Link>
+      )}
+      {showCart && user && (
         <>
           <div className="flex items-stretch justify-center gap-1 border-t border-[#EEE] px-2 py-1.5">
             <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="grid h-7 w-7 place-items-center border border-[#CCC] text-[#333] hover:bg-[#F4F4F4]" aria-label="Decrease">
