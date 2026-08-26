@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Text,
   View,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -17,113 +19,128 @@ import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getNavigationAction } from './src/navigationPolicy';
 
 const SITE_URL = 'https://sparklingsilver.in';
-// Hosts that stay inside the WebView (the app itself + its auth/CDN origins).
-const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
 
-// Runs before any page script: guarantees the document is laid out at the
-// device width even if a cached/older HTML shell ships a stale viewport tag,
-// so the UI always fits the screen with no horizontal panning.
-const VIEWPORT_LOCK_JS = `(function () {
-  function lock() {
-    var content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover';
-    var meta = document.querySelector('meta[name="viewport"]');
-    if (!meta) {
-      meta = document.createElement('meta');
-      meta.setAttribute('name', 'viewport');
-      (document.head || document.documentElement).appendChild(meta);
-    }
-    if (meta.getAttribute('content') !== content) meta.setAttribute('content', content);
-  }
-  lock();
-  document.addEventListener('DOMContentLoaded', lock);
-})();
-true;`;
-
-function isInternalUrl(url) {
-  try {
-    const { protocol, hostname } = new URL(url);
-    if (protocol !== 'http:' && protocol !== 'https:') return false;
-    return INTERNAL_HOST_SUFFIXES.some(
-      (h) => hostname === h || hostname.endsWith(`.${h}`),
-    );
-  } catch {
-    return false;
-  }
-}
-
-async function openExternal(url) {
-  try {
-    await Linking.openURL(url);
-  } catch (err) {
-    console.warn('could not open url externally', url, err);
-  }
-}
-
-// Native foreground presentation — real OS notifications, not web push.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
+    shouldSetBadge: false,
   }),
 });
 
 async function registerForPushNotificationsAsync() {
-  if (Platform.OS === 'android') {
-    await Notifications.setNotificationChannelAsync('orders', {
-      name: 'Order updates',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#6D1F2E',
-    });
+  if (!Device.isDevice) {
+    return null;
   }
+  try {
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      return null;
+    }
 
-  if (!Device.isDevice) return null;
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId || Constants.easConfig?.projectId;
+    if (!projectId) {
+      console.warn('EAS projectId is missing');
+      return null;
+    }
 
-  const existing = await Notifications.getPermissionsAsync();
-  let status = existing.status;
-  if (status !== 'granted') {
-    const asked = await Notifications.requestPermissionsAsync();
-    status = asked.status;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+  } catch (err) {
+    console.warn('Error fetching Expo push token', err);
+    return null;
   }
-  if (status !== 'granted') return null;
-
-  const projectId =
-    Constants?.expoConfig?.extra?.eas?.projectId ??
-    Constants?.easConfig?.projectId;
-
-  const token = await Notifications.getExpoPushTokenAsync(
-    projectId ? { projectId } : undefined,
-  );
-  return token?.data ?? null;
 }
 
 export default function App() {
-  // Capture protection, applied globally (the whole app is one WebView screen,
-  // so this covers every screen at all times).
-  //  * Android: FLAG_SECURE blocks screenshots AND screen recording outright,
-  //    and also blacks out the app-switcher thumbnail.
-  //  * iOS: the OS does not permit blocking capture, so we (a) shield the
-  //    content the instant a screenshot is taken, (b) shield it for as long as
-  //    a screen recording / AirPlay mirroring session is active, and (c) shield
-  //    it whenever the app leaves the foreground so the app-switcher snapshot
-  //    and any background capture show nothing.
-  // The web layer can exempt specific accounts (e.g. the App Store review
-  // account) from capture protection via an 'ss-web-capture-policy' message.
   const [captureAllowed, setCaptureAllowed] = useState(false);
   const captureAllowedRef = useRef(false);
   const [captureShield, setCaptureShield] = useState(null); // 'screenshot' | 'recording' | 'background'
   const recordingRef = useRef(false);
   const flashTimerRef = useRef(null);
 
+  const [session, setSession] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [activeTab, setActiveTab] = useState('shop'); // 'shop' | 'orders'
+  const [isOffline, setIsOffline] = useState(false);
+  const [pushToken, setPushToken] = useState(null);
+  const [showLoginNotice, setShowLoginNotice] = useState(false);
+  const hasShownLoginNoticeRef = useRef(false);
+
+  const webViewRef = useRef(null);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
+  const webReadyRef = useRef(false);
+
+  // Subscribe to network connection changes
+  useEffect(() => {
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsOffline(!state.isConnected);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch orders from Supabase
+  const fetchOrders = useCallback(async (token, userId) => {
+    try {
+      const response = await fetch(
+        `https://gihusjkvwzxcrilrbmww.supabase.co/rest/v1/orders?user_id=eq.${userId}&select=*&order=created_at.desc`,
+        {
+          headers: {
+            'apikey': 'sb_publishable_w-zu7Y7vidH12zFVXa4Ekw_6xnmf1nI',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setOrders(data);
+        AsyncStorage.setItem('ss_orders', JSON.stringify(data)).catch(() => {});
+      }
+    } catch (err) {
+      console.warn('Failed to fetch fresh orders', err);
+    }
+  }, []);
+
+  // Load cached auth and order details on mount
+  useEffect(() => {
+    async function loadCachedData() {
+      try {
+        const cachedSession = await AsyncStorage.getItem('ss_session');
+        const cachedOrders = await AsyncStorage.getItem('ss_orders');
+        if (cachedSession) {
+          const parsedSession = JSON.parse(cachedSession);
+          setSession(parsedSession);
+          if (cachedOrders) {
+            setOrders(JSON.parse(cachedOrders));
+          }
+          // Query fresh orders
+          fetchOrders(parsedSession.access_token, parsedSession.user.id);
+        }
+      } catch (e) {
+        console.warn('Failed to load cached session or orders', e);
+      }
+    }
+    loadCachedData();
+  }, [fetchOrders]);
+
+  // Screen capture & recording protection
   useEffect(() => {
     let mounted = true;
     if (captureAllowed) {
-      // Exempt account: lift the secure flag and never shield the content.
       if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
       recordingRef.current = false;
       setCaptureShield(null);
@@ -146,8 +163,6 @@ export default function App() {
       }, 4000);
     };
 
-    // Re-assert on every foreground: some OEM flows drop the secure flag.
-    // While not active, cover the content so the OS snapshot is blank (iOS).
     const appSub = AppState.addEventListener('change', (state) => {
       if (captureAllowedRef.current) {
         setCaptureShield(null);
@@ -167,17 +182,11 @@ export default function App() {
       try {
         const perm = await ScreenCapture.requestPermissionsAsync?.();
         if (perm && perm.status !== 'granted') return;
-      } catch {
-        /* not required on all platforms */
-      }
+      } catch {}
       if (!mounted) return;
       try {
         captureSub = ScreenCapture.addScreenshotListener(showFlash);
-      } catch {
-        /* listener unavailable */
-      }
-      // Screen-recording / mirroring observer (iOS). Feature-detected so the
-      // app keeps working on runtimes that don't expose it.
+      } catch {}
       try {
         const addRecordingListener =
           ScreenCapture.addScreenRecordingListener ??
@@ -192,9 +201,7 @@ export default function App() {
             setCaptureShield(active ? 'recording' : null);
           });
         }
-      } catch {
-        /* observer unavailable */
-      }
+      } catch {}
     })();
 
     return () => {
@@ -207,84 +214,47 @@ export default function App() {
     };
   }, [captureAllowed]);
 
-
-  const webViewRef = useRef(null);
-  const [canGoBack, setCanGoBack] = useState(false);
-  const [pushToken, setPushToken] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(null);
-  const [reloadKey, setReloadKey] = useState(0);
-  const webReadyRef = useRef(false);
-  const pendingUrlRef = useRef(null);
-
-  const post = useCallback((payload) => {
-    const js = `(function(){try{var d=${JSON.stringify(
-      JSON.stringify(payload),
-    )};window.dispatchEvent(new MessageEvent('message',{data:d}));}catch(e){}})();true;`;
-    webViewRef.current?.injectJavaScript(js);
-  }, []);
-
-  const sendToken = useCallback(
-    (token) => {
-      if (!token) return;
-      post({
-        type: 'ss-native-push-token',
-        token,
-        platform: Platform.OS,
-        deviceName: Device.deviceName ?? undefined,
-      });
-    },
-    [post],
-  );
-
-  // Register for native push once on launch.
+  // Request notification permissions and fetch push token
   useEffect(() => {
-    let mounted = true;
-    registerForPushNotificationsAsync()
-      .then((token) => {
-        if (mounted && token) setPushToken(token);
-      })
-      .catch((err) => console.warn('push registration failed', err));
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (pushToken && webReadyRef.current) sendToken(pushToken);
-  }, [pushToken, sendToken]);
-
-  // Notification tap -> deep link inside the web app.
-  useEffect(() => {
-    const navigateTo = (url) => {
-      if (!url) return;
-      if (webReadyRef.current) post({ type: 'ss-native-navigate', url });
-      else pendingUrlRef.current = url;
-    };
-
-    Notifications.getLastNotificationResponseAsync()
-      .then((response) => {
-        const url = response?.notification?.request?.content?.data?.url;
-        if (url) navigateTo(url);
-      })
-      .catch(() => {});
-
-    const sub = Notifications.addNotificationResponseReceivedListener((response) => {
-      const url = response?.notification?.request?.content?.data?.url;
-      navigateTo(url);
+    registerForPushNotificationsAsync().then(token => {
+      if (token) {
+        setPushToken(token);
+      }
     });
-    return () => sub.remove();
-  }, [post]);
-
-  // Clear the badge when the app is opened.
-  useEffect(() => {
-    Notifications.setBadgeCountAsync(0).catch(() => {});
   }, []);
+
+  // Listen to deep-link redirects from push notification taps
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const data = response.notification.request.content.data;
+      const url = data?.url || data?.path;
+      if (url && webViewRef.current) {
+        const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+        const script = `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(cleanUrl)} }), "*"); true;`;
+        webViewRef.current.injectJavaScript(script);
+        setActiveTab('shop');
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  // Safety timer for loading overlay
+  useEffect(() => {
+    setLoading(true);
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 3500);
+    return () => clearTimeout(safetyTimer);
+  }, [reloadKey]);
 
   // Android hardware back -> WebView back
   useEffect(() => {
     if (Platform.OS !== 'android') return;
     const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (activeTab === 'orders') {
+        setActiveTab('shop');
+        return true;
+      }
       if (canGoBack && webViewRef.current) {
         webViewRef.current.goBack();
         return true;
@@ -292,7 +262,20 @@ export default function App() {
       return false;
     });
     return () => sub.remove();
-  }, [canGoBack]);
+  }, [canGoBack, activeTab]);
+
+  const sendPushTokenToWeb = useCallback((token) => {
+    if (token && webViewRef.current) {
+      webViewRef.current.injectJavaScript(
+        `window.postMessage(JSON.stringify({
+          type: "ss-native-push-token",
+          token: ${JSON.stringify(token)},
+          platform: ${JSON.stringify(Platform.OS)},
+          deviceName: ${JSON.stringify(Device.modelName || 'Device')}
+        }), "*"); true;`
+      );
+    }
+  }, []);
 
   const onWebMessage = useCallback(
     (event) => {
@@ -310,23 +293,36 @@ export default function App() {
       }
       if (msg?.type === 'ss-web-ready') {
         webReadyRef.current = true;
-        if (pushToken) sendToken(pushToken);
-        if (pendingUrlRef.current) {
-          post({ type: 'ss-native-navigate', url: pendingUrlRef.current });
-          pendingUrlRef.current = null;
+        setLoading(false);
+        if (pushToken) {
+          sendPushTokenToWeb(pushToken);
+        }
+      }
+      if (msg?.type === 'ss-session') {
+        const s = msg.session;
+        setSession(s);
+        if (s) {
+          AsyncStorage.setItem('ss_session', JSON.stringify(s)).catch(() => {});
+          fetchOrders(s.access_token, s.user.id);
+        } else {
+          AsyncStorage.removeItem('ss_session').catch(() => {});
+          AsyncStorage.removeItem('ss_orders').catch(() => {});
+          setOrders([]);
         }
       }
     },
-    [post, pushToken, sendToken],
+    [pushToken, sendPushTokenToWeb, fetchOrders],
   );
 
-  // WhatsApp / tel: / mailto: / Instagram must leave the WebView, otherwise
-  // those buttons silently do nothing (a common App Review rejection).
   const onShouldStartLoad = useCallback((request) => {
     const url = request?.url ?? '';
-    if (!url || url === 'about:blank') return true;
-    if (isInternalUrl(url)) return true;
-    openExternal(url);
+    const action = getNavigationAction(url, SITE_URL);
+    if (action === 'ALLOW') {
+      return true;
+    }
+    if (action === 'EXTERNAL') {
+      Linking.openURL(url).catch(() => {});
+    }
     return false;
   }, []);
 
@@ -337,86 +333,175 @@ export default function App() {
     setReloadKey((k) => k + 1);
   }, []);
 
+  const renderOrderItem = ({ item }) => {
+    const dateStr = new Date(item.created_at).toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+    
+    // Status pill style mappings
+    let badgeColor = '#E2E8F0';
+    let textColor = '#475569';
+    if (item.status === 'completed' || item.status === 'confirmed') {
+      badgeColor = '#DEF7EC';
+      textColor = '#03543F';
+    } else if (item.status === 'pending') {
+      badgeColor = '#FEF08A';
+      textColor = '#713F12';
+    } else if (item.status === 'dispatched') {
+      badgeColor = '#E0F2FE';
+      textColor = '#0369A1';
+    } else if (item.status === 'cancelled') {
+      badgeColor = '#FDE8E8';
+      textColor = '#9B1C1C';
+    }
+
+    return (
+      <View style={styles.orderCard}>
+        <View style={styles.orderCardHeader}>
+          <Text style={styles.orderNo}>Order #{item.order_no || item.id.slice(0, 8)}</Text>
+          <View style={[styles.statusBadge, { backgroundColor: badgeColor }]}>
+            <Text style={[styles.statusText, { color: textColor }]}>
+              {item.status.toUpperCase()}
+            </Text>
+          </View>
+        </View>
+        <Text style={styles.orderDate}>{dateStr}</Text>
+        <View style={styles.orderFooter}>
+          <Text style={styles.orderTotalLabel}>Total Amount:</Text>
+          <Text style={styles.orderTotalValue}>₹{item.total.toLocaleString()}</Text>
+        </View>
+      </View>
+    );
+  };
+
+  const handleNavigationStateChange = (nav) => {
+    setCanGoBack(nav.canGoBack);
+    if (nav.loading) webReadyRef.current = false;
+
+    // Detect first launch after login to trigger screen capture warning notification banner
+    const isAuthPage = nav.url.includes('/auth') || nav.url.includes('/reset-password');
+    if (!isAuthPage && !nav.loading && nav.url !== 'about:blank') {
+      if (!hasShownLoginNoticeRef.current) {
+        hasShownLoginNoticeRef.current = true;
+        setShowLoginNotice(true);
+        setTimeout(() => {
+          setShowLoginNotice(false);
+        }, 5000);
+      }
+    }
+  };
+
+  const showWebView = activeTab === 'shop' && !loadError && !isOffline;
+
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <StatusBar style="dark" />
         <View style={styles.contentContainer}>
-          {loadError ? (
+          {isOffline || loadError ? (
             <View style={styles.errorBox}>
               <Text style={styles.errorTitle}>Can’t reach Sparkling Silver</Text>
               <Text style={styles.errorBody}>
-                Please check your internet connection and try again.
+                {isOffline
+                  ? 'Your device appears to be offline. Please connect to the internet to check the catalogue.'
+                  : (loadError || 'Unable to load page')}
               </Text>
-              <Pressable style={styles.retryBtn} onPress={retry} accessibilityRole="button">
+              <Pressable
+                style={styles.retryBtn}
+                onPress={retry}
+                accessibilityRole="button"
+                accessibilityLabel="Retry loading catalog"
+              >
                 <Text style={styles.retryText}>Try again</Text>
               </Pressable>
             </View>
           ) : (
             <>
-              <WebView
-                key={reloadKey}
-                ref={webViewRef}
-                source={{ uri: SITE_URL }}
-                originWhitelist={['*']}
-                javaScriptEnabled
-                domStorageEnabled
-                databaseEnabled
-                cacheEnabled={true}
-                cacheMode="LOAD_DEFAULT"
-                sharedCookiesEnabled
-                thirdPartyCookiesEnabled
-                allowsBackForwardNavigationGestures
-                pullToRefreshEnabled={true}
-                androidHardwareAccelerationDisabled={false}
-                overScrollMode="never"
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                startInLoadingState={false}
-                setSupportMultipleWindows={false}
-                scalesPageToFit={false}
-                automaticallyAdjustContentInsets={false}
-                contentInsetAdjustmentBehavior="never"
-                bounces={false}
-                directionalLockEnabled={true}
-                textZoom={100}
-                setBuiltInZoomControls={false}
-                setDisplayZoomControls={false}
-                injectedJavaScriptBeforeContentLoaded={VIEWPORT_LOCK_JS}
-                injectedJavaScriptBeforeContentLoadedForMainFrameOnly={true}
-                onMessage={onWebMessage}
-                onShouldStartLoadWithRequest={onShouldStartLoad}
-                onOpenWindow={(event) => {
-                  const url = event?.nativeEvent?.targetUrl;
-                  if (!url) return;
-                  if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
-                    `window.location.assign(${JSON.stringify(url)});true;`,
-                  );
-                  else openExternal(url);
-                }}
-                onLoadStart={() => setLoading(true)}
-                onLoadEnd={() => setLoading(false)}
-                onError={({ nativeEvent }) => {
-                  setLoading(false);
-                  setLoadError(nativeEvent?.description ?? 'load failed');
-                }}
-                onHttpError={({ nativeEvent }) => {
-                  // Only a failed main-document load should surface the error UI.
-                  if (
-                    nativeEvent?.url?.startsWith(SITE_URL) &&
-                    nativeEvent?.statusCode >= 500
-                  ) {
+              {/* WebView Layout */}
+              <View style={[styles.tabContent, { display: showWebView ? 'flex' : 'none' }]}>
+                <WebView
+                  key={reloadKey}
+                  ref={webViewRef}
+                  source={{ uri: SITE_URL }}
+                  originWhitelist={['*']}
+                  javaScriptEnabled
+                  domStorageEnabled
+                  databaseEnabled
+                  cacheEnabled={true}
+                  cacheMode="LOAD_DEFAULT"
+                  sharedCookiesEnabled
+                  thirdPartyCookiesEnabled
+                  allowsBackForwardNavigationGestures
+                  pullToRefreshEnabled={Platform.OS === 'ios'}
+                  androidHardwareAccelerationDisabled={false}
+                  overScrollMode="never"
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                  startInLoadingState={false}
+                  setSupportMultipleWindows={false}
+                  scalesPageToFit={false}
+                  automaticallyAdjustContentInsets={false}
+                  contentInsetAdjustmentBehavior="never"
+                  bounces={false}
+                  directionalLockEnabled={true}
+                  textZoom={100}
+                  setBuiltInZoomControls={false}
+                  setDisplayZoomControls={false}
+                  mixedContentMode="compatibility"
+                  onMessage={onWebMessage}
+                  onShouldStartLoadWithRequest={onShouldStartLoad}
+                  onNavigationStateChange={handleNavigationStateChange}
+                  onLoadProgress={({ nativeEvent }) => {
+                    if (nativeEvent.progress > 0.5) {
+                      setLoading(false);
+                    }
+                  }}
+                  onLoadEnd={() => setLoading(false)}
+                  onError={({ nativeEvent }) => {
                     setLoading(false);
-                    setLoadError(`server error ${nativeEvent.statusCode}`);
-                  }
-                }}
-                onNavigationStateChange={(nav) => {
-                  setCanGoBack(nav.canGoBack);
-                  // A full page load resets the injected bridge state.
-                  if (nav.loading) webReadyRef.current = false;
-                }}
-                style={styles.webview}
-              />
+                    if (!webReadyRef.current) {
+                      setLoadError(nativeEvent?.description ?? 'Failed to load page');
+                    }
+                  }}
+                  onHttpError={({ nativeEvent }) => {
+                    if (nativeEvent?.statusCode >= 500 && nativeEvent?.url?.includes('sparklingsilver.in')) {
+                      setLoading(false);
+                      setLoadError(`Server error (${nativeEvent.statusCode})`);
+                    }
+                  }}
+                  style={styles.webview}
+                />
+              </View>
+
+              {/* Native Orders History Screen */}
+              {activeTab === 'orders' && (
+                <View style={styles.ordersScreen}>
+                  <Text style={styles.screenHeader}>Order History</Text>
+                  {isOffline && (
+                    <View style={styles.offlineBanner}>
+                      <Text style={styles.offlineBannerText}>Viewing cached data offline</Text>
+                    </View>
+                  )}
+                  {orders.length === 0 ? (
+                    <View style={styles.emptyOrders}>
+                      <Text style={styles.emptyText}>No orders found.</Text>
+                      <Text style={styles.emptySub}>Browse the shop catalogue to assemble your first quotation request.</Text>
+                    </View>
+                  ) : (
+                    <FlatList
+                      data={orders}
+                      renderItem={renderOrderItem}
+                      keyExtractor={(item) => item.id}
+                      contentContainerStyle={styles.ordersList}
+                      showsVerticalScrollIndicator={false}
+                    />
+                  )}
+                </View>
+              )}
+              
+              {/* Screen Capture Block Overlay */}
               {captureShield && (
                 <View style={styles.shield}>
                   <Text style={styles.shieldTitle}>
@@ -425,15 +510,25 @@ export default function App() {
                       : 'Screen capture is not allowed'}
                   </Text>
                   <Text style={styles.shieldBody}>
-                    Sparkling Silver catalogue images and pricing are confidential.
+                    To protect catalog designs, capturing or recording is blocked in this application.
                     {captureShield === 'recording'
-                      ? ' Stop the recording or mirroring session to continue browsing.'
-                      : ' Please do not capture or record this screen.'}
+                      ? ' Stop recording or AirPlay mirroring to continue.'
+                      : ''}
                   </Text>
                 </View>
               )}
 
-              {loading && (
+              {/* Translucent Banner Notification */}
+              {showLoginNotice && (
+                <View style={styles.noticeBanner}>
+                  <Text style={styles.noticeText}>
+                    Screenshots are disabled to protect proprietary designs.
+                  </Text>
+                </View>
+              )}
+
+              {/* Loading Overlay */}
+              {loading && activeTab === 'shop' && (
                 <View style={styles.loadingOverlay} pointerEvents="none">
                   <ActivityIndicator size="large" color="#6D1F2E" />
                 </View>
@@ -441,6 +536,42 @@ export default function App() {
             </>
           )}
         </View>
+
+        {/* Tab Navigation (Only visible when user is logged in) */}
+        {session && !loadError && !isOffline && (
+          <View style={styles.tabBar}>
+            <Pressable
+              style={styles.tabItem}
+              onPress={() => setActiveTab('shop')}
+              accessibilityRole="tab"
+              accessibilityLabel="Shop Catalogue"
+            >
+              <Text
+                style={[
+                  styles.tabLabel,
+                  activeTab === 'shop' ? styles.tabLabelActive : styles.tabLabelInactive,
+                ]}
+              >
+                👜 Shop
+              </Text>
+            </Pressable>
+            <Pressable
+              style={styles.tabItem}
+              onPress={() => setActiveTab('orders')}
+              accessibilityRole="tab"
+              accessibilityLabel="Order History"
+            >
+              <Text
+                style={[
+                  styles.tabLabel,
+                  activeTab === 'orders' ? styles.tabLabelActive : styles.tabLabelInactive,
+                ]}
+              >
+                📜 My Orders
+              </Text>
+            </Pressable>
+          </View>
+        )}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -449,6 +580,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#ffffff' },
   contentContainer: { flex: 1, backgroundColor: '#ffffff' },
+  tabContent: { flex: 1 },
   webview: { flex: 1, backgroundColor: '#ffffff' },
   loadingOverlay: {
     position: 'absolute',
@@ -470,6 +602,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
     backgroundColor: '#6D1F2E',
+    zIndex: 99999,
   },
   shieldTitle: {
     fontSize: 20,
@@ -482,6 +615,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: '#F3E6E9',
+    textAlign: 'center',
+  },
+  noticeBanner: {
+    position: 'absolute',
+    bottom: 80,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.85)',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 9999,
+  },
+  noticeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
     textAlign: 'center',
   },
   errorBox: {
@@ -507,8 +659,136 @@ const styles = StyleSheet.create({
   retryBtn: {
     backgroundColor: '#6D1F2E',
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    minHeight: 48,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 999,
   },
   retryText: { color: '#ffffff', fontSize: 15, fontWeight: '600' },
+  
+  // Native Orders Screen Styling
+  ordersScreen: {
+    flex: 1,
+    backgroundColor: '#FAF7F2',
+    padding: 16,
+  },
+  screenHeader: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#6D1F2E',
+    marginBottom: 16,
+  },
+  offlineBanner: {
+    backgroundColor: '#FEF08A',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  offlineBannerText: {
+    fontSize: 12,
+    color: '#713F12',
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  ordersList: {
+    paddingBottom: 80,
+  },
+  orderCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  orderCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  orderNo: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A202C',
+  },
+  statusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 999,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  orderDate: {
+    fontSize: 13,
+    color: '#718096',
+    marginBottom: 12,
+  },
+  orderFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#EDF2F7',
+    paddingTop: 10,
+  },
+  orderTotalLabel: {
+    fontSize: 14,
+    color: '#4A5568',
+  },
+  orderTotalValue: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#6D1F2E',
+  },
+  emptyOrders: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 32,
+    marginTop: 64,
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#4A5568',
+    marginBottom: 8,
+  },
+  emptySub: {
+    fontSize: 14,
+    color: '#718096',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  
+  // Tab Bar navigation
+  tabBar: {
+    flexDirection: 'row',
+    height: 56,
+    backgroundColor: '#6D1F2E',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.1)',
+  },
+  tabItem: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabLabel: {
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  tabLabelActive: {
+    color: '#D4AF37',
+  },
+  tabLabelInactive: {
+    color: 'rgba(255, 255, 255, 0.6)',
+  },
 });
