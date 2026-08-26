@@ -1,4 +1,4 @@
-# Exclude local build artifacts from EAS uploads
+# Exclude local build artifacts and caches from EAS uploads
 build-*.aab
 *.aab
 *.apk
@@ -8,4 +8,3 @@ build/
 .expo/
 web-build/
 node_modules/
-package-lock.json
