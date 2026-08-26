@@ -230,12 +230,29 @@ function ProductPage() {
 
       <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background px-4 py-3" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
-            <Heart className="h-5 w-5" />
-          </Button>
-          <Button variant="outline" className="h-12 flex-1" onClick={() => addToCart.mutate()}>
-            <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
-          </Button>
+          {user ? (
+            <>
+              <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
+                <Heart className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" className="h-12 flex-1" onClick={() => addToCart.mutate()}>
+                <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
+              </Button>
+            </>
+          ) : (
+            <div className="flex flex-1 flex-col justify-center">
+              <p className="text-[12px] leading-snug text-muted-foreground">
+                Login to view wholesale pricing and place orders
+              </p>
+              <Link
+                to="/auth"
+                search={{ redirect: `/product/${slug}` }}
+                className="mt-0.5 text-[13px] font-semibold text-burgundy underline underline-offset-2"
+              >
+                Login
+              </Link>
+            </div>
+          )}
           <Button asChild className="h-12 flex-1 bg-burgundy text-ivory hover:bg-burgundy/90">
             <a
               href={whatsAppHref}
