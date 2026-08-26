@@ -1,0 +1,11 @@
+# Exclude local build artifacts from EAS uploads
+build-*.aab
+*.aab
+*.apk
+*.ipa
+dist/
+build/
+.expo/
+web-build/
+node_modules/
+package-lock.json
