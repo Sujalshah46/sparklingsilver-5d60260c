@@ -139,6 +139,69 @@ function FieldLabel({ children }: { children: React.ReactNode }) {
   return <div className="mb-1.5 text-[13px] font-semibold text-white">{children}</div>;
 }
 
+function AppleLogo({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.82 15.4 3.75 6.94 9.4 6.64c1.17.06 2.03.62 2.73.66 1.06-.21 2.08-.81 3.25-.73 1.37.1 2.41.64 3.09 1.63-2.77 1.68-2.32 5.98.22 7.13-.57 1.5-1.31 2.99-2.64 4.99zM12.03 7.25c-.15-2.35 1.66-4.35 3.98-4.52.29 2.58-2.34 4.8-3.98 4.52z" />
+    </svg>
+  );
+}
+
+function AppleSignIn({ redirect }: { redirect: string }) {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const signIn = async () => {
+    setLoading(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("apple", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) {
+        return toast.error(result.error.message || "Apple sign-in failed.");
+      }
+      if (result.redirected) {
+        // Browser will redirect; nothing else to do.
+        return;
+      }
+      // Session was set inline (preview iframe path).
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        return toast.error("Could not complete Apple sign-in.");
+      }
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("status, must_change_password")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      if (profile?.status === "inactive") {
+        await supabase.auth.signOut();
+        return toast.error("Login blocked. Contact Admin.");
+      }
+      if (profile?.must_change_password) {
+        return navigate({ to: "/change-password", replace: true });
+      }
+      navigate({ to: redirect, replace: true });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Apple sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={signIn}
+      disabled={loading}
+      className="group relative flex w-full items-center justify-center gap-2 rounded-md bg-black px-4 py-3 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:bg-neutral-900"
+    >
+      <AppleLogo className="h-4 w-4" />
+      {loading ? "Signing in with Apple…" : "Sign in with Apple"}
+    </button>
+  );
+}
+
 function SignInForm({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
