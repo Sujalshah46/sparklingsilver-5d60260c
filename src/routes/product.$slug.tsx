@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
 import { toast } from "sonner";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_NAMES_LC } from "@/lib/site";
 
@@ -114,6 +115,7 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(productQuery(slug));
   const { user } = useAuth();
+  const { isApproved } = useApproval();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const product = data!.product;
