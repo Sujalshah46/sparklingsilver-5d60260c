@@ -42,6 +42,9 @@ const productQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/product/$slug")({
+  // RLS hides non-featured designs from anonymous/pending viewers; SSR has no
+  // session, so the lookup must run in the browser with the viewer's token.
+  ssr: false,
   head: ({ params, loaderData }) => {
     const p = (loaderData as { product?: { name: string; sku: string; description: string | null; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = pageTitle(p ? p.name : "Jewellery");

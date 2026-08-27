@@ -55,6 +55,8 @@ const categoryQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/category/$slug/")({
+  // See catalogue.tsx: product visibility is per-viewer (RLS), so no SSR cache.
+  ssr: false,
   head: ({ params, loaderData }) => {
     const ld = loaderData as { category?: { name: string } } | undefined;
     const name = ld?.category?.name ?? params.slug;
@@ -107,6 +109,7 @@ function CategoryPage() {
 
   return (
     <MobileShell title={data.category.name}>
+      <RestrictedCatalogueNotice />
       {/* Header */}
       <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-2 py-2">
         <button

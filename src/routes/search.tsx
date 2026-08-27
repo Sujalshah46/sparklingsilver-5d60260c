@@ -10,6 +10,7 @@ import { Search as SearchIcon, X } from "lucide-react";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/search")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: pageTitle("Search Jewellery") },
@@ -64,6 +65,7 @@ function SearchPage() {
 
   return (
     <MobileShell title="Search">
+      <RestrictedCatalogueNotice />
       <div className="sticky top-[57px] z-20 border-b border-border bg-background px-4 py-3">
         <div className="relative">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

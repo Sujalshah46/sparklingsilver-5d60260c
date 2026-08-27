@@ -8,6 +8,7 @@ import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCar
 import { ArrowUpDown, ChevronLeft, LayoutGrid, ListFilter, Rows2, Rows3 } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { CARD_COLUMNS } from "@/lib/product-columns";
+import { RestrictedCatalogueNotice } from "@/components/RestrictedCatalogueNotice";
 import {
   Sheet,
   SheetContent,
@@ -53,6 +54,8 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
   });
 
 export const Route = createFileRoute("/category/$slug/$sub")({
+  // See catalogue.tsx: product visibility is per-viewer (RLS), so no SSR cache.
+  ssr: false,
   head: ({ params, loaderData }) => {
     const ld = loaderData as { category?: { name: string }; subcategory?: { name: string } } | undefined;
     const catName = ld?.category?.name ?? params.slug;
