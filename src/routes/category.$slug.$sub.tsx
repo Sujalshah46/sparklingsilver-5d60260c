@@ -199,6 +199,7 @@ function SubcategoryPage() {
 
   return (
     <MobileShell title={`${data.category.name} — ${data.subcategory.name}`}>
+      <RestrictedCatalogueNotice />
       <div className="flex items-center gap-2 border-b border-[#E5E5E5] px-2 py-2">
         <button
           type="button"
