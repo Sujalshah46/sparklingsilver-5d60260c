@@ -185,7 +185,7 @@ function AppleSignIn({ redirect }: { redirect: string }) {
       type="button"
       onClick={signIn}
       disabled={loading}
-      className="group relative flex w-full items-center justify-center gap-2 rounded-md bg-black px-4 py-3 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:bg-neutral-900"
+      className="group relative flex w-full items-center justify-center gap-2 rounded-md border border-white/25 bg-white/[0.08] px-4 py-3 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_6px_16px_rgba(0,0,0,0.25)] transition disabled:opacity-60 hover:bg-white/15"
     >
       <AppleLogo className="h-4 w-4" />
       {loading ? "Signing in with Apple…" : "Sign in with Apple"}
