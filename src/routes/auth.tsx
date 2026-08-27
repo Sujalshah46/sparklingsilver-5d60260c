@@ -11,7 +11,7 @@ import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/li
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
-import { stashOAuthTarget } from "@/routes/auth.callback";
+import { stashOAuthTarget } from "@/routes/auth-callback";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User, AlertCircle } from "lucide-react";
 import logo from "@/assets/logo.png";
 

@@ -5,7 +5,7 @@ import { pageTitle, descriptionTags } from "@/lib/seo";
 import { sanitizeRedirect } from "@/lib/site";
 import logo from "@/assets/logo.png";
 
-export const Route = createFileRoute("/auth/callback")({
+export const Route = createFileRoute("/auth-callback")({
   ssr: false,
   head: () => ({
     meta: [
