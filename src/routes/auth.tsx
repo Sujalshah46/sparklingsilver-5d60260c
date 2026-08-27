@@ -57,15 +57,6 @@ function AuthPage() {
             <User className="h-4 w-4" />
             <h1 className="text-sm font-semibold tracking-wide">Sign In</h1>
           </div>
-
-          <AppleSignIn redirect={redirect} />
-
-          <div className="my-4 flex items-center gap-3 text-white/40">
-            <div className="h-px flex-1 bg-white/15" />
-            <span className="text-[11px] font-medium uppercase tracking-wider">or continue with email</span>
-            <div className="h-px flex-1 bg-white/15" />
-          </div>
-
           <SignInForm redirect={redirect} />
 
           <div className="mt-5 rounded-md border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/70">
@@ -194,7 +185,7 @@ function AppleSignIn({ redirect }: { redirect: string }) {
       type="button"
       onClick={signIn}
       disabled={loading}
-      className="group relative flex w-full items-center justify-center gap-2 rounded-md bg-black px-4 py-3 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.15),0_6px_16px_rgba(0,0,0,0.35)] transition disabled:opacity-60 hover:bg-neutral-900"
+      className="group relative flex w-full items-center justify-center gap-2 rounded-md border border-white/25 bg-white/[0.08] px-4 py-3 text-[14px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_6px_16px_rgba(0,0,0,0.25)] transition disabled:opacity-60 hover:bg-white/15"
     >
       <AppleLogo className="h-4 w-4" />
       {loading ? "Signing in with Apple…" : "Sign in with Apple"}
@@ -277,6 +268,14 @@ function SignInForm({ redirect }: { redirect: string }) {
       <button type="submit" disabled={loading} style={silverStyle} className={silverBtn}>
         {loading ? "Signing in…" : (<>Login <ArrowRight className="h-4 w-4" /></>)}
       </button>
+
+      <div className="flex items-center gap-3 text-white/40">
+        <div className="h-px flex-1 bg-white/15" />
+        <span className="text-[11px] font-medium uppercase tracking-wider">or</span>
+        <div className="h-px flex-1 bg-white/15" />
+      </div>
+
+      <AppleSignIn redirect={redirect} />
     </form>
   );
 }
