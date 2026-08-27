@@ -36,6 +36,8 @@ const baseFields = {
   is_new: z.boolean().optional(),
   is_bestseller: z.boolean().optional(),
   is_trending: z.boolean().optional(),
+  // Visible to logged-out / not-yet-approved viewers (enforced by RLS).
+  is_featured: z.boolean().optional(),
   stock_quantity: z.number().int().min(0).default(0),
   low_stock_threshold: z.number().int().min(0).default(5),
 };
