@@ -11,6 +11,7 @@ import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/li
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
+import { stashOAuthTarget } from "@/routes/auth-callback";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User, AlertCircle } from "lucide-react";
 import logo from "@/assets/logo.png";
 
@@ -145,8 +146,11 @@ function AppleSignIn({ redirect }: { redirect: string }) {
   const signIn = async () => {
     setLoading(true);
     try {
+      // Stash the intended destination; the OAuth round-trip drops our query
+      // params, and the callback page consumes this after the session exchange.
+      stashOAuthTarget(redirect);
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: window.location.origin,
+        redirect_uri: `${window.location.origin}/auth-callback`,
       });
       if (result.error) {
         return toast.error(result.error.message || "Apple sign-in failed.");
