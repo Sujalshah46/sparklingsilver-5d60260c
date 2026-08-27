@@ -26,14 +26,21 @@ export const lookupByBarcode = createServerFn({ method: "POST" })
     await ensureAdmin(supabase, userId);
     const raw = data.barcode.trim();
     const isLabel = LABEL_RE.test(raw);
-    const cols = "id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories:categories!category_id(name), subcategories:subcategories!subcategory_id(name)";
+    const cols = "id, name, sku, barcode, label_code, gross_weight, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories:categories!category_id(name), subcategories:subcategories!subcategory_id(name)";
     const { data: product, error } = await supabase
       .from("products")
       .select(cols)
       .or(isLabel ? `label_code.eq.${raw},barcode.eq.${raw}` : `barcode.eq.${raw},label_code.eq.${raw},sku.eq.${raw}`)
       .maybeSingle();
     if (error) throw new Error(error.message);
-    return { found: !!product, product, parsedLabel: isLabel ? raw : null };
+    let withPrice: any = product;
+    if (product) {
+      // Pricing columns are approval-gated; read them through the RPC.
+      const { data: pricing } = await supabase.rpc("get_product_pricing", { _ids: [(product as any).id] });
+      const pr = (pricing ?? [])[0] as any;
+      withPrice = { ...(product as any), price: Number(pr?.price ?? 0), making_charge_pct: pr?.making_charge_pct ?? null };
+    }
+    return { found: !!product, product: withPrice, parsedLabel: isLabel ? raw : null };
   });
 
 
@@ -121,7 +128,7 @@ export const scanCreateProduct = createServerFn({ method: "POST" })
       purity: "925",
       gross_weight: data.gross_weight ?? 0,
       net_weight: 0,
-    }).select("id, name, sku, barcode, label_code, gross_weight, price, image_url, stock_quantity, low_stock_threshold, updated_at").single();
+    }).select("id, name, sku, barcode, label_code, gross_weight, image_url, stock_quantity, low_stock_threshold, updated_at").single();
     if (error) throw new Error(error.message);
 
 

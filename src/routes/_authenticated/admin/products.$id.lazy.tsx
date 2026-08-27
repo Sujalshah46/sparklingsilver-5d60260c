@@ -40,7 +40,16 @@ function ProductForm() {
     queryKey: ["admin-product-edit", id],
     enabled: !isNew,
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("*").eq("id", id).maybeSingle();
+      const { data } = await supabase
+        .from("products")
+        .select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, is_new, is_bestseller, is_trending, is_featured, in_stock, stock_quantity, low_stock_threshold, created_at")
+        .eq("id", id)
+        .maybeSingle();
+      if (!data) return null;
+      // Pricing columns are approval-gated; read them through the RPC.
+      const { data: pricing } = await supabase.rpc("get_product_pricing", { _ids: [id] });
+      const pr = (pricing ?? [])[0] as any;
+      return { ...data, price: pr?.price ?? 0, making_charge_pct: pr?.making_charge_pct ?? null } as any;
       return data;
     },
   });
