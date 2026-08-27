@@ -5,6 +5,7 @@ import { z } from "zod";
 import { zodValidator, fallback } from "@tanstack/zod-adapter";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
@@ -56,6 +57,15 @@ function AuthPage() {
             <User className="h-4 w-4" />
             <h1 className="text-sm font-semibold tracking-wide">Sign In</h1>
           </div>
+
+          <AppleSignIn redirect={redirect} />
+
+          <div className="my-4 flex items-center gap-3 text-white/40">
+            <div className="h-px flex-1 bg-white/15" />
+            <span className="text-[11px] font-medium uppercase tracking-wider">or continue with email</span>
+            <div className="h-px flex-1 bg-white/15" />
+          </div>
+
           <SignInForm redirect={redirect} />
 
           <div className="mt-5 rounded-md border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/70">
