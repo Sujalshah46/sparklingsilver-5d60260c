@@ -150,7 +150,7 @@ function AppleSignIn({ redirect }: { redirect: string }) {
       // params, and the callback page consumes this after the session exchange.
       stashOAuthTarget(redirect);
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: `${window.location.origin}/auth/callback`,
+        redirect_uri: `${window.location.origin}/auth-callback`,
       });
       if (result.error) {
         return toast.error(result.error.message || "Apple sign-in failed.");
