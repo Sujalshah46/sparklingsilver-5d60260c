@@ -1135,6 +1135,14 @@ export type Database = {
           slug: string
         }[]
       }
+      get_product_pricing: {
+        Args: { _ids: string[] }
+        Returns: {
+          making_charge_pct: number
+          price: number
+          product_id: string
+        }[]
+      }
       get_subcategory_product_counts: {
         Args: { _category_id: string }
         Returns: {
