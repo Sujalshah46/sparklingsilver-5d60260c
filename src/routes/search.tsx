@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CARD_COLUMNS } from "@/lib/product-columns";
 import { MobileShell } from "@/components/MobileShell";
+import { RestrictedCatalogueNotice } from "@/components/RestrictedCatalogueNotice";
 import { Input } from "@/components/ui/input";
 import { Search as SearchIcon, X } from "lucide-react";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";

@@ -4,6 +4,7 @@ import { createFileRoute, notFound, Link, useNavigate } from "@tanstack/react-ro
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
+import { RestrictedCatalogueNotice } from "@/components/RestrictedCatalogueNotice";
 import { ChevronLeft } from "lucide-react";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_SLUGS } from "@/lib/site";
 import { SUBCATEGORY_IMAGES, categoryPlaceholder, resolveProductImage, getSubcategoryImage } from "@/lib/product-images";
