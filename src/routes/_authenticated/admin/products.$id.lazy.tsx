@@ -59,7 +59,7 @@ function ProductForm() {
     gross_weight: 0, stone_weight: 0, stone_type: "",
     price: 0, making_charge_pct: 0, moq: 1,
     image_url: "", stock_quantity: 0, low_stock_threshold: 5,
-    is_new: false, is_bestseller: false, is_trending: false,
+    is_new: false, is_bestseller: false, is_trending: false, is_featured: false,
   });
 
   useEffect(() => {
@@ -85,6 +85,7 @@ function ProductForm() {
         is_new: !!product.is_new,
         is_bestseller: !!product.is_bestseller,
         is_trending: !!product.is_trending,
+        is_featured: !!(product as any).is_featured,
       });
     }
   }, [product]);
@@ -183,6 +184,7 @@ function ProductForm() {
             <Toggle label="New arrival" checked={form.is_new} onChange={(v) => up("is_new", v)} />
             <Toggle label="Bestseller" checked={form.is_bestseller} onChange={(v) => up("is_bestseller", v)} />
             <Toggle label="Trending" checked={form.is_trending} onChange={(v) => up("is_trending", v)} />
+            <Toggle label="Publicly visible (featured preview)" checked={form.is_featured} onChange={(v) => up("is_featured", v)} />
           </div>
 
           <Button type="submit" disabled={saving} className="w-full">

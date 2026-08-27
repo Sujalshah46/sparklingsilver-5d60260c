@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
 import { toast } from "sonner";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_NAMES_LC } from "@/lib/site";
 
@@ -42,6 +43,9 @@ const productQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/product/$slug")({
+  // RLS hides non-featured designs from anonymous/pending viewers; SSR has no
+  // session, so the lookup must run in the browser with the viewer's token.
+  ssr: false,
   head: ({ params, loaderData }) => {
     const p = (loaderData as { product?: { name: string; sku: string; description: string | null; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = pageTitle(p ? p.name : "Jewellery");
@@ -111,6 +115,7 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(productQuery(slug));
   const { user } = useAuth();
+  const { isApproved } = useApproval();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const product = data!.product;
@@ -230,7 +235,7 @@ function ProductPage() {
 
       <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background px-4 py-3" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2">
-          {user ? (
+          {user && isApproved ? (
             <>
               <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
                 <Heart className="h-5 w-5" />
@@ -239,6 +244,12 @@ function ProductPage() {
                 <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
               </Button>
             </>
+          ) : user ? (
+            <div className="flex flex-1 flex-col justify-center">
+              <p className="text-[12px] leading-snug text-muted-foreground">
+                Your account is awaiting approval. Wholesale rates and ordering unlock once approved.
+              </p>
+            </div>
           ) : (
             <div className="flex flex-1 flex-col justify-center">
               <p className="text-[12px] leading-snug text-muted-foreground">

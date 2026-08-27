@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CategoryTile } from "@/components/CategoryTile";
 import { PREMIUM_CATEGORY_IMAGES, resolveProductImage } from "@/lib/product-images";
 import { CARD_COLUMNS } from "@/lib/product-columns";
+import { RestrictedCatalogueNotice } from "@/components/RestrictedCatalogueNotice";
 
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
@@ -79,6 +80,10 @@ const NEW_DESC = pageDescription(
 );
 
 export const Route = createFileRoute("/catalogue")({
+  // Product rows are RLS-scoped to the viewer. SSR has no session, so a
+  // server-rendered cache would pin approved buyers to the featured-only
+  // anonymous result set.
+  ssr: false,
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
@@ -159,6 +164,7 @@ function Catalogue() {
   if (!onlyNew) {
     return (
       <MobileShell title="Catalogue">
+        <RestrictedCatalogueNotice />
         <section className="px-3 py-6">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>
           <span className="mt-1 block h-px w-8 bg-teal" />
@@ -186,6 +192,7 @@ function Catalogue() {
 
   return (
     <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
+      <RestrictedCatalogueNotice />
       {!onlyNew && categories.length > 0 && (
         <section className="px-3 pt-4">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>

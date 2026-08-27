@@ -588,6 +588,7 @@ export type Database = {
           import_status: string
           in_stock: boolean | null
           is_bestseller: boolean | null
+          is_featured: boolean
           is_new: boolean | null
           is_trending: boolean | null
           item: string | null
@@ -630,6 +631,7 @@ export type Database = {
           import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
+          is_featured?: boolean
           is_new?: boolean | null
           is_trending?: boolean | null
           item?: string | null
@@ -672,6 +674,7 @@ export type Database = {
           import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
+          is_featured?: boolean
           is_new?: boolean | null
           is_trending?: boolean | null
           item?: string | null
@@ -1139,6 +1142,7 @@ export type Database = {
           subcategory_id: string
         }[]
       }
+      is_approved_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "customer"
