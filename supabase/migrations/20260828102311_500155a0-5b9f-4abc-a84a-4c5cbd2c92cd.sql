@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles DROP CONSTRAINT profiles_status_check;
+ALTER TABLE public.profiles ADD CONSTRAINT profiles_status_check CHECK (status = ANY (ARRAY['pending'::text,'active'::text,'inactive'::text,'rejected'::text,'deleted'::text]));
