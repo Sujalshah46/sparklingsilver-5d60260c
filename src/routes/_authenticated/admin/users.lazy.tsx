@@ -48,6 +48,7 @@ function AdminUsersPage() {
 
   const users = useQuery({ queryKey: ["admin-users"], queryFn: () => listUsers() });
   const reqs = useQuery({ queryKey: ["admin-reset-requests"], queryFn: () => listReqs() });
+  const pendingUsers = (users.data ?? []).filter((u: UserRow) => u.status === "pending");
 
   const [showCreate, setShowCreate] = useState(false);
   const [credsView, setCredsView] = useState<{ username: string; email: string; password: string; user_id: string } | null>(null);
