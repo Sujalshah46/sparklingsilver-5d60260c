@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User, AlertCircle } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User } from "lucide-react";
 import logo from "@/assets/logo.png";
 
 const searchSchema = z.object({
@@ -59,13 +59,6 @@ function AuthPage() {
             <h1 className="text-sm font-semibold tracking-wide">Sign In</h1>
           </div>
           <SignInForm redirect={redirect} />
-
-          <div className="mt-5 rounded-md border border-white/10 bg-white/[0.03] p-3 text-[11px] leading-relaxed text-white/70">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              <p>Buyer accounts are created by our admin team. Contact us if you need access.</p>
-            </div>
-          </div>
 
           <div className="mt-4 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[11px] text-white/70">
             <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25">
