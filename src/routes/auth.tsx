@@ -345,6 +345,7 @@ function SignInForm({ redirect }: { redirect: string }) {
       </div>
 
       <AppleSignIn redirect={redirect} />
+      <GoogleSignIn redirect={redirect} />
     </form>
   );
 }
