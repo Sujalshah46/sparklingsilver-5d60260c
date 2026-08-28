@@ -26,7 +26,7 @@ export const lookupByBarcode = createServerFn({ method: "POST" })
     await ensureAdmin(supabase, userId);
     const raw = data.barcode.trim();
     const isLabel = LABEL_RE.test(raw);
-    const cols = "id, name, sku, barcode, label_code, gross_weight, image_url, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories:categories!category_id(name), subcategories:subcategories!subcategory_id(name)";
+    const cols = "id, name, sku, barcode, label_code, gross_weight, image_url, image_variants, stock_quantity, low_stock_threshold, updated_at, description, category_id, subcategory_id, categories:categories!category_id(name), subcategories:subcategories!subcategory_id(name)";
     const { data: product, error } = await supabase
       .from("products")
       .select(cols)

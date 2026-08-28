@@ -515,13 +515,20 @@ export function ProductImageZoom({
 
 export type ProductGalleryProps = {
   images: string[];
+  /**
+   * Small (~300w) counterparts to `images`, used for the thumbnail strip so a
+   * 64px tile doesn't download the full 1200w detail render. Falls back to
+   * `images` when not supplied.
+   */
+  thumbs?: string[];
   alt?: string;
   className?: string;
 };
 
-export function ProductGallery({ images, alt = "Product image", className = "" }: ProductGalleryProps) {
+export function ProductGallery({ images, thumbs, alt = "Product image", className = "" }: ProductGalleryProps) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
+  const [loaded, setLoaded] = useState(false);
 
   if (!images || images.length === 0) {
     return (
@@ -539,12 +546,21 @@ export function ProductGallery({ images, alt = "Product image", className = "" }
         aria-label="Open image viewer"
         className="group relative block w-full overflow-hidden rounded-lg bg-neutral-50"
       >
+        {/* Dark-green themed shimmer occupying the reserved square until the
+            main image decodes — no blank gap, no layout shift. */}
+        {!loaded && <span aria-hidden className="img-skeleton absolute inset-0" />}
         <img
           src={images[active]}
           alt={alt}
+          width={1200}
+          height={1200}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
           draggable={false}
+          onLoad={() => setLoaded(true)}
           onContextMenu={(e) => e.preventDefault()}
-          className="aspect-square w-full object-contain"
+          className={`aspect-square w-full object-contain transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
           style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none", userSelect: "none" }}
         />
         <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white">
@@ -558,7 +574,7 @@ export function ProductGallery({ images, alt = "Product image", className = "" }
             <button
               key={`${src}-${i}`}
               type="button"
-              onClick={() => setActive(i)}
+              onClick={() => { setActive(i); setLoaded(false); }}
               aria-label={`View image ${i + 1}`}
               aria-current={i === active}
               className={`h-16 w-16 shrink-0 overflow-hidden rounded-md border-2 transition ${
@@ -566,8 +582,12 @@ export function ProductGallery({ images, alt = "Product image", className = "" }
               }`}
             >
               <img
-                src={src}
+                src={thumbs?.[i] ?? src}
                 alt=""
+                width={64}
+                height={64}
+                loading="lazy"
+                decoding="async"
                 draggable={false}
                 className="h-full w-full object-cover"
                 style={{ WebkitTouchCallout: "none", pointerEvents: "none" }}

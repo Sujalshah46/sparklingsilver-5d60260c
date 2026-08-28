@@ -122,19 +122,27 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
   const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
-  const productImages = useMemo(() => {
+  const { productImages, thumbImages } = useMemo(() => {
     const variants = product.image_variants as
       | { detail?: string; card?: string; thumb?: string; gallery?: string[] }
       | null;
-    return [
+    const gallery = (variants?.gallery ?? []).filter(Boolean) as string[];
+    const full = [
       variants?.detail ?? variants?.card ?? variants?.thumb ?? resolveProductImage(product.image_url),
-      ...(variants?.gallery ?? []),
+      ...gallery,
     ].filter(Boolean) as string[];
+    // 64px strip tiles never need the 1200w render.
+    const thumbs = [
+      variants?.thumb ?? productThumbUrl(full[0], { width: 200, quality: 55 }),
+      ...gallery.map((g) => productThumbUrl(g, { width: 200, quality: 55 })),
+    ];
+    return { productImages: full, thumbImages: thumbs };
   }, [product]);
 
   // Short-lived (1 h) signed URLs so scraped links stop working within the hour.
-  const { resolve: signImage } = useSignedImages(productImages);
+  const { resolve: signImage } = useSignedImages([...productImages, ...thumbImages]);
   const signedImages = useMemo(() => productImages.map((u) => signImage(u)), [productImages, signImage]);
+  const signedThumbs = useMemo(() => thumbImages.map((u) => signImage(u)), [thumbImages, signImage]);
 
 
   const addToCart = useMutation({

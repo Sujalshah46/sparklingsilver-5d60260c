@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { inr, formatDate } from "@/lib/format";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, productImageSrc, type ImageVariants } from "@/lib/product-images";
 import { lookupByBarcode, scanAdjustStock, scanCreateProduct, scanEditProduct } from "@/lib/scan.functions";
 import { Camera, CameraOff, Minus, Plus, ScanLine, Search, PackagePlus, Pencil, X, Repeat } from "lucide-react";
 
@@ -29,6 +29,7 @@ type Product = {
   gross_weight?: number | null;
   price: number;
   image_url: string | null;
+  image_variants?: unknown;
   stock_quantity: number | null;
   low_stock_threshold: number | null;
   updated_at?: string | null;
@@ -343,8 +344,12 @@ function ProductPanel({
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-start gap-3">
         <img
-          src={resolveProductImage(product.image_url, categoryPlaceholder)}
+          src={productImageSrc(product.image_url, product.image_variants as ImageVariants, "thumb", categoryPlaceholder)}
           alt={product.name}
+          width={80}
+          height={80}
+          loading="lazy"
+          decoding="async"
           onError={(e) => { e.currentTarget.src = categoryPlaceholder; }}
           className="h-20 w-20 rounded-lg bg-secondary object-cover"
         />

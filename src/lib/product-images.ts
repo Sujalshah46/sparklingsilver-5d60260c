@@ -603,5 +603,59 @@ export function productVariantUrl(
   return undefined;
 }
 
+/**
+ * Single source of truth for "which URL should this surface load?".
+ *
+ * Order of preference:
+ *   1. the pre-generated WebP variant for the requested size (thumb ~11 KB /
+ *      300w, card ~40 KB / 600w, detail ~144 KB / 1200w)
+ *   2. an on-the-fly Supabase render transform of the original
+ *   3. the raw stored URL / bundled placeholder
+ *
+ * Signed tokens are always preserved: variants carry their own `?token=`, and
+ * `productThumbUrl` only rewrites the path prefix and appends params.
+ */
+const SIZE_PX: Record<"thumb" | "card" | "detail", number> = {
+  thumb: 300,
+  card: 600,
+  detail: 1200,
+};
+
+export function productImageSrc(
+  imageUrl: string | null | undefined,
+  variants: ImageVariants,
+  size: "thumb" | "card" | "detail" = "thumb",
+  fallback?: string,
+): string {
+  const variant = productVariantUrl(variants, size);
+  if (variant) return variant;
+  const resolved = resolveProductImage(imageUrl, fallback ?? ring);
+  if (resolved.includes("/storage/v1/")) {
+    return productThumbUrl(resolved, {
+      width: SIZE_PX[size],
+      quality: size === "thumb" ? 60 : 70,
+    });
+  }
+  return resolved;
+}
+
+/**
+ * Pull `image_variants` off a joined product row that may be missing entirely
+ * (product deleted after the order was placed) so historical orders always
+ * fall back to their denormalised `image_url` instead of breaking.
+ */
+export function orderItemImageSrc(
+  item: {
+    image_url?: string | null;
+    product?: { image_variants?: unknown } | null;
+  },
+  size: "thumb" | "card" = "thumb",
+  fallback?: string,
+): string {
+  const variants = (item.product?.image_variants ?? null) as ImageVariants;
+  return productImageSrc(item.image_url, variants, size, fallback);
+}
+
+
 
 

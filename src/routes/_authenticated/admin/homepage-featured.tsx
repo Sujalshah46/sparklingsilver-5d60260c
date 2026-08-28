@@ -12,7 +12,7 @@ import { Search, ArrowUp, ArrowDown, X, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { setHomepageFeatured, reorderHomepageFeatured, clearHomepageFeatured } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { categoryPlaceholder, productImageSrc, type ImageVariants } from "@/lib/product-images";
 
 export const Route = createFileRoute("/_authenticated/admin/homepage-featured")({
   head: () => ({ meta: [{ title: pageTitle("Admin — Homepage New Arrival") }] }),
@@ -34,7 +34,7 @@ function HomepageFeaturedAdmin() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, sku, image_url, gross_weight, purity, homepage_featured, homepage_featured_order")
+        .select("id, name, sku, image_url, image_variants, gross_weight, purity, homepage_featured, homepage_featured_order")
         .eq("import_status", "active")
         .order("sku", { ascending: true });
       return data ?? [];
@@ -139,8 +139,12 @@ function HomepageFeaturedAdmin() {
                     {i + 1}
                   </span>
                   <img
-                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 96, quality: 55 })}
+                    src={productImageSrc(p.image_url, p.image_variants as ImageVariants, "thumb", categoryPlaceholder)}
                     alt={p.name}
+                    width={40}
+                    height={40}
+                    loading="lazy"
+                    decoding="async"
                     className="h-10 w-10 rounded-md bg-secondary object-cover"
                   />
                   <div className="min-w-0 flex-1">
@@ -199,9 +203,12 @@ function HomepageFeaturedAdmin() {
                     className="h-4 w-4 cursor-pointer accent-burgundy disabled:cursor-not-allowed disabled:opacity-40"
                   />
                   <img
-                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 96, quality: 55 })}
+                    src={productImageSrc(p.image_url, p.image_variants as ImageVariants, "thumb", categoryPlaceholder)}
                     alt={p.name}
+                    width={48}
+                    height={48}
                     loading="lazy"
+                    decoding="async"
                     className="h-12 w-12 rounded-md bg-secondary object-cover"
                   />
                   <div className="min-w-0 flex-1">
@@ -229,7 +236,7 @@ function HomepageFeaturedAdmin() {
               {featured.map((p) => (
                 <div key={p.id} className="w-[170px] shrink-0 rounded-lg border border-border p-2">
                   <img
-                    src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 340, quality: 60 })}
+                    src={productImageSrc(p.image_url, p.image_variants as ImageVariants, "card", categoryPlaceholder)}
                     alt={p.name}
                     className="aspect-square w-full rounded-md bg-secondary object-cover"
                   />

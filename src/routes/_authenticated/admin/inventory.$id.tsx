@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { setStock, updateThreshold } from "@/lib/inventory.functions";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, productImageSrc, type ImageVariants } from "@/lib/product-images";
 import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/_authenticated/admin/inventory/$id")({
@@ -29,7 +29,7 @@ function StockDetail() {
     queryKey: ["admin-inv-product", id],
     queryFn: async () => {
       const { data } = await supabase.from("products")
-        .select("id, name, sku, image_url, stock_quantity, low_stock_threshold, in_stock")
+        .select("id, name, sku, image_url, image_variants, stock_quantity, low_stock_threshold, in_stock")
         .eq("id", id).maybeSingle();
       return data;
     },
@@ -95,9 +95,12 @@ function StockDetail() {
 
         <div className="flex gap-3 rounded-xl border border-border bg-card p-3">
           <img
-            src={resolveProductImage(product.image_url, categoryPlaceholder)}
+            src={productImageSrc(product.image_url, product.image_variants as ImageVariants, "card", categoryPlaceholder)}
             alt={product.name}
+            width={160}
+            height={160}
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               const img = e.currentTarget;
               if (img.dataset.fallback === "1") {
