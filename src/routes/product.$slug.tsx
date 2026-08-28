@@ -169,7 +169,7 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <ProductGallery images={signedImages} alt={product.name} className="w-full" />
+      <ProductGallery images={signedImages} thumbs={signedThumbs} alt={product.name} className="w-full" />
 
 
       <div className="space-y-5 p-4">
