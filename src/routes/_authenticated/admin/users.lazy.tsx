@@ -203,10 +203,25 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           <p className="truncate text-[11px] text-muted-foreground">@{u.username ?? "—"} · {u.email}</p>
           <p className="text-[11px] text-muted-foreground">Created {formatDate(u.created_at)}</p>
         </div>
-        <Badge className={u.status === "active" ? "bg-green-100 text-green-900" : "bg-red-100 text-red-900"}>
+        <Badge className={
+          u.status === "active" ? "bg-green-100 text-green-900"
+          : u.status === "pending" ? "bg-amber-100 text-amber-900"
+          : "bg-red-100 text-red-900"
+        }>
           {u.status}
         </Badge>
       </div>
+      {(u.status === "pending" || u.status === "rejected") && (
+        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="mb-1 font-semibold uppercase tracking-wide text-[10px]">Submitted business details</p>
+          <p><b>Business:</b> {u.business_name ?? "—"}</p>
+          <p><b>Contact:</b> {u.contact_person ?? "—"}</p>
+          <p><b>Mobile:</b> {u.mobile ?? "—"}</p>
+          <p><b>GSTIN:</b> {u.gstin ?? "—"}</p>
+          <p><b>Type:</b> {u.business_type ?? "—"}</p>
+          {u.delivery_address && <p><b>Address:</b> {u.delivery_address}</p>}
+        </div>
+      )}
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={busy} onClick={onReset}><KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password</Button>
         {!u.is_admin && (
@@ -215,10 +230,33 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           </Button>
         )}
 
-        <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
-          <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
-        </Button>
-        {u.status !== "active" && !u.is_admin && (
+        {u.status === "active" && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetStatus("inactive")}>
+            <Power className="mr-1 h-3.5 w-3.5" /> Deactivate
+          </Button>
+        )}
+        {u.status === "inactive" && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetStatus("active")}>
+            <Power className="mr-1 h-3.5 w-3.5" /> Reactivate
+          </Button>
+        )}
+        {(u.status === "pending" || u.status === "rejected") && (
+          <Button size="sm" disabled={busy} onClick={() => onSetStatus("active")} className="bg-green-700 text-white hover:bg-green-800">
+            <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Approve
+          </Button>
+        )}
+        {u.status === "pending" && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => onSetStatus("rejected")}
+            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" /> Reject
+          </Button>
+        )}
+        {u.status !== "active" && u.status !== "pending" && !u.is_admin && (
           <Button
             size="sm"
             variant="outline"
