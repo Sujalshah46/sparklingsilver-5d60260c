@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { deleteProduct } from "@/lib/products.functions";
 import { setProductFlag } from "@/lib/homepage-featured.functions";
 import { getErrorMessage } from "@/lib/errors";
-import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { categoryPlaceholder, productImageSrc, type ImageVariants } from "@/lib/product-images";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/products/")({
   component: ProductsAdmin,
@@ -30,7 +30,7 @@ function ProductsAdmin() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, sku, slug, image_url, stock_quantity, low_stock_threshold, is_new, is_bestseller, gross_weight, categories(name)")
+        .select("id, name, sku, slug, image_url, image_variants, stock_quantity, low_stock_threshold, is_new, is_bestseller, gross_weight, categories(name)")
         .order("created_at", { ascending: false });
       return data ?? [];
     },
@@ -117,9 +117,12 @@ function ProductsAdmin() {
                 <li key={p.id} className="rounded-xl border border-border bg-card p-3">
                   <div className="flex items-start gap-3">
                     <img
-                      src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 128, quality: 55 })}
+                      src={productImageSrc(p.image_url, p.image_variants as ImageVariants, "thumb", categoryPlaceholder)}
                       alt={p.name}
+                      width={64}
+                      height={64}
                       loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         const img = e.currentTarget;
                         if (img.dataset.fallback === "1") { img.style.visibility = "hidden"; return; }

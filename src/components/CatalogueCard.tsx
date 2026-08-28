@@ -28,6 +28,7 @@ export function CatalogueCard({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [qty, setQty] = useState(1);
+  const [imgLoaded, setImgLoaded] = useState(false);
   
 
   const wish = useMutation({
@@ -115,6 +116,7 @@ export function CatalogueCard({
           <Heart className="h-3.5 w-3.5" />
         </button>
         <div className="ruler-frame relative aspect-square w-full bg-[#F5F5F3]">
+          {!imgLoaded && <span aria-hidden className="img-skeleton absolute inset-0" />}
           <img
             src={src}
             srcSet={srcSet}
@@ -124,8 +126,10 @@ export function CatalogueCard({
             height={600}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
             {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
-            className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
+            className={`absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-300 lg:group-hover:scale-[1.04] ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
         </div>

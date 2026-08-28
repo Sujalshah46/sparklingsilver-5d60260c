@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate, formatDateTime } from "@/lib/format";
-import { resolveProductImage } from "@/lib/product-images";
+import { orderItemImageSrc } from "@/lib/product-images";
 import { rollupStatus, STATUS_LABEL as ITEM_STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
 import { editOwnOrder } from "@/lib/order-edit.functions";
 import { BUYER_CANCELLABLE } from "@/lib/order-cancel";
@@ -92,7 +92,7 @@ function OrderDetail() {
       const { data } = await supabase
         .from("orders")
         .select(
-          "*, order_items(*, item_status_history(*), product:products(id, moq, stock_quantity, in_stock)), shipments(*)",
+          "*, order_items(*, item_status_history(*), product:products(id, moq, stock_quantity, in_stock, image_variants)), shipments(*)",
         )
 
         .eq("id", id)
@@ -256,6 +256,7 @@ type ProductLimits = {
   moq: number | null;
   stock_quantity: number | null;
   in_stock: boolean | null;
+  image_variants?: unknown;
 };
 
 type ItemRow = {
@@ -316,12 +317,13 @@ function ItemCard({
         className="flex w-full gap-3 p-3 text-left"
       >
         <img
-          src={resolveProductImage(item.image_url)}
+          src={orderItemImageSrc(item, "thumb")}
           alt={item.product_name}
           width={64}
           height={64}
           loading="lazy"
-          className="h-16 w-16 rounded-lg object-cover"
+          decoding="async"
+          className="h-16 w-16 rounded-lg bg-[#0E5A3E]/5 object-cover"
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
@@ -620,12 +622,13 @@ function EditOrderPanel({ orderId, items }: { orderId: string; items: EditItem[]
                       }
                     />
                     <img
-
-                      src={resolveProductImage(i.image_url)}
+                      src={orderItemImageSrc(i, "thumb")}
                       alt={i.name}
                       width={40}
                       height={40}
-                      className="h-10 w-10 rounded-md object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      className="h-10 w-10 rounded-md bg-[#0E5A3E]/5 object-cover"
                     />
                     <div className="min-w-0 flex-1">
                       <p className={`truncate text-sm font-medium ${gone ? "line-through" : ""}`}>

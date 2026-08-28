@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Minus, Plus, Search, AlertTriangle, PackageX } from "lucide-react";
 import { toast } from "sonner";
 import { adjustStock, bulkApplyInventory } from "@/lib/inventory.functions";
-import { categoryPlaceholder, resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { categoryPlaceholder, productImageSrc, type ImageVariants } from "@/lib/product-images";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/inventory")({
   component: InventoryPage,
@@ -46,7 +46,7 @@ function InventoryPage() {
     queryKey: ["admin-inventory"],
     queryFn: async () => {
       const { data } = await supabase.from("products")
-        .select("id, name, sku, image_url, stock_quantity, low_stock_threshold, in_stock, category_id")
+        .select("id, name, sku, image_url, image_variants, stock_quantity, low_stock_threshold, in_stock, category_id")
         .order("name");
       return data ?? [];
     },
@@ -192,9 +192,12 @@ function InventoryPage() {
                   <div className="flex items-center gap-3">
                     <Checkbox checked={isSel} onCheckedChange={() => toggleOne(p.id)} className="shrink-0" />
                     <img
-                      src={productThumbUrl(resolveProductImage(p.image_url, categoryPlaceholder), { width: 112, quality: 55 })}
+                      src={productImageSrc(p.image_url, p.image_variants as ImageVariants, "thumb", categoryPlaceholder)}
                       alt={p.name}
+                      width={56}
+                      height={56}
                       loading="lazy"
+                      decoding="async"
                       onError={(e) => {
                         const img = e.currentTarget;
                         if (img.dataset.fallback === "1") {

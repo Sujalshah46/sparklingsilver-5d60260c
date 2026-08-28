@@ -23,7 +23,16 @@ export function HeroSlider({ slides }: { slides: HeroSlide[] }) {
           className="absolute inset-0 block transition-opacity duration-700"
           style={{ opacity: i === idx ? 1 : 0, pointerEvents: i === idx ? "auto" : "none" }}
         >
-          <img src={s.src} alt={s.collection} className="h-full w-full object-cover" loading={idx === 0 ? "eager" : "lazy"} />
+          <img
+            src={s.src}
+            alt={s.collection}
+            width={1200}
+            height={1200}
+            decoding="async"
+            className="h-full w-full object-cover"
+            loading={idx === 0 ? "eager" : "lazy"}
+            {...(idx === 0 ? { fetchPriority: "high" as const } : {})}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/15 to-transparent" />
           <div className="absolute inset-x-0 bottom-10 px-6 text-white">
             <div className="mb-2 text-2xl text-white/90">✦</div>
