@@ -37,6 +37,7 @@ export const Route = createLazyFileRoute("/_authenticated/admin/users")({
 type UserRow = {
   id: string; username: string | null; business_name: string | null; contact_person: string | null;
   email: string | null; mobile: string | null; status: string; must_change_password: boolean; created_at: string;
+  gstin?: string | null; business_type?: string | null; delivery_address?: string | null;
   is_admin?: boolean;
 };
 
@@ -47,6 +48,7 @@ function AdminUsersPage() {
 
   const users = useQuery({ queryKey: ["admin-users"], queryFn: () => listUsers() });
   const reqs = useQuery({ queryKey: ["admin-reset-requests"], queryFn: () => listReqs() });
+  const pendingUsers = (users.data ?? []).filter((u: UserRow) => u.status === "pending");
 
   const [showCreate, setShowCreate] = useState(false);
   const [credsView, setCredsView] = useState<{ username: string; email: string; password: string; user_id: string } | null>(null);
@@ -67,8 +69,16 @@ function AdminUsersPage() {
           <Button size="sm" onClick={() => setShowCreate(true)}><UserPlus className="mr-1 h-4 w-4" /> New</Button>
         </div>
 
-        <Tabs defaultValue="users">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="pending">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="pending">
+              Pending
+              {pendingUsers.length > 0 && (
+                <span className="ml-1 rounded-full bg-burgundy px-1.5 text-[10px] font-semibold text-white">
+                  {pendingUsers.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="users">All Users</TabsTrigger>
             <TabsTrigger value="requests">
               Reset Requests
@@ -79,6 +89,16 @@ function AdminUsersPage() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="pending" className="space-y-2">
+            {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+            {pendingUsers.map((u: UserRow) => (
+              <UserCard key={u.id} u={u} onDone={invalidate} onShowCreds={setCredsView} />
+            ))}
+            {users.data && pendingUsers.length === 0 && (
+              <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No users awaiting approval.</p>
+            )}
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-2">
             {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
@@ -145,12 +165,14 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
     } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
     finally { setBusy(false); }
   };
-  const onToggle = async () => {
+  const onSetStatus = async (next: "active" | "inactive" | "rejected") => {
     setBusy(true);
     try {
-      const next = u.status === "active" ? "inactive" : "active";
       await setStatus({ data: { user_id: u.id, status: next } });
-      toast.success(next === "active" ? "Reactivated" : "Deactivated");
+      toast.success(
+        next === "active" ? (u.status === "pending" || u.status === "rejected" ? "Approved" : "Reactivated")
+        : next === "inactive" ? "Deactivated" : "Rejected",
+      );
       onDone();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
     finally { setBusy(false); }
@@ -181,10 +203,25 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           <p className="truncate text-[11px] text-muted-foreground">@{u.username ?? "—"} · {u.email}</p>
           <p className="text-[11px] text-muted-foreground">Created {formatDate(u.created_at)}</p>
         </div>
-        <Badge className={u.status === "active" ? "bg-green-100 text-green-900" : "bg-red-100 text-red-900"}>
+        <Badge className={
+          u.status === "active" ? "bg-green-100 text-green-900"
+          : u.status === "pending" ? "bg-amber-100 text-amber-900"
+          : "bg-red-100 text-red-900"
+        }>
           {u.status}
         </Badge>
       </div>
+      {(u.status === "pending" || u.status === "rejected") && (
+        <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-[11px] text-amber-950 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="mb-1 font-semibold uppercase tracking-wide text-[10px]">Submitted business details</p>
+          <p><b>Business:</b> {u.business_name ?? "—"}</p>
+          <p><b>Contact:</b> {u.contact_person ?? "—"}</p>
+          <p><b>Mobile:</b> {u.mobile ?? "—"}</p>
+          <p><b>GSTIN:</b> {u.gstin ?? "—"}</p>
+          <p><b>Type:</b> {u.business_type ?? "—"}</p>
+          {u.delivery_address && <p><b>Address:</b> {u.delivery_address}</p>}
+        </div>
+      )}
       <div className="mt-2 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={busy} onClick={onReset}><KeyRound className="mr-1 h-3.5 w-3.5" /> Reset password</Button>
         {!u.is_admin && (
@@ -193,10 +230,33 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
           </Button>
         )}
 
-        <Button size="sm" variant="outline" disabled={busy} onClick={onToggle}>
-          <Power className="mr-1 h-3.5 w-3.5" /> {u.status === "active" ? "Deactivate" : "Reactivate"}
-        </Button>
-        {u.status !== "active" && !u.is_admin && (
+        {u.status === "active" && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetStatus("inactive")}>
+            <Power className="mr-1 h-3.5 w-3.5" /> Deactivate
+          </Button>
+        )}
+        {u.status === "inactive" && (
+          <Button size="sm" variant="outline" disabled={busy} onClick={() => onSetStatus("active")}>
+            <Power className="mr-1 h-3.5 w-3.5" /> Reactivate
+          </Button>
+        )}
+        {(u.status === "pending" || u.status === "rejected") && (
+          <Button size="sm" disabled={busy} onClick={() => onSetStatus("active")} className="bg-green-700 text-white hover:bg-green-800">
+            <CheckCircle2 className="mr-1 h-3.5 w-3.5" /> Approve
+          </Button>
+        )}
+        {u.status === "pending" && (
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={busy}
+            onClick={() => onSetStatus("rejected")}
+            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="mr-1 h-3.5 w-3.5" /> Reject
+          </Button>
+        )}
+        {u.status !== "active" && u.status !== "pending" && !u.is_admin && (
           <Button
             size="sm"
             variant="outline"
