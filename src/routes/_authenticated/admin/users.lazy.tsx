@@ -165,12 +165,14 @@ function UserCard({ u, onDone, onShowCreds }: { u: UserRow; onDone: () => void; 
     } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
     finally { setBusy(false); }
   };
-  const onToggle = async () => {
+  const onSetStatus = async (next: "active" | "inactive" | "rejected") => {
     setBusy(true);
     try {
-      const next = u.status === "active" ? "inactive" : "active";
       await setStatus({ data: { user_id: u.id, status: next } });
-      toast.success(next === "active" ? "Reactivated" : "Deactivated");
+      toast.success(
+        next === "active" ? (u.status === "pending" || u.status === "rejected" ? "Approved" : "Reactivated")
+        : next === "inactive" ? "Deactivated" : "Rejected",
+      );
       onDone();
     } catch (e) { toast.error(e instanceof Error ? e.message : "Failed"); }
     finally { setBusy(false); }
