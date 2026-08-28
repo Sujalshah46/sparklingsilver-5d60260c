@@ -37,7 +37,10 @@ function Checkout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, remark, product:products(*)")
+        // Explicit columns: pricing columns are revoked for the authenticated role.
+        .select(
+          "id, quantity, size, remark, product:products(id, slug, sku, name, purity, gross_weight, image_url, image_variants)",
+        )
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
