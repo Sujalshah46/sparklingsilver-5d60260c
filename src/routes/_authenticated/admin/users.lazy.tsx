@@ -37,6 +37,7 @@ export const Route = createLazyFileRoute("/_authenticated/admin/users")({
 type UserRow = {
   id: string; username: string | null; business_name: string | null; contact_person: string | null;
   email: string | null; mobile: string | null; status: string; must_change_password: boolean; created_at: string;
+  gstin?: string | null; business_type?: string | null; delivery_address?: string | null;
   is_admin?: boolean;
 };
 
@@ -67,8 +68,16 @@ function AdminUsersPage() {
           <Button size="sm" onClick={() => setShowCreate(true)}><UserPlus className="mr-1 h-4 w-4" /> New</Button>
         </div>
 
-        <Tabs defaultValue="users">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="pending">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="pending">
+              Pending
+              {pendingUsers.length > 0 && (
+                <span className="ml-1 rounded-full bg-burgundy px-1.5 text-[10px] font-semibold text-white">
+                  {pendingUsers.length}
+                </span>
+              )}
+            </TabsTrigger>
             <TabsTrigger value="users">All Users</TabsTrigger>
             <TabsTrigger value="requests">
               Reset Requests
@@ -79,6 +88,16 @@ function AdminUsersPage() {
               )}
             </TabsTrigger>
           </TabsList>
+
+          <TabsContent value="pending" className="space-y-2">
+            {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
+            {pendingUsers.map((u: UserRow) => (
+              <UserCard key={u.id} u={u} onDone={invalidate} onShowCreds={setCredsView} />
+            ))}
+            {users.data && pendingUsers.length === 0 && (
+              <p className="rounded-xl border border-dashed p-6 text-center text-xs text-muted-foreground">No users awaiting approval.</p>
+            )}
+          </TabsContent>
 
           <TabsContent value="users" className="space-y-2">
             {users.isLoading && <p className="text-xs text-muted-foreground">Loading…</p>}
