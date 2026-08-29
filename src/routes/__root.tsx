@@ -183,7 +183,7 @@ function RootComponent() {
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       if (event === "SIGNED_OUT") {
         const pathname = window.location.pathname;
-        if (!isPublicPath(pathname)) {
+        if (isPrivatePath(pathname)) {
           router.navigate({ to: "/auth", replace: true });
         }
       }
