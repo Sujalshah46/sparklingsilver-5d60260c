@@ -112,9 +112,7 @@ export function TopBar() {
           <Link to="/contact" className="hover:text-teal">Contact</Link>
         </nav>
         <div className="flex shrink-0 items-center">
-          <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
-            <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
-          </Link>
+          <AuthAffordance />
           <Link to="/search" aria-label="Search" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
             <Search className="h-[22px] w-[22px]" strokeWidth={1.6} />
           </Link>
