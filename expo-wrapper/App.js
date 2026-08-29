@@ -18,7 +18,9 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import * as Updates from 'expo-updates';
+import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
+
 
 const SITE_URL = 'https://sparklingsilver.in';
 const CANONICAL_ORIGIN = 'https://www.sparklingsilver.in';
