@@ -10,6 +10,8 @@ export type ViewerAccess = {
   /** Approved buyer or admin — full catalogue, wholesale rates, ordering. */
   isApproved: boolean;
   isAdmin: boolean;
+  /** Raw profiles.status ('active' | 'pending' | 'rejected' | ...); 'active' for admins, null when anonymous. */
+  status: string | null;
 };
 
 /**
