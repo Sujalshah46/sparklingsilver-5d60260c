@@ -413,7 +413,12 @@ export default function App() {
                 key={reloadKey}
                 ref={webViewRef}
                 source={{ uri: SITE_URL }}
-                originWhitelist={['*']}
+                originWhitelist={[
+                  'https://sparklingsilver.in/*',
+                  'https://www.sparklingsilver.in/*',
+                  'https://*.lovable.app/*',
+                  'https://*.supabase.co/*',
+                ]}
                 javaScriptEnabled
                 domStorageEnabled
                 databaseEnabled
