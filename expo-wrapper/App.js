@@ -252,16 +252,23 @@ export default function App() {
   const handleDeepLink = useCallback((incomingUrl) => {
     if (!incomingUrl) return;
     try {
-      let targetUrl = incomingUrl;
+      let relativePath = incomingUrl;
       if (incomingUrl.startsWith('sparklingsilver://')) {
-        const pathAndQuery = incomingUrl.replace(/^sparklingsilver:\/\/?/, '');
-        targetUrl = `https://www.sparklingsilver.in/${pathAndQuery}`;
+        const raw = incomingUrl.replace(/^sparklingsilver:\/\/?/, '');
+        relativePath = raw.startsWith('/') ? raw : `/${raw}`;
+      } else if (incomingUrl.startsWith('http://') || incomingUrl.startsWith('https://')) {
+        try {
+          const parsed = new URL(incomingUrl);
+          relativePath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+        } catch {
+          relativePath = incomingUrl;
+        }
       }
       
       if (webViewRef.current) {
-        // Instruct the WebView to navigate to the callback URL so Supabase auth exchanges the tokens
+        // Dispatch SPA client-side navigation directly to TanStack router to avoid WKWebView URL preview bar
         webViewRef.current.injectJavaScript(
-          `window.location.href = ${JSON.stringify(targetUrl)}; true;`
+          `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(relativePath)} }), "*"); true;`
         );
       }
     } catch (err) {
@@ -511,9 +518,17 @@ export default function App() {
                       } else if (action === 'EXTERNAL') {
                         Linking.openURL(targetUrl).catch(() => {});
                       } else if (action === 'ALLOW' && webViewRef.current) {
-                        webViewRef.current.injectJavaScript(
-                          `window.location.href = ${JSON.stringify(targetUrl)}; true;`
-                        );
+                        try {
+                          const parsed = new URL(targetUrl);
+                          const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+                          webViewRef.current.injectJavaScript(
+                            `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(path)} }), "*"); true;`
+                          );
+                        } catch {
+                          webViewRef.current.injectJavaScript(
+                            `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(targetUrl)} }), "*"); true;`
+                          );
+                        }
                       }
                     }
                   }}
