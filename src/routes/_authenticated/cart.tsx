@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
+import { OrderingStatusNotice } from "@/components/OrderingStatusNotice";
 import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
 import { useSignedImages } from "@/lib/useSignedImages";
 import { calculateTotalGrossWeight, calculateTotalPieces, type CartItem } from "@/lib/cart.helpers";
@@ -39,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/cart")({
 
 function CartPage() {
   const { user } = useAuth();
+  const approval = useApproval();
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -211,6 +214,12 @@ function CartPage() {
                 Our team will confirm your order details on WhatsApp after checkout.
               </p>
             </div>
+
+            {!approval.loading && !approval.isApproved && (
+              <div className="mt-4">
+                <OrderingStatusNotice status={approval.status} />
+              </div>
+            )}
 
             <Button asChild className="mt-4 h-12 w-full bg-burgundy text-ivory hover:bg-burgundy/90">
               <Link to="/checkout">Proceed to Checkout</Link>
