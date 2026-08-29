@@ -10,29 +10,10 @@ function escapeHtml(s: string) {
 // Generic response so the endpoint never reveals whether an email is an admin.
 const GENERIC = { ok: true as const };
 
-/**
- * Lightweight probe so the UI only reveals the admin reset option after an
- * admin email has actually been typed in.
- */
-export const isAdminEmail = createServerFn({ method: "POST" })
-  .inputValidator((d: unknown) => z.object({ email: emailSchema }).parse(d))
-  .handler(async ({ data }) => {
-    const email = data.email.toLowerCase();
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: prof } = await supabaseAdmin
-      .from("profiles")
-      .select("id")
-      .ilike("email", email)
-      .maybeSingle();
-    if (!prof) return { admin: false as const };
-    const { data: role } = await supabaseAdmin
-      .from("user_roles")
-      .select("user_id")
-      .eq("user_id", prof.id)
-      .eq("role", "admin")
-      .maybeSingle();
-    return { admin: !!role };
-  });
+// NOTE: there is deliberately no "is this email an admin?" probe here.
+// Any such endpoint would let anyone enumerate which addresses hold admin
+// privileges. Every reset entry point below returns the same generic result.
+
 
 /**
  * Step 1 — an admin requests a 6-digit code by email.
@@ -68,7 +49,8 @@ export const requestAdminResetCode = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .ilike("email", email)
       .gte("created_at", since);
-    if ((count ?? 0) >= 5) throw new Error("Too many code requests. Please try again later.");
+    // Silently stop issuing codes — the caller must not learn a limit exists.
+    if ((count ?? 0) >= 5) return GENERIC;
 
     // Invalidate any outstanding codes for this admin.
     await supabaseAdmin
@@ -154,7 +136,8 @@ export const confirmAdminResetCode = createServerFn({ method: "POST" })
       .eq("user_id", row.user_id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw new Error("This reset option is only available for admin accounts.");
+    // Same generic failure as a bad code, so non-admin accounts are indistinguishable.
+    if (!role) throw new Error("Invalid or expired code. Request a new one.");
 
     const { error } = await supabaseAdmin.auth.admin.updateUserById(row.user_id, { password: data.new_password });
     if (error) throw new Error(error.message);

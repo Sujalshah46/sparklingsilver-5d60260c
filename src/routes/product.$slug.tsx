@@ -24,13 +24,13 @@ const productQuery = (slug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data: product } = await supabase.from("products").select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, stock_quantity, created_at, categories(name)").eq("slug", slug).maybeSingle();
+      const { data: product } = await supabase.from("products").select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, created_at, categories(name)").eq("slug", slug).maybeSingle();
       if (!product) return null;
       const catName = ((product as any).categories?.name ?? "").toLowerCase();
       if (HIDDEN_CATEGORY_NAMES_LC.includes(catName)) return null;
       const similarQuery = supabase
         .from("products")
-        .select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, stock_quantity, created_at")
+        .select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, created_at")
         .eq("category_id", product.category_id!)
         .neq("id", product.id)
         .limit(12);

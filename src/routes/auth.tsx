@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
-import { requestAdminResetCode, confirmAdminResetCode, isAdminEmail } from "@/lib/admin-reset.functions";
+import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect } from "@/lib/site";
@@ -346,35 +346,13 @@ function SignInForm({ redirect }: { redirect: string }) {
 function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }) {
   const requestCode = useServerFn(requestAdminResetCode);
   const confirmCode = useServerFn(confirmAdminResetCode);
-  const checkAdmin = useServerFn(isAdminEmail);
   const [stage, setStage] = useState<"idle" | "code">("idle");
   const [code, setCode] = useState("");
   const [pwd, setPwd] = useState("");
   const [busy, setBusy] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Only reveal the admin reset option once an admin email has been entered.
-  useEffect(() => {
-    const value = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      setIsAdmin(false);
-      return;
-    }
-    let active = true;
-    const t = setTimeout(async () => {
-      try {
-        const res = await checkAdmin({ data: { email: value } });
-        if (active) setIsAdmin(!!res?.admin);
-      } catch {
-        if (active) setIsAdmin(false);
-      }
-    }, 400);
-    return () => {
-      active = false;
-      clearTimeout(t);
-    };
-  }, [email, checkAdmin]);
-
+  // The admin reset block is shown for any well-formed email. The server never
+  // discloses whether the address is an admin; non-admins simply get no code.
+  const looksLikeEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 
   const send = async () => {
     if (!email) return toast.error("Enter your admin email first.");
@@ -382,7 +360,7 @@ function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }
     try {
       await requestCode({ data: { email } });
       setStage("code");
-      toast.success("If that's an admin account, a 6-digit code is on its way to that inbox.");
+      toast.success("If that address is registered for admin access, a 6-digit code is on its way to that inbox.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not send code");
     } finally {
@@ -406,7 +384,7 @@ function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }
     }
   };
 
-  if (!isAdmin) return null;
+  if (!looksLikeEmail) return null;
 
   return (
     <div className="border-b border-white/10 pb-3">
