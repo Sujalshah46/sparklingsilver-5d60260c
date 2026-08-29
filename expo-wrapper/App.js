@@ -18,11 +18,44 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import * as Network from 'expo-network';
 import * as Updates from 'expo-updates';
+import * as WebBrowser from 'expo-web-browser';
 import Constants from 'expo-constants';
 
+
 const SITE_URL = 'https://sparklingsilver.in';
+const CANONICAL_ORIGIN = 'https://www.sparklingsilver.in';
+// Where the OAuth broker always lands after a successful sign-in. Registered as
+// an Android App Link / iOS Universal Link so the in-app browser tab hands the
+// finished session URL (tokens in the fragment) straight back to the app.
+const OAUTH_CALLBACK_URL = `${CANONICAL_ORIGIN}/auth-callback`;
 // Hosts that stay inside the WebView (the app itself + its auth/CDN origins).
 const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
+
+// Identity-provider hosts that Google/Apple refuse to render inside an embedded
+// WebView (Google answers "disallowed_useragent" / an authorization error).
+// These must run in a real browser context — a Chrome Custom Tab on Android or
+// SFAuthenticationSession on iOS — via expo-web-browser.
+const OAUTH_HOST_SUFFIXES = [
+  'accounts.google.com',
+  'accounts.youtube.com',
+  'appleid.apple.com',
+  'oauth.lovable.app',
+];
+
+function isOAuthUrl(url) {
+  try {
+    const { hostname, pathname } = new URL(url);
+    if (OAUTH_HOST_SUFFIXES.some((h) => hostname === h || hostname.endsWith(`.${h}`))) {
+      return true;
+    }
+    // Our own broker entry point — start the browser session here so the whole
+    // redirect chain (broker -> Google/Apple -> callback) runs in one tab.
+    return pathname.startsWith('/~oauth/');
+  } catch {
+    return false;
+  }
+}
+
 
 // Runs before any page script: guarantees the document is laid out at the
 // device width even if a cached/older HTML shell ships a stale viewport tag,
@@ -375,15 +408,60 @@ export default function App() {
     [post, pushToken, sendToken],
   );
 
+  // Google (and Apple) reject embedded WebViews for OAuth, so the sign-in
+  // redirect chain is handed to a real browser session: Chrome Custom Tabs on
+  // Android, SFAuthenticationSession on iOS. Both are user-agents the providers
+  // accept. The session ends on our https callback, which is registered as an
+  // App Link / Universal Link, so the tab closes and returns that URL (tokens
+  // in the fragment) to us — we then load it in the WebView, where the existing
+  // web /auth-callback page completes the exchange exactly as it does in a
+  // normal browser. No website-side OAuth change is involved.
+  const oauthBusyRef = useRef(false);
+  const startOAuthSession = useCallback(async (url) => {
+    if (oauthBusyRef.current) return;
+    oauthBusyRef.current = true;
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(url, OAUTH_CALLBACK_URL, {
+        showInRecents: false,
+        preferEphemeralSession: false,
+      });
+      if (result?.type === 'success' && result.url) {
+        // Replay the completed callback URL inside the WebView so the app's own
+        // Supabase client picks up the session.
+        webViewRef.current?.injectJavaScript(
+          `window.location.replace(${JSON.stringify(result.url)});true;`,
+        );
+      } else {
+        // Cancelled or dismissed — make sure the page isn't stuck on a spinner.
+        webViewRef.current?.injectJavaScript(
+          `window.location.replace(${JSON.stringify(`${SITE_URL}/auth`)});true;`,
+        );
+      }
+    } catch (err) {
+      console.warn('oauth session failed', err);
+      await openExternal(url);
+    } finally {
+      oauthBusyRef.current = false;
+    }
+  }, []);
+
   // WhatsApp / tel: / mailto: / Instagram must leave the WebView, otherwise
   // those buttons silently do nothing (a common App Review rejection).
-  const onShouldStartLoad = useCallback((request) => {
-    const url = request?.url ?? '';
-    if (!url || url === 'about:blank') return true;
-    if (isInternalUrl(url)) return true;
-    openExternal(url);
-    return false;
-  }, []);
+  const onShouldStartLoad = useCallback(
+    (request) => {
+      const url = request?.url ?? '';
+      if (!url || url === 'about:blank') return true;
+      if (isOAuthUrl(url)) {
+        void startOAuthSession(url);
+        return false;
+      }
+      if (isInternalUrl(url)) return true;
+      openExternal(url);
+      return false;
+    },
+    [startOAuthSession],
+  );
+
 
   const retry = useCallback(() => {
     setLoadError(null);
@@ -449,11 +527,15 @@ export default function App() {
                 onOpenWindow={(event) => {
                   const url = event?.nativeEvent?.targetUrl;
                   if (!url) return;
-                  if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
+                  // The web layer opens the OAuth popup via window.open in some
+                  // flows — route that to the browser auth session too.
+                  if (isOAuthUrl(url)) void startOAuthSession(url);
+                  else if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
                     `window.location.assign(${JSON.stringify(url)});true;`,
                   );
                   else openExternal(url);
                 }}
+
                 onLoadStart={() => setLoading(true)}
                 onLoadEnd={() => setLoading(false)}
                 onError={({ nativeEvent }) => {
