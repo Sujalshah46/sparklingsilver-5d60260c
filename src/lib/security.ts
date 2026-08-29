@@ -20,7 +20,7 @@ export function addSecurityHeaders(response: Response): Response {
   headers.set(
     "Content-Security-Policy",
     "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
+      "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://js.stripe.com https://maps.googleapis.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' https://fonts.gstatic.com data:; " +
