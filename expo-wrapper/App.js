@@ -21,8 +21,39 @@ import * as Updates from 'expo-updates';
 import Constants from 'expo-constants';
 
 const SITE_URL = 'https://sparklingsilver.in';
+const CANONICAL_ORIGIN = 'https://www.sparklingsilver.in';
+// Where the OAuth broker always lands after a successful sign-in. Registered as
+// an Android App Link / iOS Universal Link so the in-app browser tab hands the
+// finished session URL (tokens in the fragment) straight back to the app.
+const OAUTH_CALLBACK_URL = `${CANONICAL_ORIGIN}/auth-callback`;
 // Hosts that stay inside the WebView (the app itself + its auth/CDN origins).
 const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
+
+// Identity-provider hosts that Google/Apple refuse to render inside an embedded
+// WebView (Google answers "disallowed_useragent" / an authorization error).
+// These must run in a real browser context — a Chrome Custom Tab on Android or
+// SFAuthenticationSession on iOS — via expo-web-browser.
+const OAUTH_HOST_SUFFIXES = [
+  'accounts.google.com',
+  'accounts.youtube.com',
+  'appleid.apple.com',
+  'oauth.lovable.app',
+];
+
+function isOAuthUrl(url) {
+  try {
+    const { hostname, pathname } = new URL(url);
+    if (OAUTH_HOST_SUFFIXES.some((h) => hostname === h || hostname.endsWith(`.${h}`))) {
+      return true;
+    }
+    // Our own broker entry point — start the browser session here so the whole
+    // redirect chain (broker -> Google/Apple -> callback) runs in one tab.
+    return pathname.startsWith('/~oauth/');
+  } catch {
+    return false;
+  }
+}
+
 
 // Runs before any page script: guarantees the document is laid out at the
 // device width even if a cached/older HTML shell ships a stale viewport tag,
