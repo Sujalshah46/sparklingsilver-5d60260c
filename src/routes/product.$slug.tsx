@@ -6,11 +6,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { ProductCard, type ProductCardData } from "@/components/ProductCard";
 import { resolveProductImage, productThumbUrl } from "@/lib/product-images";
+import { ProductGallery } from "@/components/ProductImageZoom";
+import { useSignedImages } from "@/lib/useSignedImages";
 import { grams } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Heart, ShoppingBag, MessageCircle, ShieldCheck, Award, Truck } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
 import { toast } from "sonner";
 import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, HIDDEN_CATEGORY_NAMES_LC } from "@/lib/site";
 
@@ -21,13 +24,13 @@ const productQuery = (slug: string) =>
     staleTime: 10 * 60_000,
     gcTime: 30 * 60_000,
     queryFn: async () => {
-      const { data: product } = await supabase.from("products").select("*, categories(name)").eq("slug", slug).maybeSingle();
+      const { data: product } = await supabase.from("products").select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, created_at, categories(name)").eq("slug", slug).maybeSingle();
       if (!product) return null;
       const catName = ((product as any).categories?.name ?? "").toLowerCase();
       if (HIDDEN_CATEGORY_NAMES_LC.includes(catName)) return null;
       const similarQuery = supabase
         .from("products")
-        .select("*")
+        .select("id, sku, name, slug, description, category_id, subcategory_id, collection_id, metal, purity, gross_weight, net_weight, stone_weight, stone_type, occasion, sizes, moq, image_url, images, image_variants, is_new, is_bestseller, is_trending, in_stock, created_at")
         .eq("category_id", product.category_id!)
         .neq("id", product.id)
         .limit(12);
@@ -40,6 +43,9 @@ const productQuery = (slug: string) =>
   });
 
 export const Route = createFileRoute("/product/$slug")({
+  // RLS hides non-featured designs from anonymous/pending viewers; SSR has no
+  // session, so the lookup must run in the browser with the viewer's token.
+  ssr: false,
   head: ({ params, loaderData }) => {
     const p = (loaderData as { product?: { name: string; sku: string; description: string | null; image_url: string | null; in_stock: boolean | null } } | undefined)?.product;
     const title = pageTitle(p ? p.name : "Jewellery");
@@ -109,24 +115,34 @@ function ProductPage() {
   const { slug } = Route.useParams();
   const { data } = useSuspenseQuery(productQuery(slug));
   const { user } = useAuth();
+  const { isApproved } = useApproval();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const product = data!.product;
   const [size, setSize] = useState<string | null>(product.sizes?.[0] ?? null);
   const whatsAppHref = whatsappUrl(`Hi, I'm interested in ${product.name} (${product.sku})`);
 
-  const rawImg = resolveProductImage(product.image_url);
-  const isRenderable = typeof rawImg === "string" && rawImg.includes("/storage/v1/");
-  const { imgSrc, imgSrcSet, lqipSrc } = useMemo(() => {
-    if (!isRenderable) return { imgSrc: rawImg, imgSrcSet: undefined as string | undefined, lqipSrc: rawImg };
-    return {
-      imgSrc: productThumbUrl(rawImg, { width: 800, quality: 70 }),
-      imgSrcSet: `${productThumbUrl(rawImg, { width: 800, quality: 70 })} 800w, ${productThumbUrl(rawImg, { width: 1200, quality: 70 })} 1200w, ${productThumbUrl(rawImg, { width: 1600, quality: 72 })} 1600w`,
-      // Same URL the grid tile just cached in the SW — paints instantly as LQIP.
-      lqipSrc: productThumbUrl(rawImg, { width: 300, quality: 55 }),
-    };
-  }, [rawImg, isRenderable]);
-  const [hiResLoaded, setHiResLoaded] = useState(false);
+  const { productImages, thumbImages } = useMemo(() => {
+    const variants = product.image_variants as
+      | { detail?: string; card?: string; thumb?: string; gallery?: string[] }
+      | null;
+    const gallery = (variants?.gallery ?? []).filter(Boolean) as string[];
+    const full = [
+      variants?.detail ?? variants?.card ?? variants?.thumb ?? resolveProductImage(product.image_url),
+      ...gallery,
+    ].filter(Boolean) as string[];
+    // 64px strip tiles never need the 1200w render.
+    const thumbs = [
+      variants?.thumb ?? productThumbUrl(full[0], { width: 200, quality: 55 }),
+      ...gallery.map((g) => productThumbUrl(g, { width: 200, quality: 55 })),
+    ];
+    return { productImages: full, thumbImages: thumbs };
+  }, [product]);
+
+  // Short-lived (1 h) signed URLs so scraped links stop working within the hour.
+  const { resolve: signImage } = useSignedImages([...productImages, ...thumbImages]);
+  const signedImages = useMemo(() => productImages.map((u) => signImage(u)), [productImages, signImage]);
+  const signedThumbs = useMemo(() => thumbImages.map((u) => signImage(u)), [thumbImages, signImage]);
 
 
   const addToCart = useMutation({
@@ -153,31 +169,7 @@ function ProductPage() {
 
   return (
     <MobileShell>
-      <div className="relative aspect-square w-full overflow-hidden bg-secondary">
-        {isRenderable && !hiResLoaded && (
-          <img
-            src={lqipSrc}
-            alt=""
-            aria-hidden
-            width={1024}
-            height={1024}
-            className="absolute inset-0 h-full w-full object-contain"
-            style={{ filter: "blur(6px)", transform: "scale(1.02)" }}
-          />
-        )}
-        <img
-          src={imgSrc}
-          srcSet={imgSrcSet}
-          sizes="(min-width:768px) 640px, 100vw"
-          alt={product.name}
-          width={1024}
-          height={1024}
-          decoding="async"
-          fetchPriority="high"
-          onLoad={() => setHiResLoaded(true)}
-          className="relative h-full w-full object-contain"
-        />
-      </div>
+      <ProductGallery images={signedImages} thumbs={signedThumbs} alt={product.name} className="w-full" />
 
 
       <div className="space-y-5 p-4">
@@ -251,12 +243,35 @@ function ProductPage() {
 
       <div className="fixed inset-x-0 bottom-[60px] z-20 border-t border-border bg-background px-4 py-3" style={{ paddingBottom: `calc(0.75rem + env(safe-area-inset-bottom))` }}>
         <div className="mx-auto flex max-w-2xl items-center gap-2">
-          <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
-            <Heart className="h-5 w-5" />
-          </Button>
-          <Button variant="outline" className="h-12 flex-1" onClick={() => addToCart.mutate()}>
-            <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
-          </Button>
+          {user && isApproved ? (
+            <>
+              <Button variant="outline" size="icon" aria-label="Save to wishlist" className="h-12 w-12 shrink-0" onClick={() => addToWishlist.mutate()}>
+                <Heart className="h-5 w-5" />
+              </Button>
+              <Button variant="outline" className="h-12 flex-1" onClick={() => addToCart.mutate()}>
+                <ShoppingBag className="mr-1.5 h-4 w-4" /> Add to Cart
+              </Button>
+            </>
+          ) : user ? (
+            <div className="flex flex-1 flex-col justify-center">
+              <p className="text-[12px] leading-snug text-muted-foreground">
+                Your account is awaiting approval. Wholesale rates and ordering unlock once approved.
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col justify-center">
+              <p className="text-[12px] leading-snug text-muted-foreground">
+                Login to view wholesale pricing and place orders
+              </p>
+              <Link
+                to="/auth"
+                search={{ redirect: `/product/${slug}` }}
+                className="mt-0.5 text-[13px] font-semibold text-burgundy underline underline-offset-2"
+              >
+                Login
+              </Link>
+            </div>
+          )}
           <Button asChild className="h-12 flex-1 bg-burgundy text-ivory hover:bg-burgundy/90">
             <a
               href={whatsAppHref}

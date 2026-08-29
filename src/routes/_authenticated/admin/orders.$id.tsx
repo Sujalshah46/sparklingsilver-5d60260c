@@ -6,7 +6,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { formatDate } from "@/lib/format";
-import { categoryPlaceholder, resolveProductImage } from "@/lib/product-images";
+import { categoryPlaceholder, orderItemImageSrc } from "@/lib/product-images";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,6 +48,7 @@ type ItemRow = {
   remark: string | null;
   status: string;
   shipment_id: string | null;
+  product?: { image_variants?: unknown } | null;
 };
 
 type ShipmentRow = {
@@ -88,7 +89,7 @@ function AdminOrderDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(*), shipments(*)")
+        .select("*, order_items(*, product:products(image_variants)), shipments(*)")
         .eq("id", id)
         .maybeSingle();
       return data;
@@ -348,11 +349,12 @@ function AdminOrderDetail() {
                     />
                   )}
                   <img
-                    src={resolveProductImage(it.image_url, categoryPlaceholder)}
+                    src={orderItemImageSrc(it, "thumb", categoryPlaceholder)}
                     alt={it.product_name}
                     width={64}
                     height={64}
                     loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                       const img = e.currentTarget;
                       if (img.dataset.fallback === "1") {

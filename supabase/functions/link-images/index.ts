@@ -28,11 +28,19 @@ Deno.serve(async (req) => {
         headers: { ...corsHeaders, "content-type": "application/json" },
       });
     }
-    const { data: isAdmin, error: roleErr } = await userClient.rpc("has_role", {
-      _user_id: userData.user.id,
-      _role: "admin",
-    });
-    if (roleErr || isAdmin !== true) {
+    // `has_role` now lives in the private schema and is not callable over REST,
+    // so verify the admin role directly against user_roles with service-role.
+    const admin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    );
+    const { data: roleRow, error: roleErr } = await admin
+      .from("user_roles")
+      .select("user_id")
+      .eq("user_id", userData.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    if (roleErr || !roleRow) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
         status: 403,
         headers: { ...corsHeaders, "content-type": "application/json" },
@@ -41,10 +49,7 @@ Deno.serve(async (req) => {
     // --- End authorization ---
 
     const { items } = await req.json() as { items: Array<{ sku: string; storage_path: string }> };
-    const admin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+
     const results: any[] = [];
     for (const item of items) {
       const { data: signed, error: signErr } = await admin.storage

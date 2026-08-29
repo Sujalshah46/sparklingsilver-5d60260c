@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.is_approved_user(uuid) FROM anon;

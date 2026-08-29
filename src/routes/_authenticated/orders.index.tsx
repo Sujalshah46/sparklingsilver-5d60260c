@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDate } from "@/lib/format";
-import { resolveProductImage } from "@/lib/product-images";
+import { orderItemImageSrc } from "@/lib/product-images";
 import { Package, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -29,9 +29,12 @@ function OrdersPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("orders")
-        .select("*, order_items(id, product_name, product_sku, quantity, size, image_url, status)")
+        .select(
+          "id, order_no, status, created_at, order_items(id, product_name, product_sku, quantity, size, image_url, status, product:products(image_variants))",
+        )
         .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
       return data ?? [];
     },
   });
@@ -55,6 +58,7 @@ function OrdersPage() {
               const items = (o.order_items ?? []) as unknown as {
                 id: string; product_name: string; product_sku: string | null;
                 quantity: number; size: string | null; image_url: string | null; status?: string | null;
+                product?: { image_variants?: unknown } | null;
               }[];
               const totalQty = items.reduce((s, i) => s + (i.quantity ?? 0), 0);
               const roll = rollupStatus(
@@ -80,12 +84,13 @@ function OrdersPage() {
                           {items.slice(0, 4).map((it) => (
                             <img
                               key={it.id}
-                              src={resolveProductImage(it.image_url)}
+                              src={orderItemImageSrc(it, "thumb")}
                               alt={it.product_name}
                               width={48}
                               height={48}
                               loading="lazy"
-                              className="h-12 w-12 shrink-0 rounded-lg border border-border object-cover"
+                              decoding="async"
+                              className="h-12 w-12 shrink-0 rounded-lg border border-border bg-[#0E5A3E]/5 object-cover"
                             />
                           ))}
                           {items.length > 4 && (

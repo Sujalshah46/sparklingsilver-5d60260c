@@ -147,14 +147,14 @@ export const adminResetPassword = createServerFn({ method: "POST" })
 
 export const adminSetUserStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid(), status: z.enum(["active", "inactive"]) }).parse(d))
-  .handler(async ({ data, context }) => {
+    .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid(), status: z.enum(["active", "inactive", "pending", "rejected"]) }).parse(d))
+    .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await ensureAdmin(supabase, userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.from("profiles").update({ status: data.status }).eq("id", data.user_id);
     if (error) throw new Error(error.message);
-    // Optional: sign out the user by banning them briefly
+    // Only inactive accounts get the auth ban; rejected/pending stay signed-in (gated by UI/RLS)
     if (data.status === "inactive") {
       await supabaseAdmin.auth.admin.updateUserById(data.user_id, { ban_duration: "876000h" }).catch(() => {});
     } else {
@@ -217,7 +217,7 @@ export const adminListUsers = createServerFn({ method: "GET" })
     await ensureAdmin(supabase, userId);
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, username, business_name, contact_person, email, mobile, status, must_change_password, created_at")
+      .select("id, username, business_name, contact_person, email, mobile, gstin, business_type, delivery_address, status, must_change_password, created_at")
       .neq("status", "deleted")
       .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);

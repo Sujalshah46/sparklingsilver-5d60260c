@@ -1,63 +1,125 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { pageTitle, descriptionTags } from "@/lib/seo";
+import { sanitizeRedirect } from "@/lib/site";
+import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/auth-callback")({
+  ssr: false,
+  head: () => ({
+    meta: [
+      { title: pageTitle("Signing you in") },
+      ...descriptionTags("Completing secure sign in to your Sparkling Silver account."),
+      { name: "robots", content: "noindex" },
+    ],
+  }),
   component: AuthCallbackPage,
 });
 
+const OAUTH_TARGET_KEY = "ss_oauth_redirect";
+
+export function stashOAuthTarget(target: string) {
+  try {
+    sessionStorage.setItem(OAUTH_TARGET_KEY, target);
+  } catch {
+    /* private mode */
+  }
+}
+
+function consumeOAuthTarget(): string {
+  try {
+    const raw = sessionStorage.getItem(OAUTH_TARGET_KEY);
+    sessionStorage.removeItem(OAUTH_TARGET_KEY);
+    return sanitizeRedirect(raw ?? "/");
+  } catch {
+    return "/";
+  }
+}
+
 function AuthCallbackPage() {
   const navigate = useNavigate();
+  const [failed, setFailed] = useState(false);
+  const doneRef = useRef(false);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const search = window.location.search;
-      const hash = window.location.hash;
+    const search = window.location.search;
+    const hash = window.location.hash;
 
-      // 1. If in an external browser / Chrome Custom Tab (not inside React Native WebView),
-      // bounce immediately to custom scheme to auto-close Custom Tab and return to app
-      if (typeof window !== "undefined" && !window.ReactNativeWebView) {
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobile) {
-          window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
-        }
+    // If loaded in an external browser / Chrome Custom Tab (not in React Native WebView),
+    // immediately bounce to custom scheme to auto-dismiss Custom Tab and hand tokens to app
+    if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (isMobile) {
+        window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
       }
+    }
 
-      // 2. Process web session exchange
-      try {
-        const url = new URL(window.location.href);
-        const code = url.searchParams.get("code");
-        if (code) {
-          await supabase.auth.exchangeCodeForSession(code);
-        } else if (hash) {
-          const hashParams = new URLSearchParams(hash.replace(/^#/, ""));
-          const accessToken = hashParams.get("access_token");
-          const refreshToken = hashParams.get("refresh_token");
-          if (accessToken && refreshToken) {
-            await supabase.auth.setSession({
-              access_token: accessToken,
-              refresh_token: refreshToken,
-            });
-          }
-        }
-      } catch (err) {
-        console.error("Auth callback error:", err);
-      }
-
-      setTimeout(() => {
-        navigate({ to: "/", replace: true });
-      }, 500);
+    const finish = (target?: string) => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+      navigate({ to: target ?? consumeOAuthTarget(), replace: true });
     };
 
-    handleCallback();
+    const fail = () => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+      setFailed(true);
+    };
+
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) finish();
+    });
+
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session?.user) finish();
+    });
+
+    const timeout = setTimeout(() => {
+      supabase.auth.getSession().then(({ data }) => {
+        if (data.session?.user) finish();
+        else fail();
+      });
+    }, 15000);
+
+    return () => {
+      clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0b2a20] text-white">
-      <div className="text-center">
-        <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
-        <p className="mt-4 text-sm text-white/70">Completing sign-in...</p>
-      </div>
+    <div
+      className="flex min-h-screen w-full flex-col items-center justify-center px-6"
+      style={{
+        backgroundColor: "#0b2a20",
+        backgroundImage:
+          "radial-gradient(ellipse 90% 60% at 50% 0%, #164636 0%, #0b2a20 55%, #061a13 100%)",
+      }}
+    >
+      <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
+      {failed ? (
+        <div className="mt-8 text-center">
+          <p className="text-sm font-medium text-white">Sign-in could not be completed.</p>
+          <p className="mt-1 text-xs text-white/60">The link may have expired. Please try again.</p>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/auth", replace: true })}
+            className="mt-6 rounded-md border border-white/25 bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+          >
+            Back to Sign In
+          </button>
+        </div>
+      ) : (
+        <div className="mt-8 flex flex-col items-center gap-3" role="status" aria-live="polite">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/25 border-t-white" />
+          <p className="text-sm font-medium text-white">Signing you in…</p>
+        </div>
+      )}
     </div>
   );
 }

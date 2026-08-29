@@ -12,7 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CategoryTile } from "@/components/CategoryTile";
 import { PREMIUM_CATEGORY_IMAGES, resolveProductImage } from "@/lib/product-images";
 import { CARD_COLUMNS } from "@/lib/product-columns";
-import { useQuery } from "@tanstack/react-query";
+import { RestrictedCatalogueNotice } from "@/components/RestrictedCatalogueNotice";
+
 import { Label } from "@/components/ui/label";
 import { ArrowUpDown, Filter as FilterIcon, LayoutGrid, SlidersHorizontal } from "lucide-react";
 import { z } from "zod";
@@ -79,6 +80,10 @@ const NEW_DESC = pageDescription(
 );
 
 export const Route = createFileRoute("/catalogue")({
+  // Product rows are RLS-scoped to the viewer. SSR has no session, so a
+  // server-rendered cache would pin approved buyers to the featured-only
+  // anonymous result set.
+  ssr: false,
   validateSearch: zodValidator(searchSchema),
   head: () => ({
     meta: [
@@ -140,29 +145,26 @@ function Catalogue() {
     return () => io.disconnect();
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Per-category design counts for the collection tiles
-  const { data: catCounts } = useQuery({
-    queryKey: ["catalogue-category-counts"],
-    staleTime: 10 * 60_000,
-    queryFn: async () => {
-      const entries = await Promise.all(
-        categories.map(async (c) => {
-          const { count } = await supabase
-            .from("products")
-            .select("id", { count: "exact", head: true })
-            .eq("category_id", c.id as string);
-          return [c.id as string, count ?? 0] as const;
-        }),
-      );
-      return Object.fromEntries(entries) as Record<string, number>;
-    },
-    enabled: categories.length > 0,
-  });
+  // Per-category design counts come from the cached `product_count` column on
+  // the category row (maintained by a DB trigger). A head:true count aggregate
+  // on `products` returns 0 for anonymous visitors, which made every tile
+  // render "0 Designs" on the logged-out catalogue landing page.
+  const catCounts = useMemo(
+    () =>
+      Object.fromEntries(
+        categories.map((c) => [
+          c.id as string,
+          Number((c as unknown as { product_count?: number | null }).product_count) || 0,
+        ]),
+      ) as Record<string, number>,
+    [categories],
+  );
 
   // Collections-only view for /catalogue (no product grid)
   if (!onlyNew) {
     return (
       <MobileShell title="Catalogue">
+        <RestrictedCatalogueNotice />
         <section className="px-3 py-6">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>
           <span className="mt-1 block h-px w-8 bg-teal" />
@@ -190,6 +192,7 @@ function Catalogue() {
 
   return (
     <MobileShell title={onlyNew ? "New Arrivals" : "Catalogue"}>
+      <RestrictedCatalogueNotice />
       {!onlyNew && categories.length > 0 && (
         <section className="px-3 pt-4">
           <p className="text-[12px] font-bold uppercase tracking-[0.16em] text-[#1A1A1A]">Our Collections</p>

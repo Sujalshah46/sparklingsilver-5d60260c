@@ -12,7 +12,7 @@ import { Download, Search, X } from "lucide-react";
 import { exportOrdersExcel } from "@/lib/orders-export";
 
 import { rollupStatus, STATUS_LABEL, statusBadgeClass } from "@/lib/order-rollup";
-import { resolveProductImage } from "@/lib/product-images";
+import { orderItemImageSrc } from "@/lib/product-images";
 import { toast } from "sonner";
 
 export const Route = createLazyFileRoute("/_authenticated/admin/orders/")({
@@ -42,6 +42,7 @@ type ItemRow = {
   gross_weight: number | string | null;
   image_url: string | null;
   status: string;
+  product?: { image_variants?: unknown } | null;
 };
 type OrderRow = {
   id: string;
@@ -70,7 +71,7 @@ function AdminOrders() {
       const { data } = await supabase
         .from("orders")
         .select(
-          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(id, product_name, product_sku, quantity, gross_weight, image_url, status)",
+          "id, order_no, status, customer_name, customer_phone, customer_email, customer_city, created_at, order_items(id, product_name, product_sku, quantity, gross_weight, image_url, status, product:products(image_variants))",
         )
         .order("created_at", { ascending: false })
         .limit(500);
@@ -434,12 +435,13 @@ function AdminOrders() {
                       className="flex items-start gap-3 rounded-xl border border-border bg-card p-3 transition hover:border-gold"
                     >
                       <img
-                        src={resolveProductImage(item.image_url)}
+                        src={orderItemImageSrc(item, "thumb")}
                         alt={item.product_name}
                         width={56}
                         height={56}
                         loading="lazy"
-                        className="h-14 w-14 shrink-0 rounded-lg object-cover"
+                        decoding="async"
+                        className="h-14 w-14 shrink-0 rounded-lg bg-[#0E5A3E]/5 object-cover"
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-serif text-sm font-semibold">

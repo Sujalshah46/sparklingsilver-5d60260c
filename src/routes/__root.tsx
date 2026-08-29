@@ -22,7 +22,16 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeInitScript } from "@/components/ThemeToggle";
 import { jsonLdScript, websiteSchema, organizationSchema } from "@/lib/seo";
 
-const authGateScript = `(function(){try{var p=location.pathname;if(p.indexOf('/auth')===0||p.indexOf('/reset-password')===0||p.indexOf('/api/')===0||p.indexOf('/privacy')===0||p.indexOf('/terms')===0||p.indexOf('/contact')===0)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
+// Guideline 5.1.1(v): browsing must never require an account. Only
+// account-specific paths are gated before hydration.
+const authGateScript = `(function(){try{var p=location.pathname;var priv=['/cart','/checkout','/orders','/account','/account-edit','/addresses','/wishlist','/notifications','/admin','/change-password'];var m=false;for(var j=0;j<priv.length;j++){if(p===priv[j]||p.indexOf(priv[j]+'/')===0){m=true;break;}}if(!m)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
+
+// Move visitors onto the single canonical origin (www) BEFORE they can start an
+// OAuth flow. The broker binds the OAuth `state` to the initiating origin, so a
+// flow begun on the apex host or the *.lovable.app host and returned to www
+// fails with "State verification failed". Editor preview / local dev hosts are
+// left alone so sign-in still returns to the preview.
+const canonicalHostScript = `(function(){try{var h=location.host;if(location.protocol!=='https:')return;if(h.indexOf('id-preview--')>-1||h.indexOf('.lovableproject.com')>-1||h.indexOf('.lovable.dev')>-1)return;var canon='www.sparklingsilver.in';if(h===canon)return;var ours=(h==='sparklingsilver.in')||h.indexOf('.lovable.app')>-1;if(!ours)return;location.replace('https://'+canon+location.pathname+location.search+location.hash);}catch(e){}})();`;
 
 function NotFoundComponent() {
   return (
@@ -105,6 +114,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children: canonicalHostScript,
+      },
+      {
         children: authGateScript,
       },
       {
@@ -134,10 +146,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const PUBLIC_PATH_PREFIXES = ["/auth", "/reset-password", "/api/", "/privacy", "/terms", "/contact"];
+const PRIVATE_PATH_PREFIXES = [
+  "/cart",
+  "/checkout",
+  "/orders",
+  "/account",
+  "/account-edit",
+  "/addresses",
+  "/wishlist",
+  "/notifications",
+  "/admin",
+  "/change-password",
+];
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+function isPrivatePath(pathname: string) {
+  return PRIVATE_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 function RootComponent() {
@@ -175,7 +198,7 @@ function RootComponent() {
 
     const enforceAuth = async () => {
       const pathname = window.location.pathname;
-      if (isPublicPath(pathname)) return;
+      if (!isPrivatePath(pathname)) return;
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
@@ -191,7 +214,7 @@ function RootComponent() {
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       if (event === "SIGNED_OUT") {
         const pathname = window.location.pathname;
-        if (!isPublicPath(pathname)) {
+        if (isPrivatePath(pathname)) {
           router.navigate({ to: "/auth", replace: true });
         }
       }

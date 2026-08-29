@@ -1,0 +1,1 @@
+REVOKE SELECT (stock_quantity, low_stock_threshold, barcode, label_code, design_no) ON public.products FROM anon;

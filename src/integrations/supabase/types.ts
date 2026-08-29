@@ -588,6 +588,7 @@ export type Database = {
           import_status: string
           in_stock: boolean | null
           is_bestseller: boolean | null
+          is_featured: boolean
           is_new: boolean | null
           is_trending: boolean | null
           item: string | null
@@ -630,6 +631,7 @@ export type Database = {
           import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
+          is_featured?: boolean
           is_new?: boolean | null
           is_trending?: boolean | null
           item?: string | null
@@ -672,6 +674,7 @@ export type Database = {
           import_status?: string
           in_stock?: boolean | null
           is_bestseller?: boolean | null
+          is_featured?: boolean
           is_new?: boolean | null
           is_trending?: boolean | null
           item?: string | null
@@ -948,6 +951,51 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_enquiries: {
+        Row: {
+          business_name: string
+          business_type: string
+          city: string
+          consent: boolean
+          contact_person: string
+          created_at: string
+          email: string
+          id: string
+          message: string | null
+          phone: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          business_name: string
+          business_type: string
+          city: string
+          consent?: boolean
+          contact_person: string
+          created_at?: string
+          email: string
+          id?: string
+          message?: string | null
+          phone: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string
+          business_type?: string
+          city?: string
+          consent?: boolean
+          contact_person?: string
+          created_at?: string
+          email?: string
+          id?: string
+          message?: string | null
+          phone?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_activity_log: {
         Row: {
           action: string
@@ -1087,6 +1135,14 @@ export type Database = {
           slug: string
         }[]
       }
+      get_product_pricing: {
+        Args: { _ids: string[] }
+        Returns: {
+          making_charge_pct: number
+          price: number
+          product_id: string
+        }[]
+      }
       get_subcategory_product_counts: {
         Args: { _category_id: string }
         Returns: {
@@ -1094,6 +1150,7 @@ export type Database = {
           subcategory_id: string
         }[]
       }
+      is_approved_user: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "customer"

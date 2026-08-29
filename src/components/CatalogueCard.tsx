@@ -29,6 +29,7 @@ export function CatalogueCard({
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [qty, setQty] = useState(1);
+  const [imgLoaded, setImgLoaded] = useState(false);
   
 
   const wish = useMutation({
@@ -123,6 +124,7 @@ export function CatalogueCard({
           <Heart className="h-3.5 w-3.5" />
         </button>
         <div className="ruler-frame relative aspect-square w-full bg-[#F5F5F3]">
+          {!imgLoaded && <span aria-hidden className="img-skeleton absolute inset-0" />}
           <img
             src={src}
             srcSet={srcSet}
@@ -132,8 +134,10 @@ export function CatalogueCard({
             height={600}
             loading={priority ? "eager" : "lazy"}
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
             {...(priority ? { fetchPriority: "high" as const } : { fetchPriority: "low" as const })}
-            className="absolute inset-0 h-full w-full object-contain p-3 lg:transition-transform lg:duration-300 lg:group-hover:scale-[1.04]"
+            className={`absolute inset-0 h-full w-full object-contain p-3 transition-opacity duration-300 lg:group-hover:scale-[1.04] ${imgLoaded ? "opacity-100" : "opacity-0"}`}
             style={{ paddingLeft: 14, paddingBottom: 14 }}
           />
         </div>
@@ -145,7 +149,12 @@ export function CatalogueCard({
         
         <p><span className="font-semibold text-[#333]">Silver Purity:</span> {p.purity}</p>
       </div>
-      {showCart && (
+      {showCart && !user && (
+        <Link to="/auth" search={{ redirect: "/catalogue" }} className="block border-t border-[#EEE] px-2 py-2 text-center text-[11px] font-semibold text-burgundy underline underline-offset-2">
+          Login to view wholesale pricing
+        </Link>
+      )}
+      {showCart && user && (
         <>
           <div className="flex items-stretch justify-center gap-1 border-t border-[#EEE] px-2 py-1.5">
             <button onClick={() => setQty((q) => Math.max(1, q - 1))} className="grid h-7 w-7 place-items-center border border-[#CCC] text-[#333] hover:bg-[#F4F4F4]" aria-label="Decrease">

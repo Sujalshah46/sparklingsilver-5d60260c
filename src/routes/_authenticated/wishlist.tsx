@@ -24,7 +24,11 @@ function WishlistPage() {
     queryFn: async () => {
       const { data } = await supabase
         .from("wishlist_items")
-        .select("id, product:products(*)")
+        // `products(*)` would include the pricing columns that authenticated
+        // users are no longer granted SELECT on -> "permission denied for column price".
+        .select(
+          "id, product:products(id, slug, sku, name, purity, metal, gross_weight, image_url, image_variants, category_id, subcategory_id, is_new, is_bestseller)",
+        )
         .eq("user_id", user!.id);
       return data ?? [];
     },

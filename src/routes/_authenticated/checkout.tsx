@@ -6,6 +6,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
+import { OrderingStatusNotice } from "@/components/OrderingStatusNotice";
+
 
 import { placeOrder as placeOrderFn } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
@@ -25,6 +28,10 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 
 function Checkout() {
   const { user } = useAuth();
+  const approval = useApproval();
+  // Pending/rejected buyers can review their cart but must not submit an order
+  // that RLS would reject server-side.
+  const canOrder = approval.isApproved;
   const qc = useQueryClient();
   const [placed, setPlaced] = useState<{ id: string; order_no: string; waHref: string; itemCount: number } | null>(null);
   const [useDefault, setUseDefault] = useState(true);
@@ -37,7 +44,10 @@ function Checkout() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cart_items")
-        .select("id, quantity, size, remark, product:products(*)")
+        // Explicit columns: pricing columns are revoked for the authenticated role.
+        .select(
+          "id, quantity, size, remark, product:products(id, slug, sku, name, purity, gross_weight, image_url, image_variants)",
+        )
         .eq("user_id", user!.id);
       if (error) throw new Error(error.message);
       return data ?? [];
@@ -203,6 +213,7 @@ function Checkout() {
         className="space-y-5 p-4"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!canOrder) return;
           if (!valid) return toast.error("Please enter a delivery address");
           placeOrder.mutate();
         }}
@@ -262,12 +273,20 @@ function Checkout() {
           <Row label="Total gross weight" value={`${totalGrossWt.toFixed(3)} g`} />
         </div>
 
+        {!approval.loading && !canOrder && (
+          <OrderingStatusNotice status={approval.status} />
+        )}
+
         <Button
           type="submit"
-          disabled={placeOrder.isPending || !valid}
+          disabled={placeOrder.isPending || !valid || approval.loading || !canOrder}
           className="h-12 w-full bg-burgundy hover:bg-burgundy/90"
         >
-          {placeOrder.isPending ? "Placing…" : "Place Order"}
+          {placeOrder.isPending
+            ? "Placing…"
+            : !canOrder && !approval.loading
+              ? "Ordering unavailable"
+              : "Place Order"}
         </Button>
       </form>
     </MobileShell>

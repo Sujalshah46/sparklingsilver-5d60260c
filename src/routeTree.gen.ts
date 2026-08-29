@@ -21,6 +21,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as PublicCompanyInfoRouteImport } from './routes/public.company-info'
 import { Route as ProductSlugRouteImport } from './routes/product.$slug'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as AuthenticatedWishlistRouteImport } from './routes/_authenticated/wishlist'
@@ -30,6 +31,8 @@ import { Route as AuthenticatedCartRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedAddressesRouteImport } from './routes/_authenticated/addresses'
 import { Route as AuthenticatedAccountEditRouteImport } from './routes/_authenticated/account-edit'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
+import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]well-known/assetlinks[.]json'
+import { Route as DotwellKnownAppleAppSiteAssociationRouteImport } from './routes/[.]well-known/apple-app-site-association'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as CategorySlugIndexRouteImport } from './routes/category.$slug.index'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders.index'
@@ -115,6 +118,11 @@ const BlogIndexRoute = BlogIndexRouteImport.update({
   path: '/blog/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PublicCompanyInfoRoute = PublicCompanyInfoRouteImport.update({
+  id: '/public/company-info',
+  path: '/public/company-info',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProductSlugRoute = ProductSlugRouteImport.update({
   id: '/product/$slug',
   path: '/product/$slug',
@@ -162,6 +170,18 @@ const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
   path: '/account',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const DotwellKnownAssetlinksDotjsonRoute =
+  DotwellKnownAssetlinksDotjsonRouteImport.update({
+    id: '/.well-known/assetlinks.json',
+    path: '/.well-known/assetlinks.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotwellKnownAppleAppSiteAssociationRoute =
+  DotwellKnownAppleAppSiteAssociationRouteImport.update({
+    id: '/.well-known/apple-app-site-association',
+    path: '/.well-known/apple-app-site-association',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -340,6 +360,8 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -349,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -386,6 +409,8 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/account': typeof AuthenticatedAccountRoute
   '/account-edit': typeof AuthenticatedAccountEditRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -395,6 +420,7 @@ export interface FileRoutesByTo {
   '/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog': typeof BlogIndexRoute
   '/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -434,6 +460,8 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/.well-known/apple-app-site-association': typeof DotwellKnownAppleAppSiteAssociationRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/account-edit': typeof AuthenticatedAccountEditRoute
   '/_authenticated/addresses': typeof AuthenticatedAddressesRoute
@@ -443,6 +471,7 @@ export interface FileRoutesById {
   '/_authenticated/wishlist': typeof AuthenticatedWishlistRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/product/$slug': typeof ProductSlugRoute
+  '/public/company-info': typeof PublicCompanyInfoRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/categories': typeof AuthenticatedAdminCategoriesRoute
   '/_authenticated/admin/homepage-featured': typeof AuthenticatedAdminHomepageFeaturedRoute
@@ -483,6 +512,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/admin'
+    | '/.well-known/apple-app-site-association'
+    | '/.well-known/assetlinks.json'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -492,6 +523,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog/'
     | '/admin/categories'
     | '/admin/homepage-featured'
@@ -529,6 +561,8 @@ export interface FileRouteTypes {
     | '/search'
     | '/sitemap.xml'
     | '/terms'
+    | '/.well-known/apple-app-site-association'
+    | '/.well-known/assetlinks.json'
     | '/account'
     | '/account-edit'
     | '/addresses'
@@ -538,6 +572,7 @@ export interface FileRouteTypes {
     | '/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog'
     | '/admin/categories'
     | '/admin/homepage-featured'
@@ -576,6 +611,8 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/admin'
+    | '/.well-known/apple-app-site-association'
+    | '/.well-known/assetlinks.json'
     | '/_authenticated/account'
     | '/_authenticated/account-edit'
     | '/_authenticated/addresses'
@@ -585,6 +622,7 @@ export interface FileRouteTypes {
     | '/_authenticated/wishlist'
     | '/blog/$slug'
     | '/product/$slug'
+    | '/public/company-info'
     | '/blog/'
     | '/_authenticated/admin/categories'
     | '/_authenticated/admin/homepage-featured'
@@ -624,8 +662,11 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  DotwellKnownAppleAppSiteAssociationRoute: typeof DotwellKnownAppleAppSiteAssociationRoute
+  DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
   BlogSlugRoute: typeof BlogSlugRoute
   ProductSlugRoute: typeof ProductSlugRoute
+  PublicCompanyInfoRoute: typeof PublicCompanyInfoRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicAdminBulkLinkImagesRoute: typeof ApiPublicAdminBulkLinkImagesRoute
   CategorySlugSubRoute: typeof CategorySlugSubRoute
@@ -719,6 +760,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/public/company-info': {
+      id: '/public/company-info'
+      path: '/public/company-info'
+      fullPath: '/public/company-info'
+      preLoaderRoute: typeof PublicCompanyInfoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/product/$slug': {
       id: '/product/$slug'
       path: '/product/$slug'
@@ -781,6 +829,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/account'
       preLoaderRoute: typeof AuthenticatedAccountRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/.well-known/assetlinks.json': {
+      id: '/.well-known/assetlinks.json'
+      path: '/.well-known/assetlinks.json'
+      fullPath: '/.well-known/assetlinks.json'
+      preLoaderRoute: typeof DotwellKnownAssetlinksDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/apple-app-site-association': {
+      id: '/.well-known/apple-app-site-association'
+      path: '/.well-known/apple-app-site-association'
+      fullPath: '/.well-known/apple-app-site-association'
+      preLoaderRoute: typeof DotwellKnownAppleAppSiteAssociationRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
@@ -1080,8 +1142,12 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  DotwellKnownAppleAppSiteAssociationRoute:
+    DotwellKnownAppleAppSiteAssociationRoute,
+  DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
   BlogSlugRoute: BlogSlugRoute,
   ProductSlugRoute: ProductSlugRoute,
+  PublicCompanyInfoRoute: PublicCompanyInfoRoute,
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicAdminBulkLinkImagesRoute: ApiPublicAdminBulkLinkImagesRoute,
   CategorySlugSubRoute: CategorySlugSubRoute,
