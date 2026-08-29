@@ -5,6 +5,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
+import { useApproval } from "@/hooks/use-approval";
+import { OrderingStatusNotice } from "@/components/OrderingStatusNotice";
 import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
 import { useSignedImages } from "@/lib/useSignedImages";
 import { calculateTotalGrossWeight, calculateTotalPieces, type CartItem } from "@/lib/cart.helpers";

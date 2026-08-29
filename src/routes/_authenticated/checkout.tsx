@@ -28,6 +28,10 @@ export const Route = createFileRoute("/_authenticated/checkout")({
 
 function Checkout() {
   const { user } = useAuth();
+  const approval = useApproval();
+  // Pending/rejected buyers can review their cart but must not submit an order
+  // that RLS would reject server-side.
+  const canOrder = approval.isApproved;
   const qc = useQueryClient();
   const [placed, setPlaced] = useState<{ id: string; order_no: string; waHref: string; itemCount: number } | null>(null);
   const [useDefault, setUseDefault] = useState(true);
