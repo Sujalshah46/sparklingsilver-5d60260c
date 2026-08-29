@@ -86,3 +86,68 @@ export function sanitizeRedirect(raw: string | undefined | null, fallback = "/")
   if (raw.startsWith("/\\")) return fallback;
   return raw;
 }
+
+// ---------------------------------------------------------------------------
+// Canonical origin for OAuth
+// ---------------------------------------------------------------------------
+// Every OAuth round-trip (Google via the Lovable broker, Apple Services ID)
+// must start and finish on ONE origin. The broker binds the `state` value to
+// the initiating origin's storage, so a flow started on the apex host
+// (sparklingsilver.in) and returned to www — or vice versa — fails with
+// "State verification failed" / invalid_request. Mobile browsers hit this more
+// often because they do a full-page round-trip and partition storage harder.
+export const CANONICAL_ORIGIN = "https://www.sparklingsilver.in";
+export const CANONICAL_OAUTH_CALLBACK = `${CANONICAL_ORIGIN}/auth-callback`;
+
+/**
+ * Hosts where we must NOT rewrite the origin: the Lovable editor preview and
+ * local dev. Pinning those to the live domain would send a developer's
+ * sign-in to production instead of back to the preview they started in.
+ */
+function isPreviewOrDevHost(host: string): boolean {
+  return (
+    host === "localhost" ||
+    host.startsWith("localhost:") ||
+    host === "127.0.0.1" ||
+    host.startsWith("127.0.0.1:") ||
+    host.includes("id-preview--") ||
+    host.endsWith(".lovableproject.com") ||
+    host.endsWith(".lovable.dev")
+  );
+}
+
+/**
+ * The redirect_uri handed to every OAuth provider. Hardcoded to the canonical
+ * production origin so it can never vary by which host the visitor typed.
+ * Preview/dev keeps its own origin so sign-in still works while building.
+ */
+export function oauthRedirectUri(): string {
+  if (typeof window === "undefined") return CANONICAL_OAUTH_CALLBACK;
+  if (isPreviewOrDevHost(window.location.host)) {
+    return `${window.location.origin}/auth-callback`;
+  }
+  return CANONICAL_OAUTH_CALLBACK;
+}
+
+/**
+ * If the visitor landed on a non-canonical production host (apex, or the
+ * *.lovable.app published host), return the same path on the canonical host so
+ * they are moved BEFORE they ever click sign-in. Returns null when already
+ * canonical, or on preview/dev hosts.
+ */
+export function canonicalHostRedirectUrl(href: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(href);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:") return null;
+  if (isPreviewOrDevHost(url.host)) return null;
+  const canonicalHost = new URL(CANONICAL_ORIGIN).host;
+  if (url.host === canonicalHost) return null;
+  const isOurs =
+    url.host === "sparklingsilver.in" || url.host.endsWith(".lovable.app");
+  if (!isOurs) return null;
+  return `${CANONICAL_ORIGIN}${url.pathname}${url.search}${url.hash}`;
+}
