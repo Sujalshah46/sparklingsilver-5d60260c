@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { resolveProductImage, productThumbUrl, productVariantUrl, type ImageVariants } from "@/lib/product-images";
+import { trackAddToCart } from "@/lib/analytics";
 import { toast } from "sonner";
 
 export type CatalogueCardData = {
@@ -52,6 +53,13 @@ export function CatalogueCard({
     },
     onSuccess: () => {
       toast.success("Added to cart");
+      trackAddToCart({
+        id: p.id,
+        name: p.name,
+        sku: p.sku,
+        quantity: qty,
+        weight: p.gross_weight,
+      });
       qc.invalidateQueries({ queryKey: ["cart-count"] });
       qc.invalidateQueries({ queryKey: ["cart"] });
       qc.invalidateQueries({ queryKey: ["cart-weight"] });

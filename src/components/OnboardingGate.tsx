@@ -239,7 +239,8 @@ export function OnboardingGate() {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-black/70 px-4 py-8 backdrop-blur-sm"
+      className="fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto overscroll-contain bg-black/70 px-4 py-8 pb-32 backdrop-blur-sm"
+      style={{ WebkitOverflowScrolling: "touch" }}
       role="dialog"
       aria-modal="true"
       onKeyDown={(e) => {

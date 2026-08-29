@@ -1,4 +1,5 @@
 import { whatsappUrl, WHATSAPP_DEFAULT_MESSAGE, WHATSAPP_LINK_TARGET, openWhatsAppUrl } from "@/lib/site";
+import { trackWhatsAppInquiry } from "@/lib/analytics";
 
 export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: string }) {
   const url = whatsappUrl(message);
@@ -9,6 +10,7 @@ export function WhatsAppFab({ message = WHATSAPP_DEFAULT_MESSAGE }: { message?: 
       rel="noopener noreferrer"
       onClick={(event) => {
         event.preventDefault();
+        trackWhatsAppInquiry("floating_fab", { message });
         openWhatsAppUrl(url);
       }}
       aria-label="Chat with us on WhatsApp"

@@ -92,6 +92,17 @@ export function NativePushBridge() {
               // Explicitly exchange auth code with Supabase if code param exists
               void supabase.auth.exchangeCodeForSession(code);
             }
+            if (target.hash) {
+              const hashParams = new URLSearchParams(target.hash.replace(/^#/, ""));
+              const accessToken = hashParams.get("access_token");
+              const refreshToken = hashParams.get("refresh_token");
+              if (accessToken && refreshToken) {
+                void supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                });
+              }
+            }
             void router.navigate({ href: target.pathname + target.search + target.hash });
           }
         } catch {

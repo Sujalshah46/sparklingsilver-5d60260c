@@ -10,6 +10,8 @@ import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCar
 
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
+import { FeedbackModal } from "@/components/FeedbackModal";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
 
 
@@ -185,6 +187,44 @@ function Home() {
             );
           })}
         </div>
+      </section>
+
+      {/* CUSTOM DESIGN & FEEDBACK BANNER */}
+      <section className="mt-8 mx-3 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-[#2C7A76]/90 p-5 text-white shadow-sm">
+        <div className="flex flex-col items-center text-center">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300">
+            B2B Custom Jewellery
+          </span>
+          <h3 className="mt-1 text-lg font-serif font-semibold text-white">
+            Can't find a specific weight or design?
+          </h3>
+          <p className="mt-1 max-w-xs text-xs text-slate-300">
+            We manufacture bespoke 92.5 sterling silver designs tailored to your showroom's target weights.
+          </p>
+          <div className="mt-3">
+            <FeedbackModal
+              trigger={
+                <button
+                  type="button"
+                  className="rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-900 shadow-md hover:bg-slate-100 active:scale-95 transition-all"
+                >
+                  Request Custom Design
+                </button>
+              }
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* APP DOWNLOAD SECTION */}
+      <section className="mt-8 px-3 text-center">
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+          Get the Sparkling Silver Mobile App
+        </p>
+        <p className="mt-0.5 text-xs text-slate-500 mb-3">
+          Available on Google Play and Apple App Store
+        </p>
+        <AppStoreBadges />
       </section>
 
       <div className="h-8" />

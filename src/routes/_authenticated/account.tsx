@@ -6,9 +6,11 @@ import { MobileShell } from "@/components/MobileShell";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { FeedbackModal } from "@/components/FeedbackModal";
+import { AppStoreBadges } from "@/components/AppStoreBadges";
 import {
   MapPin, Bell, Globe, HelpCircle, Info, LogOut, ChevronRight,
-  ShoppingBag, Heart, Gift, UserCog, ShieldCheck, Trash2, FileText
+  ShoppingBag, Heart, Gift, UserCog, ShieldCheck, Trash2, FileText, MessageSquarePlus
 } from "lucide-react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/hooks/use-is-admin";
@@ -89,6 +91,15 @@ function AccountPage() {
         </section>
 
         <section className="mt-4 divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          <FeedbackModal
+            trigger={
+              <button type="button" className="w-full flex items-center gap-3 px-4 py-3.5 text-sm transition hover:bg-secondary/50 text-left">
+                <MessageSquarePlus className="h-4 w-4 text-teal" />
+                <span className="flex-1 font-medium text-slate-900">Request Jewellery Design / Feedback</span>
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            }
+          />
           <Row to="/contact" icon={HelpCircle} label="Help & Support" />
           <Row to="/privacy" icon={ShieldCheck} label="Privacy Policy" />
           <Row to="/terms" icon={FileText} label="Terms of Use" />
@@ -100,6 +111,13 @@ function AccountPage() {
             <Row to="/admin" icon={ShieldCheck} label="Admin Panel" hint="Manage orders" />
           </section>
         )}
+
+        <div className="mt-6">
+          <p className="mb-2 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Download Our App
+          </p>
+          <AppStoreBadges />
+        </div>
 
 
         <Button

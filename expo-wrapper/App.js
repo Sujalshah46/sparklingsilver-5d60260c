@@ -280,10 +280,12 @@ export default function App() {
   const openOAuthSession = useCallback(
     async (authUrl) => {
       try {
+        console.log('[OAuth] Launching WebBrowser auth session for:', authUrl);
         const result = await WebBrowser.openAuthSessionAsync(
           authUrl,
           'sparklingsilver://auth-callback'
         );
+        console.log('[OAuth] Result received:', JSON.stringify(result));
         if (result.type === 'success' && result.url) {
           handleDeepLink(result.url);
         }
