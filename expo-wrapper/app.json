@@ -126,7 +126,11 @@
         "light": "./assets/icon.png",
         "dark": "./assets/icon-dark.png",
         "tinted": "./assets/icon-tinted.png"
-      }
+      },
+      "associatedDomains": [
+        "applinks:www.sparklingsilver.in",
+        "applinks:sparklingsilver.in"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -153,7 +157,29 @@
         "android.permission.SYSTEM_ALERT_WINDOW",
         "android.permission.READ_MEDIA_VIDEO"
       ],
-      "allowBackup": false
+      "allowBackup": false,
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "www.sparklingsilver.in",
+              "pathPrefix": "/auth-callback"
+            },
+            {
+              "scheme": "https",
+              "host": "sparklingsilver.in",
+              "pathPrefix": "/auth-callback"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/icon.png"
@@ -189,6 +215,7 @@
           }
         }
       ]
-    ]
+    ],
+    "scheme": "sparklingsilver"
   }
 }
