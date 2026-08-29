@@ -213,6 +213,7 @@ function Checkout() {
         className="space-y-5 p-4"
         onSubmit={(e) => {
           e.preventDefault();
+          if (!canOrder) return;
           if (!valid) return toast.error("Please enter a delivery address");
           placeOrder.mutate();
         }}
