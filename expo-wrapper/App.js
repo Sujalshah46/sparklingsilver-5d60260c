@@ -527,11 +527,15 @@ export default function App() {
                 onOpenWindow={(event) => {
                   const url = event?.nativeEvent?.targetUrl;
                   if (!url) return;
-                  if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
+                  // The web layer opens the OAuth popup via window.open in some
+                  // flows — route that to the browser auth session too.
+                  if (isOAuthUrl(url)) void startOAuthSession(url);
+                  else if (isInternalUrl(url)) webViewRef.current?.injectJavaScript(
                     `window.location.assign(${JSON.stringify(url)});true;`,
                   );
                   else openExternal(url);
                 }}
+
                 onLoadStart={() => setLoading(true)}
                 onLoadEnd={() => setLoading(false)}
                 onError={({ nativeEvent }) => {
