@@ -49,7 +49,8 @@ export const requestAdminResetCode = createServerFn({ method: "POST" })
       .select("id", { count: "exact", head: true })
       .ilike("email", email)
       .gte("created_at", since);
-    if ((count ?? 0) >= 5) throw new Error("Too many code requests. Please try again later.");
+    // Silently stop issuing codes — the caller must not learn a limit exists.
+    if ((count ?? 0) >= 5) return GENERIC;
 
     // Invalidate any outstanding codes for this admin.
     await supabaseAdmin
