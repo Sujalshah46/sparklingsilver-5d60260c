@@ -214,6 +214,12 @@ function CartPage() {
               </p>
             </div>
 
+            {!approval.loading && !approval.isApproved && (
+              <div className="mt-4">
+                <OrderingStatusNotice status={approval.status} />
+              </div>
+            )}
+
             <Button asChild className="mt-4 h-12 w-full bg-burgundy text-ivory hover:bg-burgundy/90">
               <Link to="/checkout">Proceed to Checkout</Link>
             </Button>

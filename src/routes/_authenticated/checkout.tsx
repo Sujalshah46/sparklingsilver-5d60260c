@@ -272,12 +272,20 @@ function Checkout() {
           <Row label="Total gross weight" value={`${totalGrossWt.toFixed(3)} g`} />
         </div>
 
+        {!approval.loading && !canOrder && (
+          <OrderingStatusNotice status={approval.status} />
+        )}
+
         <Button
           type="submit"
-          disabled={placeOrder.isPending || !valid}
+          disabled={placeOrder.isPending || !valid || approval.loading || !canOrder}
           className="h-12 w-full bg-burgundy hover:bg-burgundy/90"
         >
-          {placeOrder.isPending ? "Placing…" : "Place Order"}
+          {placeOrder.isPending
+            ? "Placing…"
+            : !canOrder && !approval.loading
+              ? "Ordering unavailable"
+              : "Place Order"}
         </Button>
       </form>
     </MobileShell>
