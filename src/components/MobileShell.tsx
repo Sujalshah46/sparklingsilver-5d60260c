@@ -9,6 +9,7 @@ import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, INSTAGRAM_URL, open
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountStatusBanner } from "@/components/AccountStatusBanner";
 import type { ReactNode } from "react";
 
 function CartBadge() {
