@@ -17,6 +17,7 @@ import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
+import * as WebBrowser from 'expo-web-browser';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import NetInfo from '@react-native-community/netinfo';
@@ -247,6 +248,58 @@ export default function App() {
     return () => clearTimeout(safetyTimer);
   }, [reloadKey]);
 
+  // Shared handler for deep links and OAuth redirects
+  const handleDeepLink = useCallback((incomingUrl) => {
+    if (!incomingUrl) return;
+    try {
+      let targetUrl = incomingUrl;
+      if (incomingUrl.startsWith('sparklingsilver://')) {
+        const pathAndQuery = incomingUrl.replace(/^sparklingsilver:\/\/?/, '');
+        targetUrl = `https://www.sparklingsilver.in/${pathAndQuery}`;
+      }
+      
+      if (webViewRef.current) {
+        // Instruct the WebView to navigate to the callback URL so Supabase auth exchanges the tokens
+        webViewRef.current.injectJavaScript(
+          `window.location.href = ${JSON.stringify(targetUrl)}; true;`
+        );
+      }
+    } catch (err) {
+      console.warn('Error handling deep link:', err);
+    }
+  }, []);
+
+  // Open OAuth flows (Google, Apple, Lovable) in Chrome Custom Tab / ASWebAuthenticationSession
+  const openOAuthSession = useCallback(
+    async (authUrl) => {
+      try {
+        const result = await WebBrowser.openAuthSessionAsync(
+          authUrl,
+          'sparklingsilver://auth-callback'
+        );
+        if (result.type === 'success' && result.url) {
+          handleDeepLink(result.url);
+        }
+      } catch (err) {
+        console.warn('Error during OAuth web browser session:', err);
+      }
+    },
+    [handleDeepLink],
+  );
+
+  // Handle incoming App Links & Custom Scheme URLs
+  useEffect(() => {
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink(url);
+    });
+
+    const sub = Linking.addEventListener('url', ({ url }) => {
+      handleDeepLink(url);
+    });
+
+    return () => sub.remove();
+  }, [handleDeepLink]);
+
   // Android hardware back -> WebView back
   useEffect(() => {
     if (Platform.OS !== 'android') return;
@@ -314,17 +367,25 @@ export default function App() {
     [pushToken, sendPushTokenToWeb, fetchOrders],
   );
 
-  const onShouldStartLoad = useCallback((request) => {
-    const url = request?.url ?? '';
-    const action = getNavigationAction(url, SITE_URL);
-    if (action === 'ALLOW') {
-      return true;
-    }
-    if (action === 'EXTERNAL') {
-      Linking.openURL(url).catch(() => {});
-    }
-    return false;
-  }, []);
+  const onShouldStartLoad = useCallback(
+    (request) => {
+      const url = request?.url ?? '';
+      const action = getNavigationAction(url, SITE_URL);
+      if (action === 'ALLOW') {
+        return true;
+      }
+      if (action === 'AUTH') {
+        openOAuthSession(url);
+        return false;
+      }
+      if (action === 'EXTERNAL') {
+        Linking.openURL(url).catch(() => {});
+        return false;
+      }
+      return false;
+    },
+    [openOAuthSession],
+  );
 
   const retry = useCallback(() => {
     setLoadError(null);
@@ -440,7 +501,22 @@ export default function App() {
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
                   startInLoadingState={false}
-                  setSupportMultipleWindows={false}
+                  setSupportMultipleWindows={true}
+                  onOpenWindow={(syntheticEvent) => {
+                    const { targetUrl } = syntheticEvent.nativeEvent;
+                    if (targetUrl) {
+                      const action = getNavigationAction(targetUrl, SITE_URL);
+                      if (action === 'AUTH') {
+                        openOAuthSession(targetUrl);
+                      } else if (action === 'EXTERNAL') {
+                        Linking.openURL(targetUrl).catch(() => {});
+                      } else if (action === 'ALLOW' && webViewRef.current) {
+                        webViewRef.current.injectJavaScript(
+                          `window.location.href = ${JSON.stringify(targetUrl)}; true;`
+                        );
+                      }
+                    }
+                  }}
                   scalesPageToFit={false}
                   automaticallyAdjustContentInsets={false}
                   contentInsetAdjustmentBehavior="never"
