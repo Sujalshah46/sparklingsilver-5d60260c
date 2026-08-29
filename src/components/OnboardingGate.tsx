@@ -82,7 +82,7 @@ export function OnboardingGate() {
 
   const check = async (user: User) => {
     const pathname = window.location.pathname;
-    if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) {
+    if (!GATED_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
       setOpen(false);
       return;
     }
