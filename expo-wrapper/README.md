@@ -126,3 +126,32 @@ Still to do in App Store Connect (cannot be done from code):
 Note: the app is a wholesale B2B catalogue with no in-app payment, so no
 In-App Purchase is required (Guideline 3.1.1 does not apply — orders are
 quotes fulfilled offline). Keep it that way, or IAP rules kick in.
+
+## In-app Google / Apple sign-in (OAuth)
+
+Google refuses OAuth requests from embedded WebViews (`disallowed_useragent`),
+so the wrapper never renders the provider inside the WebView. `App.js` detects
+navigations to `accounts.google.com`, `appleid.apple.com`, `oauth.lovable.app`
+and `/~oauth/*`, and runs them through `WebBrowser.openAuthSessionAsync`
+(Chrome Custom Tabs on Android, `SFAuthenticationSession` on iOS) — user agents
+both providers accept. The session ends on
+`https://www.sparklingsilver.in/auth-callback`, the tab closes, and the wrapper
+replays that exact URL into the WebView so the existing web callback page
+completes the Supabase exchange. The website's OAuth code is unchanged.
+
+### Required one-time hosting setup (makes the tab hand the session back)
+
+The callback URL is registered as an Android App Link / iOS Universal Link.
+Verification files are served from the site and need real values:
+
+1. `public/.well-known/assetlinks.json` — replace
+   `REPLACE_WITH_ANDROID_SIGNING_SHA256` with the release signing fingerprint
+   from `eas credentials` (Android → keystore → SHA-256 Fingerprint).
+2. `public/.well-known/apple-app-site-association` — replace
+   `REPLACE_WITH_APPLE_TEAM_ID` with the Apple Developer Team ID.
+
+Then publish the site and run a new native build (`eas build`) — App Link
+verification happens at install time, so an OTA update is not enough.
+
+Until those fingerprints are filled in, the browser tab still completes the
+sign-in correctly but cannot auto-close, so the user has to close it manually.
