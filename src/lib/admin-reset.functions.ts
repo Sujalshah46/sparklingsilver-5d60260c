@@ -136,7 +136,8 @@ export const confirmAdminResetCode = createServerFn({ method: "POST" })
       .eq("user_id", row.user_id)
       .eq("role", "admin")
       .maybeSingle();
-    if (!role) throw new Error("This reset option is only available for admin accounts.");
+    // Same generic failure as a bad code, so non-admin accounts are indistinguishable.
+    if (!role) throw new Error("Invalid or expired code. Request a new one.");
 
     const { error } = await supabaseAdmin.auth.admin.updateUserById(row.user_id, { password: data.new_password });
     if (error) throw new Error(error.message);
