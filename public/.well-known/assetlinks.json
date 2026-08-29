@@ -5,7 +5,7 @@
       "namespace": "android_app",
       "package_name": "com.sparklingsilver.app",
       "sha256_cert_fingerprints": [
-        "REPLACE_WITH_ANDROID_SIGNING_SHA256"
+        "C73380C82A9F5A1384696F15F285CE8B76A471F5A7BA8C37E65E2F12B3C0657A"
       ]
     }
   }

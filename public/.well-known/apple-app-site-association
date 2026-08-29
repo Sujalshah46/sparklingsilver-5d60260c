@@ -3,7 +3,7 @@
     "apps": [],
     "details": [
       {
-        "appID": "REPLACE_WITH_APPLE_TEAM_ID.com.sparklingsilver.app",
+        "appID": "GGGYZ5NH2Q.com.sparklingsilver.app",
         "paths": ["/auth-callback", "/auth-callback/*"]
       }
     ]
