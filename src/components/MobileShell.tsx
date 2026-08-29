@@ -94,6 +94,26 @@ function SideMenu() {
   );
 }
 
+function AuthAffordance() {
+  const { user, loading } = useAuth();
+  if (loading) return <span className="h-10 w-10" />;
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        className="mr-1 rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
+      >
+        Login
+      </Link>
+    );
+  }
+  return (
+    <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+      <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
+    </Link>
+  );
+}
+
 export function TopBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-[#E5E5E5] bg-white">
