@@ -113,6 +113,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     scripts: [
       {
+        children: canonicalHostScript,
+      },
+      {
         children: authGateScript,
       },
       {
