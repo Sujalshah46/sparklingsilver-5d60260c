@@ -25,6 +25,13 @@ import { jsonLdScript, websiteSchema, organizationSchema } from "@/lib/seo";
 // account-specific paths are gated before hydration.
 const authGateScript = `(function(){try{var p=location.pathname;var priv=['/cart','/checkout','/orders','/account','/account-edit','/addresses','/wishlist','/notifications','/admin','/change-password'];var m=false;for(var j=0;j<priv.length;j++){if(p===priv[j]||p.indexOf(priv[j]+'/')===0){m=true;break;}}if(!m)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
 
+// Move visitors onto the single canonical origin (www) BEFORE they can start an
+// OAuth flow. The broker binds the OAuth `state` to the initiating origin, so a
+// flow begun on the apex host or the *.lovable.app host and returned to www
+// fails with "State verification failed". Editor preview / local dev hosts are
+// left alone so sign-in still returns to the preview.
+const canonicalHostScript = `(function(){try{var h=location.host;if(location.protocol!=='https:')return;if(h.indexOf('id-preview--')>-1||h.indexOf('.lovableproject.com')>-1||h.indexOf('.lovable.dev')>-1)return;var canon='www.sparklingsilver.in';if(h===canon)return;var ours=(h==='sparklingsilver.in')||h.indexOf('.lovable.app')>-1;if(!ours)return;location.replace('https://'+canon+location.pathname+location.search+location.hash);}catch(e){}})();`;
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -105,6 +112,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&display=swap" },
     ],
     scripts: [
+      {
+        children: canonicalHostScript,
+      },
       {
         children: authGateScript,
       },
