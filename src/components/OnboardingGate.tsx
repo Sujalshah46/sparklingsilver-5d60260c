@@ -47,7 +47,18 @@ function Row({
   );
 }
 
-const EXEMPT_PREFIXES = ["/auth", "/reset-password", "/api/", "/change-password", "/public/", "/catalogue", "/category/", "/product/", "/search"];
+// The onboarding form may only interrupt account-specific flows — passive
+// browsing (home, catalogue, category, product, search) is never blocked.
+const GATED_PREFIXES = [
+  "/cart",
+  "/checkout",
+  "/orders",
+  "/account",
+  "/account-edit",
+  "/addresses",
+  "/wishlist",
+  "/notifications",
+];
 
 export function OnboardingGate() {
   const router = useRouter();
