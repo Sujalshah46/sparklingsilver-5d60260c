@@ -21,7 +21,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { themeInitScript } from "@/components/ThemeToggle";
 import { jsonLdScript, websiteSchema, organizationSchema } from "@/lib/seo";
 
-const authGateScript = `(function(){try{var p=location.pathname;if(p.indexOf('/auth')===0||p.indexOf('/reset-password')===0||p.indexOf('/api/')===0||p.indexOf('/privacy')===0||p.indexOf('/terms')===0||p.indexOf('/contact')===0||p.indexOf('/public/')===0||p.indexOf('/catalogue')===0||p.indexOf('/category/')===0||p.indexOf('/product/')===0||p.indexOf('/search')===0)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
+// Guideline 5.1.1(v): browsing must never require an account. Only
+// account-specific paths are gated before hydration.
+const authGateScript = `(function(){try{var p=location.pathname;var priv=['/cart','/checkout','/orders','/account','/account-edit','/addresses','/wishlist','/notifications','/admin','/change-password'];var m=false;for(var j=0;j<priv.length;j++){if(p===priv[j]||p.indexOf(priv[j]+'/')===0){m=true;break;}}if(!m)return;var keys=Object.keys(localStorage);for(var i=0;i<keys.length;i++){var k=keys[i];if(k.indexOf('sb-')===0&&k.indexOf('-auth-token')>0){try{var v=JSON.parse(localStorage.getItem(k));if(v&&v.access_token&&(!v.expires_at||v.expires_at*1000>Date.now()))return;}catch(e){}}}location.replace('/auth?redirect='+encodeURIComponent(p+location.search));}catch(e){}})();`;
 
 function NotFoundComponent() {
   return (
