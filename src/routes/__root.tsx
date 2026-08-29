@@ -135,10 +135,21 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-const PUBLIC_PATH_PREFIXES = ["/auth", "/reset-password", "/api/", "/privacy", "/terms", "/contact", "/public/", "/catalogue", "/category/", "/product/", "/search"];
+const PRIVATE_PATH_PREFIXES = [
+  "/cart",
+  "/checkout",
+  "/orders",
+  "/account",
+  "/account-edit",
+  "/addresses",
+  "/wishlist",
+  "/notifications",
+  "/admin",
+  "/change-password",
+];
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/") || pathname.startsWith(p));
+function isPrivatePath(pathname: string) {
+  return PRIVATE_PATH_PREFIXES.some((p) => pathname === p || pathname.startsWith(p + "/"));
 }
 
 function RootComponent() {
