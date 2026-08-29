@@ -167,7 +167,7 @@ function RootComponent() {
 
     const enforceAuth = async () => {
       const pathname = window.location.pathname;
-      if (isPublicPath(pathname)) return;
+      if (!isPrivatePath(pathname)) return;
       const { data } = await supabase.auth.getSession();
       if (cancelled) return;
       if (!data.session) {
