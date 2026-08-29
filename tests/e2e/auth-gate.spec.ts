@@ -12,7 +12,8 @@ import { test, expect, type Route } from "@playwright/test";
  *   • mobile-slow   — Pixel 5, CPU + network throttled via CDP
  */
 
-const PROTECTED_PATHS = ["/", "/category/antique/tops", "/catalogue", "/contact"];
+// Guideline 5.1.1(v): browsing is public. Only account-specific pages gate.
+const PROTECTED_PATHS = ["/cart", "/orders", "/account", "/wishlist"];
 
 // A DOM signature only the real homepage / catalogue ships (never on /auth).
 const HOMEPAGE_MARKERS = [

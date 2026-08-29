@@ -9,6 +9,7 @@ import { whatsappUrl, WHATSAPP_LINK_TARGET, openWhatsAppUrl, INSTAGRAM_URL, open
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AccountStatusBanner } from "@/components/AccountStatusBanner";
 import type { ReactNode } from "react";
 
 function CartBadge() {
@@ -94,6 +95,26 @@ function SideMenu() {
   );
 }
 
+function AuthAffordance() {
+  const { user, loading } = useAuth();
+  if (loading) return <span className="h-10 w-10" />;
+  if (!user) {
+    return (
+      <Link
+        to="/auth"
+        className="mr-1 rounded-[2px] border border-teal px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-teal hover:bg-teal hover:text-white"
+      >
+        Login
+      </Link>
+    );
+  }
+  return (
+    <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
+      <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
+    </Link>
+  );
+}
+
 export function TopBar() {
   return (
     <header className="sticky top-0 z-30 border-b border-[#E5E5E5] bg-white">
@@ -112,9 +133,7 @@ export function TopBar() {
           <Link to="/contact" className="hover:text-teal">Contact</Link>
         </nav>
         <div className="flex shrink-0 items-center">
-          <Link to="/account" aria-label="Account" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
-            <UserIcon className="h-[22px] w-[22px]" strokeWidth={1.6} />
-          </Link>
+          <AuthAffordance />
           <Link to="/search" aria-label="Search" className="grid h-10 w-10 place-items-center text-[#333] hover:bg-[#F4F4F4]">
             <Search className="h-[22px] w-[22px]" strokeWidth={1.6} />
           </Link>
@@ -221,7 +240,10 @@ export function MobileShell({ children, hideTopBar = false }: { children: ReactN
   return (
     <div className="min-h-screen bg-background">
       {!hideTopBar && <TopBar />}
-      <main className="mx-auto max-w-2xl pb-safe-nav lg:max-w-[1600px] lg:px-6">{children}</main>
+      <main className="mx-auto max-w-2xl pb-safe-nav lg:max-w-[1600px] lg:px-6">
+        <AccountStatusBanner />
+        {children}
+      </main>
       <BottomNav />
     </div>
   );
