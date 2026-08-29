@@ -408,15 +408,60 @@ export default function App() {
     [post, pushToken, sendToken],
   );
 
+  // Google (and Apple) reject embedded WebViews for OAuth, so the sign-in
+  // redirect chain is handed to a real browser session: Chrome Custom Tabs on
+  // Android, SFAuthenticationSession on iOS. Both are user-agents the providers
+  // accept. The session ends on our https callback, which is registered as an
+  // App Link / Universal Link, so the tab closes and returns that URL (tokens
+  // in the fragment) to us — we then load it in the WebView, where the existing
+  // web /auth-callback page completes the exchange exactly as it does in a
+  // normal browser. No website-side OAuth change is involved.
+  const oauthBusyRef = useRef(false);
+  const startOAuthSession = useCallback(async (url) => {
+    if (oauthBusyRef.current) return;
+    oauthBusyRef.current = true;
+    try {
+      const result = await WebBrowser.openAuthSessionAsync(url, OAUTH_CALLBACK_URL, {
+        showInRecents: false,
+        preferEphemeralSession: false,
+      });
+      if (result?.type === 'success' && result.url) {
+        // Replay the completed callback URL inside the WebView so the app's own
+        // Supabase client picks up the session.
+        webViewRef.current?.injectJavaScript(
+          `window.location.replace(${JSON.stringify(result.url)});true;`,
+        );
+      } else {
+        // Cancelled or dismissed — make sure the page isn't stuck on a spinner.
+        webViewRef.current?.injectJavaScript(
+          `window.location.replace(${JSON.stringify(`${SITE_URL}/auth`)});true;`,
+        );
+      }
+    } catch (err) {
+      console.warn('oauth session failed', err);
+      await openExternal(url);
+    } finally {
+      oauthBusyRef.current = false;
+    }
+  }, []);
+
   // WhatsApp / tel: / mailto: / Instagram must leave the WebView, otherwise
   // those buttons silently do nothing (a common App Review rejection).
-  const onShouldStartLoad = useCallback((request) => {
-    const url = request?.url ?? '';
-    if (!url || url === 'about:blank') return true;
-    if (isInternalUrl(url)) return true;
-    openExternal(url);
-    return false;
-  }, []);
+  const onShouldStartLoad = useCallback(
+    (request) => {
+      const url = request?.url ?? '';
+      if (!url || url === 'about:blank') return true;
+      if (isOAuthUrl(url)) {
+        void startOAuthSession(url);
+        return false;
+      }
+      if (isInternalUrl(url)) return true;
+      openExternal(url);
+      return false;
+    },
+    [startOAuthSession],
+  );
+
 
   const retry = useCallback(() => {
     setLoadError(null);
