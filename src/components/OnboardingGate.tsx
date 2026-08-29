@@ -48,6 +48,15 @@ function Row({
 }
 
 const EXEMPT_PREFIXES = ["/auth", "/reset-password", "/api/", "/change-password"];
+// Do not exempt /auth-callback or OAuth redirect paths
+const isExemptPath = (p: string) =>
+  p === "/auth" ||
+  p.startsWith("/auth/") ||
+  p === "/reset-password" ||
+  p.startsWith("/reset-password/") ||
+  p.startsWith("/api/") ||
+  p === "/change-password" ||
+  p.startsWith("/change-password/");
 
 export function OnboardingGate() {
   const router = useRouter();
@@ -71,7 +80,7 @@ export function OnboardingGate() {
 
   const check = async (user: User) => {
     const pathname = window.location.pathname;
-    if (EXEMPT_PREFIXES.some((p) => pathname.startsWith(p))) {
+    if (isExemptPath(pathname)) {
       setOpen(false);
       return;
     }
@@ -85,28 +94,29 @@ export function OnboardingGate() {
       .select("business_name, contact_person, mobile, email, delivery_address, gstin, additional_remarks, profile_completed, must_change_password")
       .eq("id", user.id)
       .maybeSingle();
-    if (!p) return;
+      
     // First-time password change takes priority over the profile form.
-    if (p.must_change_password) {
+    if (p?.must_change_password) {
       setOpen(false);
       return;
     }
 
     const missingRequired =
-      !p.business_name?.trim() ||
-      !p.contact_person?.trim() ||
-      !p.mobile?.trim() ||
-      !(p.email ?? user.email ?? "").trim() ||
-      !p.delivery_address?.trim() ||
-      !p.gstin?.trim();
+      !p?.business_name?.trim() ||
+      !p?.contact_person?.trim() ||
+      !p?.mobile?.trim() ||
+      !(p?.email ?? user.email ?? "").trim() ||
+      !p?.delivery_address?.trim() ||
+      !p?.gstin?.trim();
 
-    if (p.profile_completed && !missingRequired) return;
+    if (p?.profile_completed && !missingRequired) return;
 
+    const fallbackName = (user.user_metadata?.full_name || user.user_metadata?.name || "") as string;
     setUserId(user.id);
     setBusinessName(p?.business_name ?? "");
-    setContactPerson(p?.contact_person ?? "");
+    setContactPerson(p?.contact_person || fallbackName);
     setMobile(p?.mobile ?? "");
-    setEmail(p?.email ?? user.email ?? "");
+    setEmail(p?.email || user.email || "");
     setDeliveryAddress(p?.delivery_address ?? "");
     setGstin(p?.gstin ?? "");
     setRemarks(p?.additional_remarks ?? "");
@@ -204,17 +214,20 @@ export function OnboardingGate() {
     setLoading(true);
     const { error } = await supabase
       .from("profiles")
-      .update({
-        business_name: businessName.trim(),
-        contact_person: contactPerson.trim(),
-        mobile: mobile.trim(),
-        email: email.trim(),
-        delivery_address: deliveryAddress.trim(),
-        gstin: gstin.trim().toUpperCase(),
-        additional_remarks: remarks.trim() || null,
-        profile_completed: true,
-      })
-      .eq("id", userId);
+      .upsert(
+        {
+          id: userId,
+          business_name: businessName.trim(),
+          contact_person: contactPerson.trim(),
+          mobile: mobile.trim(),
+          email: email.trim(),
+          delivery_address: deliveryAddress.trim(),
+          gstin: gstin.trim().toUpperCase(),
+          additional_remarks: remarks.trim() || null,
+          profile_completed: true,
+        },
+        { onConflict: "id" }
+      );
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("Profile saved. Welcome!");
