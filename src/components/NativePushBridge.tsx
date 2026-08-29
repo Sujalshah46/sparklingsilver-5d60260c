@@ -87,6 +87,11 @@ export function NativePushBridge() {
         try {
           const target = new URL(msg.url, window.location.origin);
           if (target.origin === window.location.origin) {
+            const code = target.searchParams.get("code");
+            if (code) {
+              // Explicitly exchange auth code with Supabase if code param exists
+              void supabase.auth.exchangeCodeForSession(code);
+            }
             void router.navigate({ href: target.pathname + target.search + target.hash });
           }
         } catch {
