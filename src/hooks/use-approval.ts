@@ -26,6 +26,7 @@ export function useApproval(): ViewerAccess {
     isPending: false,
     isApproved: false,
     isAdmin: false,
+    status: null,
   });
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function useApproval(): ViewerAccess {
     const load = async (userId: string | null) => {
       if (!userId) {
         if (!cancelled)
-          setState({ loading: false, isAnonymous: true, isPending: false, isApproved: false, isAdmin: false });
+          setState({ loading: false, isAnonymous: true, isPending: false, isApproved: false, isAdmin: false, status: null });
         return;
       }
       const [{ data: profile }, { data: role }] = await Promise.all([
@@ -50,6 +51,7 @@ export function useApproval(): ViewerAccess {
         isPending: !isApproved,
         isApproved,
         isAdmin,
+        status: isAdmin ? "active" : (profile?.status ?? null),
       });
     };
 
@@ -58,7 +60,7 @@ export function useApproval(): ViewerAccess {
       .then(({ data }) => load(data.session?.user?.id ?? null))
       .catch(() => {
         if (!cancelled)
-          setState({ loading: false, isAnonymous: true, isPending: false, isApproved: false, isAdmin: false });
+          setState({ loading: false, isAnonymous: true, isPending: false, isApproved: false, isAdmin: false, status: null });
       });
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
