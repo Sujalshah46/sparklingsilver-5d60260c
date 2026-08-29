@@ -41,6 +41,7 @@ export const Route = createFileRoute("/_authenticated/cart")({
 
 function CartPage() {
   const { user } = useAuth();
+  const approval = useApproval();
   const qc = useQueryClient();
 
   const { data, isLoading } = useQuery({
