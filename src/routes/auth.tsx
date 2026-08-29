@@ -10,7 +10,7 @@ import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
-import { sanitizeRedirect } from "@/lib/site";
+import { sanitizeRedirect, oauthRedirectUri } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, User } from "lucide-react";
 import logo from "@/assets/logo.png";
@@ -154,7 +154,10 @@ function AppleSignIn({ redirect }: { redirect: string }) {
       // params, and the callback page consumes this after the session exchange.
       stashOAuthTarget(redirect);
       const result = await lovable.auth.signInWithOAuth("apple", {
-        redirect_uri: `${window.location.origin}/auth-callback`,
+        // Pinned to the canonical origin — never window.location.origin, or a
+        // flow started on the apex/preview host returns to a different origin
+        // and the broker rejects it with "State verification failed".
+        redirect_uri: oauthRedirectUri(),
       });
       if (result.error) {
         return toast.error(result.error.message || "Apple sign-in failed.");
@@ -210,7 +213,10 @@ function GoogleSignIn({ redirect }: { redirect: string }) {
     try {
       stashOAuthTarget(redirect);
       const result = await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${window.location.origin}/auth-callback`,
+        // Pinned to the canonical origin — never window.location.origin, or a
+        // flow started on the apex/preview host returns to a different origin
+        // and the broker rejects it with "State verification failed".
+        redirect_uri: oauthRedirectUri(),
       });
       if (result.error) {
         return toast.error(result.error.message || "Google sign-in failed.");
