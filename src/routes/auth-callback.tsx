@@ -46,14 +46,18 @@ function AuthCallbackPage() {
     const search = window.location.search;
     const hash = window.location.hash;
 
-    // If loaded in an external browser / Chrome Custom Tab (not in React Native WebView),
-    // immediately bounce to custom scheme to auto-dismiss Custom Tab and hand tokens to app
-    if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile) {
-        window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
-      }
+    // Only hand the flow back to the native app when the app itself started it
+    // (it tags the callback URL with ss_native=1). Plain mobile browsers must
+    // finish sign-in in place — otherwise installed apps hijack the session and
+    // iOS Safari shows a "Cannot Open Page" alert.
+    if (
+      typeof window !== "undefined" &&
+      !(window as any).ReactNativeWebView &&
+      isNativeOAuthHandoff(search, hash)
+    ) {
+      window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
     }
+
 
     const finish = (target?: string) => {
       if (doneRef.current) return;
