@@ -10,8 +10,6 @@ import { CatalogueCard, type CatalogueCardData } from "@/components/CatalogueCar
 
 import { CategoryTile } from "@/components/CategoryTile";
 import { VideoShowcase } from "@/components/VideoShowcase";
-import { AppStoreBadges } from "@/components/AppStoreBadges";
-import { FeedbackModal } from "@/components/FeedbackModal";
 import { resolveProductImage, PREMIUM_CATEGORY_IMAGES } from "@/lib/product-images";
 
 
