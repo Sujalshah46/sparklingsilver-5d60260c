@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
-import { isNativeApp, requestNativeLogin, NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
+import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect, oauthRedirectUri } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
