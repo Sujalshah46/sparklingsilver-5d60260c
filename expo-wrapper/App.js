@@ -26,6 +26,31 @@ import { getNavigationAction } from './src/navigationPolicy';
 
 const SITE_URL = 'https://sparklingsilver.in';
 
+/**
+ * Tags an OAuth URL so the website knows this flow was started by the app and
+ * may hand the finished session back via the sparklingsilver:// scheme.
+ * Regular mobile-browser sign-ins carry no marker and finish in the browser.
+ */
+function withNativeOAuthMarker(authUrl) {
+  try {
+    const url = new URL(authUrl);
+    const redirectKey = ['redirect_uri', 'redirect_to', 'redirectUri'].find((k) =>
+      url.searchParams.has(k),
+    );
+    if (redirectKey) {
+      const inner = new URL(url.searchParams.get(redirectKey));
+      inner.searchParams.set('ss_native', '1');
+      url.searchParams.set(redirectKey, inner.toString());
+    } else {
+      url.searchParams.set('ss_native', '1');
+    }
+    return url.toString();
+  } catch {
+    return authUrl;
+  }
+}
+
+
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
