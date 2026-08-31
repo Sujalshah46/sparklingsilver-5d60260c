@@ -16,6 +16,7 @@ import { AppDownloadBanner } from "@/components/AppDownloadBanner";
 
 
 import { supabase } from "@/integrations/supabase/client";
+import { isNativeOAuthHandoff } from "@/lib/site";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -176,8 +177,9 @@ function RootComponent() {
   useEffect(() => {
     let cancelled = false;
 
-    // If running in an external browser / Chrome Custom Tab (not in React Native WebView)
-    // and an OAuth callback hash/code is present, bounce to custom scheme to return to app
+    // If the native app launched this OAuth flow in a Custom Tab / auth session
+    // it tags the callback URL with ss_native=1; only then do we hand back to the
+    // app. Plain mobile browsers finish sign-in in place.
     if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
       const hash = window.location.hash;
       const search = window.location.search;
@@ -188,13 +190,11 @@ function RootComponent() {
         hash.includes("access_token=") ||
         search.includes("code=");
 
-      if (isOAuthReturn) {
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobile) {
-          window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
-        }
+      if (isOAuthReturn && isNativeOAuthHandoff(search, hash)) {
+        window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
       }
     }
+
 
     const enforceAuth = async () => {
       const pathname = window.location.pathname;
