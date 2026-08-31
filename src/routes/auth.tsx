@@ -147,7 +147,20 @@ function AppleSignIn({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  // Hide Apple sign-in button on native Android app
+  if (typeof window !== "undefined" && window.ReactNativeWebView && window.__SS_NATIVE__?.platform === "android") {
+    return null;
+  }
+
   const signIn = async () => {
+    // If inside native wrapper app, request native Apple Sign-In
+    if (typeof window !== "undefined" && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "ss-request-native-login", provider: "apple" })
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       // Stash the intended destination; the OAuth round-trip drops our query
@@ -209,6 +222,14 @@ function GoogleSignIn({ redirect }: { redirect: string }) {
   const [loading, setLoading] = useState(false);
 
   const signIn = async () => {
+    // If inside native wrapper app, request native Google Sign-In
+    if (typeof window !== "undefined" && window.ReactNativeWebView) {
+      window.ReactNativeWebView.postMessage(
+        JSON.stringify({ type: "ss-request-native-login", provider: "google" })
+      );
+      return;
+    }
+
     setLoading(true);
     try {
       stashOAuthTarget(redirect);

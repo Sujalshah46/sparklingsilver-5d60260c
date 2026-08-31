@@ -3,10 +3,13 @@ import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { saveExpoPushToken } from "@/lib/push.functions";
+import { toast } from "sonner";
 
 type NativeMessage =
   | { type: "ss-native-push-token"; token: string; platform?: string; deviceName?: string }
-  | { type: "ss-native-navigate"; url: string };
+  | { type: "ss-native-navigate"; url: string }
+  | { type: "ss-native-session"; accessToken: string; refreshToken: string; user?: unknown }
+  | { type: "ss-native-auth-error"; provider?: string; error: string };
 
 declare global {
   interface Window {
@@ -83,6 +86,21 @@ export function NativePushBridge() {
           deviceName: msg.deviceName,
         };
         void register(msg.token, msg.platform, msg.deviceName);
+      } else if (msg.type === "ss-native-session") {
+        if (msg.accessToken && msg.refreshToken) {
+          void supabase.auth.setSession({
+            access_token: msg.accessToken,
+            refresh_token: msg.refreshToken,
+          }).then(({ data, error }) => {
+            if (error) {
+              toast.error(error.message || "Failed to establish authenticated session.");
+            } else if (data.session) {
+              void router.navigate({ to: "/" });
+            }
+          });
+        }
+      } else if (msg.type === "ss-native-auth-error") {
+        toast.error(msg.error || "Authentication failed.");
       } else if (msg.type === "ss-native-navigate" && msg.url) {
         try {
           const target = new URL(msg.url, window.location.origin);

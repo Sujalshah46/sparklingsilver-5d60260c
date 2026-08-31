@@ -14,13 +14,11 @@ module.exports = {
       supportsTablet: false,
       bundleIdentifier: "com.sparklingsilver.app",
       buildNumber: "14",
+      usesAppleSignIn: true,
       entitlements: {
-        "aps-environment": "production"
+        "aps-environment": "production",
+        "com.apple.developer.applesignin": ["Default"]
       },
-      associatedDomains: [
-        "applinks:www.sparklingsilver.in",
-        "applinks:sparklingsilver.in"
-      ],
       config: {
         usesNonExemptEncryption: false
       },
@@ -111,25 +109,6 @@ module.exports = {
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO"
       ],
-      intentFilters: [
-        {
-          action: "VIEW",
-          autoVerify: true,
-          data: [
-            {
-              scheme: "https",
-              host: "www.sparklingsilver.in",
-              pathPrefix: "/auth-callback"
-            },
-            {
-              scheme: "https",
-              host: "sparklingsilver.in",
-              pathPrefix: "/auth-callback"
-            }
-          ],
-          category: ["BROWSABLE", "DEFAULT"]
-        }
-      ],
       allowBackup: false
     },
     web: {
@@ -137,6 +116,8 @@ module.exports = {
     },
     plugins: [
       "./plugins/withAndroidOptimizations",
+      "@react-native-google-signin/google-signin",
+      "expo-apple-authentication",
       [
         "expo-splash-screen",
         {
@@ -162,7 +143,11 @@ module.exports = {
     extra: {
       eas: {
         projectId: "9f3a0161-70df-4852-b627-3b19524c2488"
-      }
+      },
+      supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "https://gihusjkvwzxcrilrbmww.supabase.co",
+      supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || process.env.SUPABASE_PUBLISHABLE_KEY || "sb_publishable_w-zu7Y7vidH12zFVXa4Ekw_6xnmf1nI",
+      googleWebClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "432399447357-9kdqulrqfo17ec6tbk8auqriqp01npv8.apps.googleusercontent.com",
+      googleIosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "432399447357-eoja4h63mu98q1qnbsd7i6vhbjrb68a7.apps.googleusercontent.com"
     }
   }
 };

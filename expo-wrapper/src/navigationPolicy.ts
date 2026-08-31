@@ -1,40 +1,10 @@
-export type NavigationAction = 'ALLOW' | 'EXTERNAL' | 'BLOCK' | 'AUTH';
+export type NavigationAction = 'ALLOW' | 'EXTERNAL' | 'BLOCK';
 
 const INTERNAL_HOST_SUFFIXES = ['sparklingsilver.in', 'lovable.app', 'supabase.co'];
-
-export function isOAuthUrl(url: string): boolean {
-  if (!url) return false;
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    const path = parsed.pathname.toLowerCase();
-
-    if (host === 'accounts.google.com' || (host.endsWith('.google.com') && path.includes('/oauth'))) {
-      return true;
-    }
-    if (host === 'appleid.apple.com' || (host.endsWith('.apple.com') && path.includes('/auth'))) {
-      return true;
-    }
-    if (host === 'oauth.lovable.app' || path.includes('/~oauth')) {
-      return true;
-    }
-    if (path.includes('/auth/v1/authorize')) {
-      return true;
-    }
-    return false;
-  } catch {
-    return false;
-  }
-}
 
 export function getNavigationAction(url: string, siteUrl: string): NavigationAction {
   if (!url || url === 'about:blank') {
     return 'ALLOW';
-  }
-
-  // 0. OAuth target interception (Chrome Custom Tabs / ASWebAuthenticationSession)
-  if (isOAuthUrl(url)) {
-    return 'AUTH';
   }
 
   try {

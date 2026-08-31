@@ -17,14 +17,49 @@ import { StatusBar } from 'expo-status-bar';
 import { WebView } from 'react-native-webview';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as Notifications from 'expo-notifications';
-import * as WebBrowser from 'expo-web-browser';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { createClient } from '@supabase/supabase-js';
 import { getNavigationAction } from './src/navigationPolicy';
 
 const SITE_URL = 'https://sparklingsilver.in';
+
+const SUPABASE_URL =
+  Constants.expoConfig?.extra?.supabaseUrl ||
+  process.env.EXPO_PUBLIC_SUPABASE_URL ||
+  'https://gihusjkvwzxcrilrbmww.supabase.co';
+
+const SUPABASE_ANON_KEY =
+  Constants.expoConfig?.extra?.supabaseAnonKey ||
+  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ||
+  'sb_publishable_w-zu7Y7vidH12zFVXa4Ekw_6xnmf1nI';
+
+const GOOGLE_WEB_CLIENT_ID =
+  Constants.expoConfig?.extra?.googleWebClientId ||
+  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ||
+  '432399447357-9kdqulrqfo17ec6tbk8auqriqp01npv8.apps.googleusercontent.com';
+
+const GOOGLE_IOS_CLIENT_ID =
+  Constants.expoConfig?.extra?.googleIosClientId ||
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ||
+  '432399447357-eoja4h63mu98q1qnbsd7i6vhbjrb68a7.apps.googleusercontent.com';
+
+const supabaseNative = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+  },
+});
+
+GoogleSignin.configure({
+  webClientId: GOOGLE_WEB_CLIENT_ID,
+  iosClientId: Platform.OS === 'ios' ? GOOGLE_IOS_CLIENT_ID : undefined,
+  offlineAccess: true,
+});
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -97,10 +132,10 @@ export default function App() {
   const fetchOrders = useCallback(async (token, userId) => {
     try {
       const response = await fetch(
-        `https://gihusjkvwzxcrilrbmww.supabase.co/rest/v1/orders?user_id=eq.${userId}&select=*&order=created_at.desc`,
+        `${SUPABASE_URL}/rest/v1/orders?user_id=eq.${userId}&select=*&order=created_at.desc`,
         {
           headers: {
-            'apikey': 'sb_publishable_w-zu7Y7vidH12zFVXa4Ekw_6xnmf1nI',
+            'apikey': SUPABASE_ANON_KEY,
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
@@ -250,53 +285,183 @@ export default function App() {
 
   // Shared handler for deep links and OAuth redirects
   const handleDeepLink = useCallback((incomingUrl) => {
-    if (!incomingUrl) return;
-    try {
-      let relativePath = incomingUrl;
-      if (incomingUrl.startsWith('sparklingsilver://')) {
-        const raw = incomingUrl.replace(/^sparklingsilver:\/\/?/, '');
-        relativePath = raw.startsWith('/') ? raw : `/${raw}`;
-      } else if (incomingUrl.startsWith('http://') || incomingUrl.startsWith('https://')) {
-        try {
-          const parsed = new URL(incomingUrl);
-          relativePath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-        } catch {
-          relativePath = incomingUrl;
-        }
-      }
-      
-      if (webViewRef.current) {
-        // Dispatch SPA client-side navigation directly to TanStack router to avoid WKWebView URL preview bar
-        webViewRef.current.injectJavaScript(
-          `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(relativePath)} }), "*"); true;`
-        );
-      }
-    } catch (err) {
-      console.warn('Error handling deep link:', err);
-    }
+  if (!incomingUrl) return;
+  try {
+  let relativePath = incomingUrl;
+  if (incomingUrl.startsWith("sparklingsilver://")) {
+  const raw = incomingUrl.replace(/^sparklingsilver:\/\//, "");
+  relativePath = raw.startsWith("/") ? raw : `/${raw}`;
+  } else if (incomingUrl.startsWith("http://") || incomingUrl.startsWith("https://")) {
+  try {
+  const parsed = new URL(incomingUrl);
+  relativePath = `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+  relativePath = incomingUrl;
+  }
+  }
+ 
+  if (webViewRef.current) {
+  // OAuth callback: navigate WebView directly to the full https URL
+  // so auth-callback.tsx can parse query params (code/access_token).
+  // On Android Chrome Custom Tab the custom-scheme redirect from
+  // auth-callback.tsx often fails to hand off, leaving the website
+  // visible. Direct WebView navigation avoids that hand-off.
+  const isOAuthCallback = (() => {
+  try {
+  const p = new URL(incomingUrl);
+  return p.protocol === "https:"
+  && (p.pathname === "/auth-callback" || p.pathname.startsWith("/~oauth"));
+  } catch {
+  return false;
+  }
+  })();
+ 
+  if (isOAuthCallback) {
+  webViewRef.current.injectJavaScript(
+  `window.location.href = ${JSON.stringify(incomingUrl)}; true;`
+  );
+  } else {
+  // Dispatch SPA client-side navigation directly to TanStack router to avoid WKWebView URL preview bar
+  webViewRef.current.injectJavaScript(
+  `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(relativePath)} }), "*"); true;`
+  );
+  }
+  }
+  } catch (err) {
+  console.warn("Error handling deep link:", err);
+  }
   }, []);
 
-  // Open OAuth flows (Google, Apple, Lovable) in Chrome Custom Tab / ASWebAuthenticationSession
-  const openOAuthSession = useCallback(
-    async (authUrl) => {
+  const postMessageToWeb = useCallback((payload) => {
+    if (!webViewRef.current) return;
+    const jsonStr = JSON.stringify(payload);
+    const script = `(function() {
+      var raw = ${JSON.stringify(jsonStr)};
+      var event;
       try {
-        console.log('[OAuth] Launching WebBrowser auth session for:', authUrl);
-        const result = await WebBrowser.openAuthSessionAsync(
-          authUrl,
-          'sparklingsilver://auth-callback'
-        );
-        console.log('[OAuth] Result received:', JSON.stringify(result));
-        if (result.type === 'success' && result.url) {
-          handleDeepLink(result.url);
-        }
-      } catch (err) {
-        console.warn('Error during OAuth web browser session:', err);
+        event = new MessageEvent('message', { data: raw });
+      } catch(e) {
+        event = document.createEvent('MessageEvent');
+        event.initMessageEvent('message', true, true, raw, window.location.origin, '', window, null);
       }
-    },
-    [handleDeepLink],
-  );
+      window.dispatchEvent(event);
+      document.dispatchEvent(event);
+      if (window.postMessage) {
+        window.postMessage(raw, '*');
+      }
+    })(); true;`;
+    webViewRef.current.injectJavaScript(script);
+  }, []);
 
-  // Handle incoming App Links & Custom Scheme URLs
+  // Native Google Sign-In
+  const performNativeGoogleSignIn = useCallback(async () => {
+    try {
+      console.log('[NativeAuth] Starting native Google Sign-In...');
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const response = await GoogleSignin.signIn();
+      const idToken = response?.data?.idToken ?? response?.idToken;
+      if (!idToken) {
+        throw new Error('Google Sign-In did not return an ID token');
+      }
+
+      console.log('[NativeAuth] Exchanging Google ID token with Supabase...');
+      const { data, error } = await supabaseNative.auth.signInWithIdToken({
+        provider: 'google',
+        token: idToken,
+      });
+
+      if (error) throw error;
+
+      if (data?.session) {
+        console.log('[NativeAuth] Google session established, injecting into WebView...');
+        postMessageToWeb({
+          type: 'ss-native-session',
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          user: data.session.user,
+        });
+      } else {
+        throw new Error('Supabase did not return a valid session.');
+      }
+    } catch (err) {
+      console.warn('[NativeAuth] Google Sign-In error:', err);
+      let errorMessage = 'Google sign-in failed. Please try again.';
+      if (err?.code === statusCodes.SIGN_IN_CANCELLED) {
+        errorMessage = 'Sign in was cancelled.';
+      } else if (err?.code === statusCodes.IN_PROGRESS) {
+        errorMessage = 'Sign in already in progress.';
+      } else if (err?.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        errorMessage = 'Google Play Services is not available or outdated on this device.';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      postMessageToWeb({
+        type: 'ss-native-auth-error',
+        provider: 'google',
+        error: errorMessage,
+      });
+    }
+  }, [postMessageToWeb]);
+
+  // Native Apple Sign-In
+  const performNativeAppleSignIn = useCallback(async () => {
+    if (Platform.OS !== 'ios') {
+      postMessageToWeb({
+        type: 'ss-native-auth-error',
+        provider: 'apple',
+        error: 'Apple Sign-In is only available on iOS devices.',
+      });
+      return;
+    }
+    try {
+      console.log('[NativeAuth] Starting native Apple Sign-In...');
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      });
+
+      if (!credential.identityToken) {
+        throw new Error('Apple Sign-In did not return an identity token');
+      }
+
+      console.log('[NativeAuth] Exchanging Apple ID token with Supabase...');
+      const { data, error } = await supabaseNative.auth.signInWithIdToken({
+        provider: 'apple',
+        token: credential.identityToken,
+      });
+
+      if (error) throw error;
+
+      if (data?.session) {
+        console.log('[NativeAuth] Apple session established, injecting into WebView...');
+        postMessageToWeb({
+          type: 'ss-native-session',
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          user: data.session.user,
+        });
+      } else {
+        throw new Error('Supabase did not return a valid session.');
+      }
+    } catch (err) {
+      console.warn('[NativeAuth] Apple Sign-In error:', err);
+      let errorMessage = 'Apple sign-in failed. Please try again.';
+      if (err?.code === 'ERR_REQUEST_CANCELED') {
+        errorMessage = 'Apple Sign-In was cancelled.';
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+      postMessageToWeb({
+        type: 'ss-native-auth-error',
+        provider: 'apple',
+        error: errorMessage,
+      });
+    }
+  }, [postMessageToWeb]);
+
+  // Handle incoming deep links (clean SPA router routing)
   useEffect(() => {
     Linking.getInitialURL().then((url) => {
       if (url) handleDeepLink(url);
@@ -326,18 +491,19 @@ export default function App() {
     return () => sub.remove();
   }, [canGoBack, activeTab]);
 
-  const sendPushTokenToWeb = useCallback((token) => {
-    if (token && webViewRef.current) {
-      webViewRef.current.injectJavaScript(
-        `window.postMessage(JSON.stringify({
-          type: "ss-native-push-token",
-          token: ${JSON.stringify(token)},
-          platform: ${JSON.stringify(Platform.OS)},
-          deviceName: ${JSON.stringify(Device.modelName || 'Device')}
-        }), "*"); true;`
-      );
-    }
-  }, []);
+  const sendPushTokenToWeb = useCallback(
+    (token) => {
+      if (token && webViewRef.current) {
+        postMessageToWeb({
+          type: 'ss-native-push-token',
+          token: token,
+          platform: Platform.OS,
+          deviceName: Device.modelName || 'Device',
+        });
+      }
+    },
+    [postMessageToWeb],
+  );
 
   const onWebMessage = useCallback(
     (event) => {
@@ -345,6 +511,14 @@ export default function App() {
       try {
         msg = JSON.parse(event.nativeEvent.data);
       } catch {
+        return;
+      }
+      if (msg?.type === 'ss-request-native-login') {
+        if (msg.provider === 'google') {
+          performNativeGoogleSignIn();
+        } else if (msg.provider === 'apple') {
+          performNativeAppleSignIn();
+        }
         return;
       }
       if (msg?.type === 'ss-web-capture-policy') {
@@ -373,7 +547,7 @@ export default function App() {
         }
       }
     },
-    [pushToken, sendPushTokenToWeb, fetchOrders],
+    [pushToken, sendPushTokenToWeb, fetchOrders, performNativeGoogleSignIn, performNativeAppleSignIn],
   );
 
   const onShouldStartLoad = useCallback(
@@ -383,17 +557,13 @@ export default function App() {
       if (action === 'ALLOW') {
         return true;
       }
-      if (action === 'AUTH') {
-        openOAuthSession(url);
-        return false;
-      }
       if (action === 'EXTERNAL') {
         Linking.openURL(url).catch(() => {});
         return false;
       }
       return false;
     },
-    [openOAuthSession],
+    [],
   );
 
   const retry = useCallback(() => {
@@ -515,21 +685,15 @@ export default function App() {
                     const { targetUrl } = syntheticEvent.nativeEvent;
                     if (targetUrl) {
                       const action = getNavigationAction(targetUrl, SITE_URL);
-                      if (action === 'AUTH') {
-                        openOAuthSession(targetUrl);
-                      } else if (action === 'EXTERNAL') {
+                      if (action === 'EXTERNAL') {
                         Linking.openURL(targetUrl).catch(() => {});
                       } else if (action === 'ALLOW' && webViewRef.current) {
                         try {
                           const parsed = new URL(targetUrl);
                           const path = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-                          webViewRef.current.injectJavaScript(
-                            `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(path)} }), "*"); true;`
-                          );
+                          postMessageToWeb({ type: 'ss-native-navigate', url: path });
                         } catch {
-                          webViewRef.current.injectJavaScript(
-                            `window.postMessage(JSON.stringify({ type: "ss-native-navigate", url: ${JSON.stringify(targetUrl)} }), "*"); true;`
-                          );
+                          postMessageToWeb({ type: 'ss-native-navigate', url: targetUrl });
                         }
                       }
                     }
