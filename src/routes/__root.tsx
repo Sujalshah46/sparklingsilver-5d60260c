@@ -16,7 +16,13 @@ import { AppDownloadBanner } from "@/components/AppDownloadBanner";
 
 
 import { supabase } from "@/integrations/supabase/client";
-import { isNativeOAuthHandoff } from "@/lib/site";
+import {
+  urlHasAppSessionMarker,
+  rememberAppSession,
+  shouldHandoffToApp,
+  appCallbackUrl,
+  openAppCallback,
+} from "@/lib/native-handoff";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
