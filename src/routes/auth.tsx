@@ -9,6 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
+import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect, oauthRedirectUri } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
@@ -143,12 +144,26 @@ function GoogleLogo({ className }: { className?: string }) {
   );
 }
 
+/** Clears a provider button's "signing in…" state when native sign-in fails. */
+function useNativeAuthErrorReset(setLoading: (v: boolean) => void) {
+  useEffect(() => {
+    const onErr = () => setLoading(false);
+    window.addEventListener(NATIVE_AUTH_ERROR_EVENT, onErr);
+    return () => window.removeEventListener(NATIVE_AUTH_ERROR_EVENT, onErr);
+  }, [setLoading]);
+}
+
 function AppleSignIn({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  useNativeAuthErrorReset(setLoading);
+
   const signIn = async () => {
     setLoading(true);
+    // Inside the native app, sign-in runs natively; the app posts the session
+    // back through NativePushBridge. Browsers keep the web OAuth flow.
+    if (requestNativeLogin("apple")) return;
     try {
       // Stash the intended destination; the OAuth round-trip drops our query
       // params, and the callback page consumes this after the session exchange.
@@ -208,8 +223,11 @@ function GoogleSignIn({ redirect }: { redirect: string }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  useNativeAuthErrorReset(setLoading);
+
   const signIn = async () => {
     setLoading(true);
+    if (requestNativeLogin("google")) return;
     try {
       stashOAuthTarget(redirect);
       const result = await lovable.auth.signInWithOAuth("google", {

@@ -1,12 +1,21 @@
 import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
 import { saveExpoPushToken } from "@/lib/push.functions";
 
 type NativeMessage =
   | { type: "ss-native-push-token"; token: string; platform?: string; deviceName?: string }
-  | { type: "ss-native-navigate"; url: string };
+  | { type: "ss-native-navigate"; url: string }
+  | {
+      type: "ss-native-session";
+      accessToken: string;
+      refreshToken: string;
+      user?: { id?: string; email?: string } | null;
+    }
+  | { type: "ss-native-auth-error"; error?: string };
 
 declare global {
   interface Window {
@@ -83,6 +92,28 @@ export function NativePushBridge() {
           deviceName: msg.deviceName,
         };
         void register(msg.token, msg.platform, msg.deviceName);
+      } else if (msg.type === "ss-native-session") {
+        // Native Google/Apple sign-in completed inside the app: adopt the
+        // session it produced, then land on the homepage so the signed-in
+        // state (and OnboardingGate) picks it up from SIGNED_IN.
+        const { accessToken, refreshToken } = msg;
+        if (!accessToken || !refreshToken) return;
+        void (async () => {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
+          });
+          if (error) {
+            window.dispatchEvent(new CustomEvent(NATIVE_AUTH_ERROR_EVENT));
+            toast.error(error.message || "Sign-in could not be completed.");
+            return;
+          }
+          await router.navigate({ to: "/", replace: true });
+          await router.invalidate();
+        })();
+      } else if (msg.type === "ss-native-auth-error") {
+        window.dispatchEvent(new CustomEvent(NATIVE_AUTH_ERROR_EVENT));
+        toast.error(msg.error || "Sign-in was not completed.");
       } else if (msg.type === "ss-native-navigate" && msg.url) {
         try {
           const target = new URL(msg.url, window.location.origin);
