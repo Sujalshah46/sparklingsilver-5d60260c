@@ -177,21 +177,24 @@ function RootComponent() {
   useEffect(() => {
     let cancelled = false;
 
-    // If the native app launched this OAuth flow in a Custom Tab / auth session
-    // it tags the callback URL with ss_native=1; only then do we hand back to the
-    // app. Plain mobile browsers finish sign-in in place.
-    if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
+    // Latch the app_session marker as soon as it appears anywhere in the flow
+    // (sign-in page, broker hop, callback) so it survives brokers that drop
+    // unknown query params. Only a marked flow is handed back to the native app;
+    // there is deliberately no User-Agent check.
+    if (typeof window !== "undefined") {
       const hash = window.location.hash;
       const search = window.location.search;
       const pathname = window.location.pathname;
+      if (urlHasAppSessionMarker(search, hash)) rememberAppSession();
+
       const isOAuthReturn =
-        pathname === "/auth-callback" ||
         pathname.startsWith("/~oauth") ||
         hash.includes("access_token=") ||
         search.includes("code=");
 
-      if (isOAuthReturn && isNativeOAuthHandoff(search, hash)) {
-        window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
+      // /auth-callback owns its own handoff UI (spinner + Continue to App).
+      if (pathname !== "/auth-callback" && isOAuthReturn && shouldHandoffToApp(search, hash)) {
+        openAppCallback(appCallbackUrl(search, hash));
       }
     }
 
