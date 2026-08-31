@@ -280,9 +280,10 @@ export default function App() {
   const openOAuthSession = useCallback(
     async (authUrl) => {
       try {
-        console.log('[OAuth] Launching WebBrowser auth session for:', authUrl);
+        const taggedUrl = withNativeOAuthMarker(authUrl);
+        console.log('[OAuth] Launching WebBrowser auth session for:', taggedUrl);
         const result = await WebBrowser.openAuthSessionAsync(
-          authUrl,
+          taggedUrl,
           'sparklingsilver://auth-callback'
         );
         console.log('[OAuth] Result received:', JSON.stringify(result));
