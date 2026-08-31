@@ -176,26 +176,6 @@ function RootComponent() {
   useEffect(() => {
     let cancelled = false;
 
-    // If running in an external browser / Chrome Custom Tab (not in React Native WebView)
-    // and an OAuth callback hash/code is present, bounce to custom scheme to return to app
-    if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
-      const hash = window.location.hash;
-      const search = window.location.search;
-      const pathname = window.location.pathname;
-      const isOAuthReturn =
-        pathname === "/auth-callback" ||
-        pathname.startsWith("/~oauth") ||
-        hash.includes("access_token=") ||
-        search.includes("code=");
-
-      if (isOAuthReturn) {
-        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-        if (isMobile) {
-          window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
-        }
-      }
-    }
-
     const enforceAuth = async () => {
       const pathname = window.location.pathname;
       if (!isPrivatePath(pathname)) return;

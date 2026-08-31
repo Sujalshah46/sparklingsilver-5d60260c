@@ -1,15 +1,21 @@
 import { useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { saveExpoPushToken } from "@/lib/push.functions";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
+import { saveExpoPushToken } from "@/lib/push.functions";
 
 type NativeMessage =
   | { type: "ss-native-push-token"; token: string; platform?: string; deviceName?: string }
   | { type: "ss-native-navigate"; url: string }
-  | { type: "ss-native-session"; accessToken: string; refreshToken: string; user?: unknown }
-  | { type: "ss-native-auth-error"; provider?: string; error: string };
+  | {
+      type: "ss-native-session";
+      accessToken: string;
+      refreshToken: string;
+      user?: { id?: string; email?: string } | null;
+    }
+  | { type: "ss-native-auth-error"; provider?: string; error?: string };
 
 declare global {
   interface Window {
@@ -87,20 +93,24 @@ export function NativePushBridge() {
         };
         void register(msg.token, msg.platform, msg.deviceName);
       } else if (msg.type === "ss-native-session") {
-        if (msg.accessToken && msg.refreshToken) {
-          void supabase.auth.setSession({
-            access_token: msg.accessToken,
-            refresh_token: msg.refreshToken,
-          }).then(({ data, error }) => {
-            if (error) {
-              toast.error(error.message || "Failed to establish authenticated session.");
-            } else if (data.session) {
-              void router.navigate({ to: "/" });
-            }
+        const { accessToken, refreshToken } = msg;
+        if (!accessToken || !refreshToken) return;
+        void (async () => {
+          const { error } = await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken,
           });
-        }
+          if (error) {
+            window.dispatchEvent(new CustomEvent(NATIVE_AUTH_ERROR_EVENT));
+            toast.error(error.message || "Sign-in could not be completed.");
+            return;
+          }
+          await router.navigate({ to: "/", replace: true });
+          await router.invalidate();
+        })();
       } else if (msg.type === "ss-native-auth-error") {
-        toast.error(msg.error || "Authentication failed.");
+        window.dispatchEvent(new CustomEvent(NATIVE_AUTH_ERROR_EVENT));
+        toast.error(msg.error || "Sign-in was not completed.");
       } else if (msg.type === "ss-native-navigate" && msg.url) {
         try {
           const target = new URL(msg.url, window.location.origin);

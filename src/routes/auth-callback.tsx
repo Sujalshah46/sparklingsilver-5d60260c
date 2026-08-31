@@ -43,64 +43,43 @@ function AuthCallbackPage() {
  const doneRef = useRef(false);
 
  useEffect(() => {
- const url = new URL(window.location.href);
- const search = window.location.search;
- const hash = window.location.hash;
+    const url = new URL(window.location.href);
+    const hash = window.location.hash;
 
- // If loaded in an external browser / Chrome Custom Tab (not in React Native WebView),
- // immediately bounce to custom scheme to auto-dismiss Custom Tab and hand tokens to app
- if (typeof window !== "undefined" && !(window as any).ReactNativeWebView) {
- const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
- if (isMobile) {
- window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
- return;
- }
- }
+    const setSessionFromUrl = async () => {
+      try {
+        const authCode = url.searchParams.get("code");
+        const accessToken =
+          url.searchParams.get("access_token") ||
+          new URLSearchParams(hash.replace("#", "?")).get("access_token");
+        const refreshToken =
+          url.searchParams.get("refresh_token") ||
+          new URLSearchParams(hash.replace("#", "?")).get("refresh_token");
 
- // Supabase's JS client only auto-parses tokens from the URL hash fragment.
- // When the native bridge navigates the WebView, the token arrives as a query
- // parameter (?access_token=...), so we must extract and set it manually.
- //
- // In the PKCE flow (the default for Supabase OAuth), the callback arrives with
- // ?code=xxx instead, so we exchange the code for a session.
- const setSessionFromUrl = async () => {
- try {
- const authCode = url.searchParams.get("code");
- const accessToken =
- url.searchParams.get("access_token") ||
- new URLSearchParams(hash.replace("#", "?")).get("access_token");
- const refreshToken =
- url.searchParams.get("refresh_token") ||
- new URLSearchParams(hash.replace("#", "?")).get("refresh_token");
+        if (accessToken) {
+          await supabase.auth.setSession({
+            access_token: accessToken,
+            refresh_token: refreshToken ?? "",
+            expires_in: 3600,
+          });
+        } else if (authCode) {
+          const { error } = await supabase.auth.exchangeCodeForSession(authCode);
+          if (error) {
+            console.error("[auth-callback] exchangeCodeForSession failed:", error);
+          }
+        }
+      } catch {
+        // Handled below
+      }
+    setSessionFromUrl();
 
- if (accessToken) {
- // Implicit flow: tokens already in URL
- await supabase.auth.setSession({
- access_token: accessToken,
- refresh_token: refreshToken ?? "",
- expires_in: 3600,
- });
- } else if (authCode) {
- // PKCE flow: exchange authorization code for session
- const { error } = await supabase.auth.exchangeCodeForSession(authCode);
- if (error) {
- console.error("[auth-callback] exchangeCodeForSession failed:", error);
- }
- }
- } catch {
- // setSession failure will be caught by onAuthStateChange / getSession below
- }
- };
-
- setSessionFromUrl();
-
- const finish = (target?: string) => {
- if (doneRef.current) return;
- doneRef.current = true;
- clearTimeout(timeout);
- sub.subscription.unsubscribe();
- navigate({ to: target ?? consumeOAuthTarget(), replace: true });
- };
+    const finish = (target?: string) => {
+      if (doneRef.current) return;
+      doneRef.current = true;
+      clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+      navigate({ to: target ?? consumeOAuthTarget(), replace: true });
+    };
 
  const fail = () => {
  if (doneRef.current) return;
