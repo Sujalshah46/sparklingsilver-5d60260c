@@ -130,25 +130,6 @@ export function oauthRedirectUri(): string {
 }
 
 /**
- * Marker the native wrapper appends to the OAuth callback URL when it launches
- * the flow in a Chrome Custom Tab / ASWebAuthenticationSession. Only then may
- * the web app bounce to the `sparklingsilver://` scheme — a normal mobile
- * browser must complete sign-in in place.
- */
-export const NATIVE_OAUTH_MARKER = "ss_native";
-
-export function isNativeOAuthHandoff(search: string, hash: string): boolean {
-  const check = (raw: string) => {
-    try {
-      return new URLSearchParams(raw.replace(/^[?#]/, "")).get(NATIVE_OAUTH_MARKER) === "1";
-    } catch {
-      return false;
-    }
-  };
-  return check(search) || check(hash);
-}
-
-/**
  * If the visitor landed on a non-canonical production host (apex, or the
  * *.lovable.app published host), return the same path on the canonical host so
  * they are moved BEFORE they ever click sign-in. Returns null when already
