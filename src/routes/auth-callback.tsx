@@ -71,6 +71,8 @@ function AuthCallbackPage() {
       } catch {
         // Handled below
       }
+    };
+
     setSessionFromUrl();
 
     const finish = (target?: string) => {
