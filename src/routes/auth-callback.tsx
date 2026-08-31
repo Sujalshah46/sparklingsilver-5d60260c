@@ -2,7 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { pageTitle, descriptionTags } from "@/lib/seo";
-import { sanitizeRedirect, isNativeOAuthHandoff } from "@/lib/site";
+import { sanitizeRedirect } from "@/lib/site";
+import {
+  shouldHandoffToApp,
+  appCallbackUrl,
+  openAppCallback,
+  clearAppSession,
+} from "@/lib/native-handoff";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/auth-callback")({
