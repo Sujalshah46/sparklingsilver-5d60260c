@@ -39,11 +39,14 @@ function withNativeOAuthMarker(authUrl) {
     );
     if (redirectKey) {
       const inner = new URL(url.searchParams.get(redirectKey));
+      inner.searchParams.set('app_session', '1');
       inner.searchParams.set('ss_native', '1');
       url.searchParams.set(redirectKey, inner.toString());
-    } else {
-      url.searchParams.set('ss_native', '1');
     }
+    // Also mark the outer URL so the marker is latched on the very first page
+    // the Custom Tab opens, even if the broker drops it from the inner redirect.
+    url.searchParams.set('app_session', '1');
+    url.searchParams.set('ss_native', '1');
     return url.toString();
   } catch {
     return authUrl;

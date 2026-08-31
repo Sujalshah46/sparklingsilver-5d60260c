@@ -2,7 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { pageTitle, descriptionTags } from "@/lib/seo";
-import { sanitizeRedirect, isNativeOAuthHandoff } from "@/lib/site";
+import { sanitizeRedirect } from "@/lib/site";
+import {
+  shouldHandoffToApp,
+  appCallbackUrl,
+  openAppCallback,
+  clearAppSession,
+} from "@/lib/native-handoff";
 import logo from "@/assets/logo.png";
 
 export const Route = createFileRoute("/auth-callback")({
@@ -40,23 +46,28 @@ function consumeOAuthTarget(): string {
 function AuthCallbackPage() {
   const navigate = useNavigate();
   const [failed, setFailed] = useState(false);
+  const [appLink, setAppLink] = useState<string | null>(null);
+  const [showAppFallback, setShowAppFallback] = useState(false);
   const doneRef = useRef(false);
 
   useEffect(() => {
     const search = window.location.search;
     const hash = window.location.hash;
 
-    // Only hand the flow back to the native app when the app itself started it
-    // (it tags the callback URL with ss_native=1). Plain mobile browsers must
-    // finish sign-in in place — otherwise installed apps hijack the session and
-    // iOS Safari shows a "Cannot Open Page" alert.
-    if (
-      typeof window !== "undefined" &&
-      !(window as any).ReactNativeWebView &&
-      isNativeOAuthHandoff(search, hash)
-    ) {
-      window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
+    // Hand the flow back to the native app ONLY when the app itself started it
+    // (explicit app_session marker). No User-Agent sniffing: plain mobile
+    // browsers always finish sign-in in place, so an installed app can never
+    // hijack the session and iOS Safari never shows "Cannot Open Page".
+    if (shouldHandoffToApp(search, hash)) {
+      const url = appCallbackUrl(search, hash);
+      setAppLink(url);
+      clearAppSession();
+      openAppCallback(url);
+      const t = setTimeout(() => setShowAppFallback(true), 2000);
+      return () => clearTimeout(t);
     }
+
+
 
 
     const finish = (target?: string) => {
@@ -106,7 +117,20 @@ function AuthCallbackPage() {
       }}
     >
       <img src={logo} alt="Sparkling Silver" className="h-24 w-auto" />
-      {failed ? (
+      {appLink ? (
+        <div className="mt-8 flex flex-col items-center gap-3" role="status" aria-live="polite">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/25 border-t-white" />
+          <p className="text-sm font-medium text-white">Signing you in…</p>
+          {showAppFallback && (
+            <a
+              href={appLink}
+              className="mt-4 rounded-md border border-white/25 bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-white/15"
+            >
+              Continue to App
+            </a>
+          )}
+        </div>
+      ) : failed ? (
         <div className="mt-8 text-center">
           <p className="text-sm font-medium text-white">Sign-in could not be completed.</p>
           <p className="mt-1 text-xs text-white/60">The link may have expired. Please try again.</p>
