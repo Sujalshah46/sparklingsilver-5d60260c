@@ -46,23 +46,28 @@ function consumeOAuthTarget(): string {
 function AuthCallbackPage() {
   const navigate = useNavigate();
   const [failed, setFailed] = useState(false);
+  const [appLink, setAppLink] = useState<string | null>(null);
+  const [showAppFallback, setShowAppFallback] = useState(false);
   const doneRef = useRef(false);
 
   useEffect(() => {
     const search = window.location.search;
     const hash = window.location.hash;
 
-    // Only hand the flow back to the native app when the app itself started it
-    // (it tags the callback URL with ss_native=1). Plain mobile browsers must
-    // finish sign-in in place — otherwise installed apps hijack the session and
-    // iOS Safari shows a "Cannot Open Page" alert.
-    if (
-      typeof window !== "undefined" &&
-      !(window as any).ReactNativeWebView &&
-      isNativeOAuthHandoff(search, hash)
-    ) {
-      window.location.href = `sparklingsilver://auth-callback${search}${hash}`;
+    // Hand the flow back to the native app ONLY when the app itself started it
+    // (explicit app_session marker). No User-Agent sniffing: plain mobile
+    // browsers always finish sign-in in place, so an installed app can never
+    // hijack the session and iOS Safari never shows "Cannot Open Page".
+    if (shouldHandoffToApp(search, hash)) {
+      const url = appCallbackUrl(search, hash);
+      setAppLink(url);
+      clearAppSession();
+      openAppCallback(url);
+      const t = setTimeout(() => setShowAppFallback(true), 2000);
+      return () => clearTimeout(t);
     }
+
+
 
 
     const finish = (target?: string) => {
