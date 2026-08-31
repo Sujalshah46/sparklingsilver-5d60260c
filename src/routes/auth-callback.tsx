@@ -60,7 +60,6 @@ function AuthCallbackPage() {
           await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken ?? "",
-            expires_in: 3600,
           });
         } else if (authCode) {
           const { error } = await supabase.auth.exchangeCodeForSession(authCode);
@@ -71,6 +70,8 @@ function AuthCallbackPage() {
       } catch {
         // Handled below
       }
+    };
+
     setSessionFromUrl();
 
     const finish = (target?: string) => {
