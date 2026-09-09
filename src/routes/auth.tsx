@@ -57,9 +57,21 @@ function AuthPage() {
         <div className="mt-6 rounded-2xl border border-white/15 bg-white/10 p-5 shadow-[0_20px_50px_rgba(0,0,0,0.45)]">
           <div className="mb-4 flex items-center gap-2 text-white">
             <User className="h-4 w-4" />
-            <h1 className="text-sm font-semibold tracking-wide">Sign In</h1>
+            <h1 className="text-sm font-semibold tracking-wide">{mode === "signin" ? "Sign In" : "Register for wholesale access"}</h1>
           </div>
-          <SignInForm redirect={redirect} />
+          {mode === "signin" ? <SignInForm redirect={redirect} /> : <RegisterForm onBack={() => setMode("signin")} />}
+
+          <div className="mt-4 border-t border-white/10 pt-4 text-center">
+            {mode === "signin" ? (
+              <button type="button" onClick={() => setMode("register")} className="text-[12.5px] font-semibold text-white underline hover:text-white/80">
+                New business? Register for wholesale access
+              </button>
+            ) : (
+              <button type="button" onClick={() => setMode("signin")} className="text-[12.5px] font-semibold text-white underline hover:text-white/80">
+                Already registered? Sign in
+              </button>
+            )}
+          </div>
 
           <div className="mt-4 flex items-center justify-center gap-2 border-t border-white/10 pt-4 text-[11px] text-white/70">
             <span className="grid h-6 w-6 place-items-center rounded-full border border-white/25">
