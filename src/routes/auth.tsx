@@ -383,6 +383,65 @@ function SignInForm({ redirect }: { redirect: string }) {
   );
 }
 
+/**
+ * Public B2B registration: email + password only. Business/GST details are
+ * collected right after by the existing OnboardingGate, and the profile stays
+ * `pending` (set by the DB trigger) until an admin approves it, so the full
+ * catalogue, wholesale rates and ordering stay hidden meanwhile.
+ */
+function RegisterForm({ onBack }: { onBack: () => void }) {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password.length < 8) return toast.error("Password must be at least 8 characters.");
+    if (password !== confirm) return toast.error("Passwords do not match.");
+    setLoading(true);
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    });
+    setLoading(false);
+    if (error) return toast.error(error.message);
+    if (!data.session) {
+      toast.success("Account created. Please confirm your email, then sign in to finish registration.");
+      return onBack();
+    }
+    toast.success("Account created. Tell us about your business to complete registration.");
+    // Landing on "/" opens the business/GST onboarding form.
+    navigate({ to: "/", replace: true });
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <p className="rounded-md border border-white/15 bg-white/[0.04] p-3 text-[12px] leading-relaxed text-white/75">
+        Wholesale access is for verified businesses. After registering you'll add your business and GST details; your
+        account stays under review until our team approves it.
+      </p>
+      <div>
+        <FieldLabel>Email</FieldLabel>
+        <Field icon={<Mail className="h-4 w-4" />} type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" placeholder="Business email" />
+      </div>
+      <div>
+        <FieldLabel>Password</FieldLabel>
+        <PasswordField value={password} onChange={setPassword} autoComplete="new-password" placeholder="Create a password (min 8 chars)" />
+      </div>
+      <div>
+        <FieldLabel>Confirm password</FieldLabel>
+        <PasswordField value={confirm} onChange={setConfirm} autoComplete="new-password" placeholder="Re-enter your password" />
+      </div>
+      <button type="submit" disabled={loading} style={silverStyle} className={silverBtn}>
+        {loading ? "Creating account…" : (<>Create account <ArrowRight className="h-4 w-4" /></>)}
+      </button>
+    </form>
+  );
+}
+
 function AdminCodeReset({ email, onDone }: { email: string; onDone: () => void }) {
   const requestCode = useServerFn(requestAdminResetCode);
   const confirmCode = useServerFn(confirmAdminResetCode);
