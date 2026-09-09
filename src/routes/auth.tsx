@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
-import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
+import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT, useSocialAuthAvailability } from "@/lib/native-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect, oauthRedirectUri } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
@@ -158,11 +158,6 @@ function AppleSignIn({ redirect }: { redirect: string }) {
   const [loading, setLoading] = useState(false);
 
   useNativeAuthErrorReset(setLoading);
-
-  // Hide Apple sign-in button on native Android app
-  if (typeof window !== "undefined" && window.ReactNativeWebView && window.__SS_NATIVE__?.platform === "android") {
-    return null;
-  }
 
   const signIn = async () => {
     setLoading(true);
