@@ -42,6 +42,7 @@ function AuthPage() {
   const redirect = sanitizeRedirect(search.redirect);
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
+  const [mode, setMode] = useState<"signin" | "register">("signin");
 
   useEffect(() => {
     if (!loading && isAuthenticated) navigate({ to: redirect, replace: true });
