@@ -286,6 +286,7 @@ function SignInForm({ redirect }: { redirect: string }) {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const submitReset = useServerFn(submitPasswordResetRequest);
+  const social = useSocialAuthAvailability();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
