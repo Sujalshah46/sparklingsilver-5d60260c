@@ -355,14 +355,16 @@ function SignInForm({ redirect }: { redirect: string }) {
         {loading ? "Signing in…" : (<>Login <ArrowRight className="h-4 w-4" /></>)}
       </button>
 
-      <div className="flex items-center gap-3 text-white/40">
-        <div className="h-px flex-1 bg-white/15" />
-        <span className="text-[11px] font-medium uppercase tracking-wider">or</span>
-        <div className="h-px flex-1 bg-white/15" />
-      </div>
+      {(social.apple || social.google) && (
+        <div className="flex items-center gap-3 text-white/40">
+          <div className="h-px flex-1 bg-white/15" />
+          <span className="text-[11px] font-medium uppercase tracking-wider">or</span>
+          <div className="h-px flex-1 bg-white/15" />
+        </div>
+      )}
 
-      <AppleSignIn redirect={redirect} />
-      <GoogleSignIn redirect={redirect} />
+      {social.apple && <AppleSignIn redirect={redirect} />}
+      {social.google && <GoogleSignIn redirect={redirect} />}
     </form>
   );
 }
