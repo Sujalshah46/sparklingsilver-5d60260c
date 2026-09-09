@@ -9,7 +9,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { submitPasswordResetRequest } from "@/lib/users.functions";
 import { requestAdminResetCode, confirmAdminResetCode } from "@/lib/admin-reset.functions";
 import { toast } from "sonner";
-import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT } from "@/lib/native-auth";
+import { requestNativeLogin, NATIVE_AUTH_ERROR_EVENT, useSocialAuthAvailability } from "@/lib/native-auth";
 import { useAuth } from "@/hooks/use-auth";
 import { sanitizeRedirect, oauthRedirectUri } from "@/lib/site";
 import { stashOAuthTarget } from "@/routes/auth-callback";
@@ -159,11 +159,6 @@ function AppleSignIn({ redirect }: { redirect: string }) {
 
   useNativeAuthErrorReset(setLoading);
 
-  // Hide Apple sign-in button on native Android app
-  if (typeof window !== "undefined" && window.ReactNativeWebView && window.__SS_NATIVE__?.platform === "android") {
-    return null;
-  }
-
   const signIn = async () => {
     setLoading(true);
     // Inside the native app, sign-in runs natively; the app posts the session
@@ -291,6 +286,7 @@ function SignInForm({ redirect }: { redirect: string }) {
   const [loading, setLoading] = useState(false);
   const [forgot, setForgot] = useState(false);
   const submitReset = useServerFn(submitPasswordResetRequest);
+  const social = useSocialAuthAvailability();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -360,14 +356,16 @@ function SignInForm({ redirect }: { redirect: string }) {
         {loading ? "Signing in…" : (<>Login <ArrowRight className="h-4 w-4" /></>)}
       </button>
 
-      <div className="flex items-center gap-3 text-white/40">
-        <div className="h-px flex-1 bg-white/15" />
-        <span className="text-[11px] font-medium uppercase tracking-wider">or</span>
-        <div className="h-px flex-1 bg-white/15" />
-      </div>
+      {(social.apple || social.google) && (
+        <div className="flex items-center gap-3 text-white/40">
+          <div className="h-px flex-1 bg-white/15" />
+          <span className="text-[11px] font-medium uppercase tracking-wider">or</span>
+          <div className="h-px flex-1 bg-white/15" />
+        </div>
+      )}
 
-      <AppleSignIn redirect={redirect} />
-      <GoogleSignIn redirect={redirect} />
+      {social.apple && <AppleSignIn redirect={redirect} />}
+      {social.google && <GoogleSignIn redirect={redirect} />}
     </form>
   );
 }
