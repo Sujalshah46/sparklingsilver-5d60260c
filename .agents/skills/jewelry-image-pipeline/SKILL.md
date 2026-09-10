@@ -33,10 +33,12 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 Use these verbatim. They were derived from repeatedly fixing the exact failure modes below.
 
 - **Single-piece (necklace, long set, choker, matil, belt, pendant, tika):**
-  `"Studio product photo of this exact jewellery piece on a completely uniform emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge with NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing on its bust. Soft studio lighting, sharp focus, subtle vignette, no text, no props."`
-- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered."
+  `"Studio product photo of this exact jewellery piece on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge as one continuous even field: NO horizon line, NO ledge, NO step, NO seam, NO table or surface edge, NO gradient, NO spotlight halo, NO lighter or darker band, NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Even soft studio lighting across the whole backdrop. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing, filling about the same share of the frame with equal margins on all sides. Sharp focus, no text, no props."`
+- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered, symmetric, same size."
 
-Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step.
+Use the SAME prompt string, verbatim, for every image in the batch — never reword per SKU, since wording drift is the main cause of backdrop drift.
+
+Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step. Do NOT add "on a velvet bust/stand", "on a display table", or "subtle vignette" — those cues invent the ledge/horizon line and the glow that break batch consistency.
 
 ## Post-generation audit (mandatory before shipping)
 
