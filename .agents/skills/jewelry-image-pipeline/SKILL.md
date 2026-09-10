@@ -36,6 +36,18 @@ Use these verbatim. They were derived from repeatedly fixing the exact failure m
   `"Studio product photo of this exact jewellery piece on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge as one continuous even field: NO horizon line, NO ledge, NO step, NO seam, NO table or surface edge, NO gradient, NO spotlight halo, NO lighter or darker band, NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Even soft studio lighting across the whole backdrop. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing, filling about the same share of the frame with equal margins on all sides. Sharp focus, no text, no props."`
 - **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered, symmetric, same size."
 
+### Reference-frame method (REQUIRED for batch consistency)
+
+Prompt wording alone does NOT hold the backdrop steady — the model still alternates between a flat field and a ledge/horizon look. So: generate ONE frame first, approve it, and keep it as the batch's **reference frame**. Every remaining image in the batch is then produced by passing TWO inputs to `imagegen--edit_image`: `[<raw source photo>, <approved reference frame>]`, with this prompt:
+
+`"Take the jewellery from the FIRST image and place it on the exact background of the SECOND image. Copy the second image's backdrop precisely: the same flat, even, seamless dark emerald velvet field filling the whole frame, same colour, same texture, same even lighting, no horizon line, no ledge, no step, no seam, no gradient, no halo, no vignette, no text, no props. Keep the first image's jewellery exactly as it is — same metal colour, same gemstone tones, no recolouring, no redesign, keep every bead, pearl and drop. Show BOTH earrings together, centred, symmetric, same scale and margins as the second image."`
+
+(For single-piece products drop the "BOTH earrings" clause and say "Centre the piece front-facing".)
+
+One reference frame per category (antique / CZ) is reused across all its subcategories, so the whole catalogue matches. Store it at `/tmp/<batch>-src/reference-<category>.jpg`.
+
+**Fidelity guard**: the merge occasionally drops gemstone/bead drops from the source. Compare each merged output against its raw source and regenerate any frame that lost beads, pearls, drops, or stones.
+
 Use the SAME prompt string, verbatim, for every image in the batch — never reword per SKU, since wording drift is the main cause of backdrop drift.
 
 Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step. Do NOT add "on a velvet bust/stand", "on a display table", or "subtle vignette" — those cues invent the ledge/horizon line and the glow that break batch consistency.
