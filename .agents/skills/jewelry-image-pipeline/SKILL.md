@@ -48,6 +48,8 @@ After generating a batch, run these checks with PIL on every `final/*.jpg`. Rege
 2. **Top-right patch check**: crop the top-right ~18% of the frame, compute local color variance / edge density vs the rest of the backdrop. A blurred rectangular box shows up as a low-variance patch with a hard edge; regenerate any SKU that trips this.
 3. **Logo-presence check**: count near-white pixels (R,G,B > 235) inside the top-right 18% box. A properly overlaid logo returns > ~2000 white pixels at 1920x1920. Zero white pixels means the overlay step was skipped — re-run `overlay_logo.py` on that file.
 4. **Uniform backdrop check**: sample the four corners; all four should be within ΔE ≈ 15 of the target emerald hex. Large deltas mean the model painted a gradient or reserved area.
+5. **Horizon / ledge check (per frame)**: take a vertical strip of backdrop only (e.g. x = 4-12% of width, full height), average each row, and scan for a step in mean luminance between consecutive row bands. A jump greater than ~8/255 between adjacent bands means a ledge or horizon line — regenerate.
+6. **Cross-image consistency check (per subcategory, mandatory)**: for every `final/*.jpg` in the batch compute the mean RGB of the four corner patches and the top-vs-bottom luminance ratio. Across the subcategory the corner means must sit within ΔE ≈ 10 of the batch median and the top/bottom ratio within ±0.08 of the batch median. Any outlier is regenerated with the identical prompt until it falls inside the band. Also compare against a reference frame from already-shipped images of the same subcategory so new batches match old ones.
 
 Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declare a batch done until 0 SKUs are flagged.
 
