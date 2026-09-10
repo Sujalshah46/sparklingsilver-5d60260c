@@ -9,7 +9,7 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 ## Rules (non-negotiable)
 
-1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **1920x1920** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
+1. **Upscale**: Lovable AI via `imagegen--edit_image` with `width: 1920`, `height: 1920` (the tool has NO `model` parameter — passing one is rejected; it may return 2048px, which is fine). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
 2. **Pairs rule for earrings / tops**: when the source SKU is a pair product (for example Tops), the generated image must show **both earrings** together. Never output only one earring unless the source itself is intentionally a single-piece product.
 3. **Logo overlay is applied ONLY in the PIL post-step, never by the AI model.** Do NOT ask the model to reserve space, leave headroom, or draw a logo — that produces the blurred top-right square/patch artifact. Instead the AI prompt asks for a fully uniform emerald backdrop, and the PIL overlay drops the white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` in the **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. The PIL step is mandatory on every generated frame — never ship a raw generated image without running `overlay_logo.py` over it.
 4. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
@@ -21,16 +21,24 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
    - PATCH the matching product row by SKU via PostgREST (`PATCH /rest/v1/products?sku=eq.<sku>` with headers `apikey`, `Authorization: Bearer <service-role>`, `Content-Type: application/json`, `Prefer: return=minimal`) setting `image_url`, `image_path`, `has_image=true`.
    - No edge function, no `/api/public/admin-bulk-link-images` call, no admin UI upload. If the SKU row does not exist yet, insert it first (see Bulk insert shape) — same PostgREST endpoint with POST.
 8. **Pricing safety**: never touch `price`, `making_charge_pct`, `gst`, etc. If a new row must be created, use `0` or existing safe defaults only for required placeholder fields — never auto-calculate commercial pricing.
+9. **Backdrop consistency across the whole batch (non-negotiable)**: every image in a subcategory — and across all subcategories of a category — must look like it was shot in the same session on the same set. The model tends to drift: some frames come back as a plain flat velvet field, others with a visible horizontal velvet ledge / horizon line, others with a soft radial glow or a lighter top half. That mix is a FAIL even if each frame looks good alone. Locked backdrop definition for every frame:
+   - Seamless flat velvet field filling the frame, **no horizon line, no ledge, no visible edge, step, seam, table, or surface transition** anywhere.
+   - Even, uniform lighting — no gradient, no spotlight halo, no lighter top or bottom band, no vignette variation between frames.
+   - Same framing every time: subject centred, occupying roughly the same share of the frame as its siblings, generous even margins.
+   - Same emerald tone for the whole category (one hex per category — never mix `#0E3A2E` and `#0E5A3E` inside one batch).
+   Any frame that differs from its siblings is regenerated, not shipped. Consistency is judged per subcategory AND against already-shipped images of the same subcategory.
 
 ## Prompt templates (locked)
 
 Use these verbatim. They were derived from repeatedly fixing the exact failure modes below.
 
 - **Single-piece (necklace, long set, choker, matil, belt, pendant, tika):**
-  `"Studio product photo of this exact jewellery piece on a completely uniform emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge with NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing on its bust. Soft studio lighting, sharp focus, subtle vignette, no text, no props."`
-- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered."
+  `"Studio product photo of this exact jewellery piece on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge as one continuous even field: NO horizon line, NO ledge, NO step, NO seam, NO table or surface edge, NO gradient, NO spotlight halo, NO lighter or darker band, NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Even soft studio lighting across the whole backdrop. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing, filling about the same share of the frame with equal margins on all sides. Sharp focus, no text, no props."`
+- **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered, symmetric, same size."
 
-Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step.
+Use the SAME prompt string, verbatim, for every image in the batch — never reword per SKU, since wording drift is the main cause of backdrop drift.
+
+Do NOT add phrases like "reserve space for logo", "leave the top-right blank", "headroom for a watermark" — those cues make the model paint a blurred rectangle. The logo lives only in the PIL overlay step. Do NOT add "on a velvet bust/stand", "on a display table", or "subtle vignette" — those cues invent the ledge/horizon line and the glow that break batch consistency.
 
 ## Post-generation audit (mandatory before shipping)
 
@@ -40,6 +48,8 @@ After generating a batch, run these checks with PIL on every `final/*.jpg`. Rege
 2. **Top-right patch check**: crop the top-right ~18% of the frame, compute local color variance / edge density vs the rest of the backdrop. A blurred rectangular box shows up as a low-variance patch with a hard edge; regenerate any SKU that trips this.
 3. **Logo-presence check**: count near-white pixels (R,G,B > 235) inside the top-right 18% box. A properly overlaid logo returns > ~2000 white pixels at 1920x1920. Zero white pixels means the overlay step was skipped — re-run `overlay_logo.py` on that file.
 4. **Uniform backdrop check**: sample the four corners; all four should be within ΔE ≈ 15 of the target emerald hex. Large deltas mean the model painted a gradient or reserved area.
+5. **Horizon / ledge check (per frame)**: take a vertical strip of backdrop only (e.g. x = 4-12% of width, full height), average each row, and scan for a step in mean luminance between consecutive row bands. A jump greater than ~8/255 between adjacent bands means a ledge or horizon line — regenerate.
+6. **Cross-image consistency check (per subcategory, mandatory)**: for every `final/*.jpg` in the batch compute the mean RGB of the four corner patches and the top-vs-bottom luminance ratio. Across the subcategory the corner means must sit within ΔE ≈ 10 of the batch median and the top/bottom ratio within ±0.08 of the batch median. Any outlier is regenerated with the identical prompt until it falls inside the band. Also compare against a reference frame from already-shipped images of the same subcategory so new batches match old ones.
 
 Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declare a batch done until 0 SKUs are flagged.
 
