@@ -124,6 +124,11 @@ export function CatalogueCard({
         >
           <Heart className="h-3.5 w-3.5" />
         </button>
+        {p.is_new && (
+          <span className="absolute left-1.5 top-1.5 z-10 rounded-[2px] bg-burgundy px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+            New
+          </span>
+        )}
         <div className="ruler-frame relative aspect-square w-full bg-[#F5F5F3]">
           {!imgLoaded && <span aria-hidden className="img-skeleton absolute inset-0" />}
           <img
