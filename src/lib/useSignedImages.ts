@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { signImageUrls } from "@/lib/image-signing.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Swap long-lived storage URLs for freshly signed, 1-hour URLs.
