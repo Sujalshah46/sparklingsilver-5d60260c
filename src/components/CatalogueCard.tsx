@@ -14,6 +14,7 @@ export type CatalogueCardData = {
   sku: string;
   name: string;
   purity: string;
+  is_new?: boolean | null;
   metal?: string | null;
   gross_weight: number | string;
 
