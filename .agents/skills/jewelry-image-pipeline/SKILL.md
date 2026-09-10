@@ -9,7 +9,7 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 ## Rules (non-negotiable)
 
-1. **Upscale**: Lovable AI via `imagegen--edit_image` model=`premium`, output **1920x1920** (Lovable's max). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
+1. **Upscale**: Lovable AI via `imagegen--edit_image` with `width: 1920`, `height: 1920` (the tool has NO `model` parameter — passing one is rejected; it may return 2048px, which is fine). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
 2. **Pairs rule for earrings / tops**: when the source SKU is a pair product (for example Tops), the generated image must show **both earrings** together. Never output only one earring unless the source itself is intentionally a single-piece product.
 3. **Logo overlay is applied ONLY in the PIL post-step, never by the AI model.** Do NOT ask the model to reserve space, leave headroom, or draw a logo — that produces the blurred top-right square/patch artifact. Instead the AI prompt asks for a fully uniform emerald backdrop, and the PIL overlay drops the white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` in the **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. The PIL step is mandatory on every generated frame — never ship a raw generated image without running `overlay_logo.py` over it.
 4. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
@@ -21,6 +21,12 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
    - PATCH the matching product row by SKU via PostgREST (`PATCH /rest/v1/products?sku=eq.<sku>` with headers `apikey`, `Authorization: Bearer <service-role>`, `Content-Type: application/json`, `Prefer: return=minimal`) setting `image_url`, `image_path`, `has_image=true`.
    - No edge function, no `/api/public/admin-bulk-link-images` call, no admin UI upload. If the SKU row does not exist yet, insert it first (see Bulk insert shape) — same PostgREST endpoint with POST.
 8. **Pricing safety**: never touch `price`, `making_charge_pct`, `gst`, etc. If a new row must be created, use `0` or existing safe defaults only for required placeholder fields — never auto-calculate commercial pricing.
+9. **Backdrop consistency across the whole batch (non-negotiable)**: every image in a subcategory — and across all subcategories of a category — must look like it was shot in the same session on the same set. The model tends to drift: some frames come back as a plain flat velvet field, others with a visible horizontal velvet ledge / horizon line, others with a soft radial glow or a lighter top half. That mix is a FAIL even if each frame looks good alone. Locked backdrop definition for every frame:
+   - Seamless flat velvet field filling the frame, **no horizon line, no ledge, no visible edge, step, seam, table, or surface transition** anywhere.
+   - Even, uniform lighting — no gradient, no spotlight halo, no lighter top or bottom band, no vignette variation between frames.
+   - Same framing every time: subject centred, occupying roughly the same share of the frame as its siblings, generous even margins.
+   - Same emerald tone for the whole category (one hex per category — never mix `#0E3A2E` and `#0E5A3E` inside one batch).
+   Any frame that differs from its siblings is regenerated, not shipped. Consistency is judged per subcategory AND against already-shipped images of the same subcategory.
 
 ## Prompt templates (locked)
 
