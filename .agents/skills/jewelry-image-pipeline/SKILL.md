@@ -36,6 +36,17 @@ Use these verbatim. They were derived from repeatedly fixing the exact failure m
   `"Studio product photo of this exact jewellery piece on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge as one continuous even field: NO horizon line, NO ledge, NO step, NO seam, NO table or surface edge, NO gradient, NO spotlight halo, NO lighter or darker band, NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Even soft studio lighting across the whole backdrop. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing, filling about the same share of the frame with equal margins on all sides. Sharp focus, no text, no props."`
 - **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered, symmetric, same size."
 
+### Stand vs flat lay — per subcategory (LOCKED)
+
+Match what is already shipped on the website. Two presentations only:
+
+| Subcategory | Presentation |
+| --- | --- |
+| Necklace (NK), Long Set (LS), Pendant Set (PS), Choker/Chik, Bridal | Tall emerald green velvet **bust stand**, piece hanging on it, earrings of the set placed symmetrically on the upper bust |
+| Jhumka (JH), Tops (TP), Earrings (ER), Bangle (BNG), Bracelet, Belt (BT), Matil (MT), Tikka, Baju, Finger ring | **Flat lay** on a seamless flat emerald velvet field, no stand, no bust |
+
+Never put a belt or matil on a bust, and never lay a necklace/long set flat. Pull the reference frame from an already-shipped image of the same presentation (e.g. `cz/long-set/*` for bust, `antique/jhumka/*` for flat) by downloading it from Storage with the service-role key, and keep one bust reference + one flat reference per run.
+
 ### Reference-frame method (REQUIRED for batch consistency)
 
 Prompt wording alone does NOT hold the backdrop steady — the model still alternates between a flat field and a ledge/horizon look. So: generate ONE frame first, approve it, and keep it as the batch's **reference frame**. Every remaining image in the batch is then produced by passing TWO inputs to `imagegen--edit_image`: `[<raw source photo>, <approved reference frame>]`, with this prompt:
