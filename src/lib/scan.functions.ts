@@ -36,7 +36,10 @@ export const lookupByBarcode = createServerFn({ method: "POST" })
     let withPrice: any = product;
     if (product) {
       // Pricing columns are approval-gated; read them through the RPC.
-      const { data: pricing } = await supabase.rpc("get_product_pricing", { _ids: [(product as any).id] });
+      const { data: pricing, error: priceErr } = await supabase.rpc("get_product_pricing", { _ids: [(product as any).id] });
+      if (priceErr && ((priceErr as { code?: string }).code === "42501" || /permission denied/i.test(priceErr.message))) {
+        throw new Error("Your session has expired. Please sign in again.");
+      }
       const pr = (pricing ?? [])[0] as any;
       withPrice = { ...(product as any), price: Number(pr?.price ?? 0), making_charge_pct: pr?.making_charge_pct ?? null };
     }

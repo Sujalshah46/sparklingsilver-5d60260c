@@ -43,7 +43,13 @@ export const placeOrder = createServerFn({ method: "POST" })
     // Pricing columns are not directly readable; fetch through the approval-gated RPC.
     const { data: pricingRows, error: priceErr } = await supabase
       .rpc("get_product_pricing", { _ids: rows.map((r) => r.product!.id) });
-    if (priceErr) throw new Error(priceErr.message);
+    if (priceErr) {
+      // 42501 = permission denied: the request reached the DB without a valid session.
+      if ((priceErr as { code?: string }).code === "42501" || /permission denied/i.test(priceErr.message)) {
+        throw new Error("Your session has expired. Please sign in again and retry your order.");
+      }
+      throw new Error("Could not load current prices. Please try again in a moment.");
+    }
     const priceOf = new Map<string, number>(
       (pricingRows ?? []).map((r: any) => [r.product_id as string, Number(r.price ?? 0)]),
     );
