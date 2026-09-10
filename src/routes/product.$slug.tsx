@@ -174,7 +174,14 @@ function ProductPage() {
 
       <div className="space-y-5 p-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">SKU {product.sku}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">SKU {product.sku}</p>
+            {(product as { is_new?: boolean | null }).is_new && (
+              <span className="rounded-[2px] bg-burgundy px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-white">
+                New Design
+              </span>
+            )}
+          </div>
           <h1 className="mt-1 font-serif text-2xl font-bold leading-tight text-foreground">{product.name}</h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="border-gold/40 text-foreground">{(() => { const c = ((product as any).categories?.name ?? "").toLowerCase(); if (c.startsWith("antique")) return "925 Ultra Antique Jewellery"; if (c === "cz") return "925 Premium CZ Jewellery"; return `${product.purity} ${product.metal}`; })()}</Badge>
