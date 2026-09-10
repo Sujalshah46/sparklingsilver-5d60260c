@@ -46,11 +46,25 @@ function ProductForm() {
         .eq("id", id)
         .maybeSingle();
       if (!data) return null;
-      // Pricing columns are approval-gated; read them through the RPC.
-      const { data: pricing } = await supabase.rpc("get_product_pricing", { _ids: [id] });
+      // Pricing columns are approval-gated; the RPC needs a live session.
+      const { data: sess } = await supabase.auth.getSession();
+      if (!sess.session) {
+        toast.error("Your session has expired. Please sign in again.");
+        nav({ to: "/auth", search: { redirect: `/admin/products/${id}` } as never });
+        return { ...data, price: 0, making_charge_pct: null } as any;
+      }
+      const { data: pricing, error: priceErr } = await supabase.rpc("get_product_pricing", { _ids: [id] });
+      if (priceErr) {
+        if (priceErr.code === "42501" || /permission denied/i.test(priceErr.message)) {
+          toast.error("Your session has expired. Please sign in again.");
+          nav({ to: "/auth", search: { redirect: `/admin/products/${id}` } as never });
+        } else {
+          toast.error("Could not load pricing for this product.");
+        }
+        return { ...data, price: 0, making_charge_pct: null } as any;
+      }
       const pr = (pricing ?? [])[0] as any;
       return { ...data, price: pr?.price ?? 0, making_charge_pct: pr?.making_charge_pct ?? null } as any;
-      return data;
     },
   });
 
