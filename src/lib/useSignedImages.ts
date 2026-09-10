@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { signImageUrls } from "@/lib/image-signing.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Swap long-lived storage URLs for freshly signed, 1-hour URLs.
@@ -22,9 +23,25 @@ export function useSignedImages(urls: Array<string | null | undefined>) {
 
   const key = useMemo(() => [...list].sort().join("|"), [list]);
 
+  // Signing is authenticated-only; never call it for anonymous visitors.
+  const [hasSession, setHasSession] = useState(false);
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data: s }) => {
+      if (active) setHasSession(!!s.session?.access_token);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      setHasSession(!!session?.access_token);
+    });
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, []);
+
   const { data } = useQuery({
     queryKey: ["signed-images", key],
-    enabled: list.length > 0,
+    enabled: hasSession && list.length > 0,
     staleTime: 50 * 60 * 1000,
     gcTime: 55 * 60 * 1000,
     refetchInterval: 50 * 60 * 1000,
