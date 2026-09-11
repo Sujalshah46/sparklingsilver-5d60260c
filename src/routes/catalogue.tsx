@@ -52,7 +52,7 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
         .select(CARD_COLUMNS, { count: "exact" })
         .in("category_id", visibleIds);
       if (onlyNew) {
-        qb = qb.eq("homepage_featured", true).order("homepage_featured_order", { ascending: true });
+        qb = qb.eq("is_new", true).order("created_at", { ascending: false });
       } else {
         qb = qb.order("created_at", { ascending: false });
       }
