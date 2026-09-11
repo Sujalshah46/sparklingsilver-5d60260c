@@ -93,9 +93,9 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
       };
     },
     getNextPageParam: (last) => {
-      // Grouped New Arrivals mode returns the whole set in one page — a page
-      // shorter than PAGE_SIZE means there's nothing further to load.
-      if (last.products.length < PAGE_SIZE) return undefined;
+      // Grouped New Arrivals mode returns the whole set in one page
+      // (products.length === total) — stop paginating there too.
+      if (last.products.length < PAGE_SIZE || last.products.length >= last.total) return undefined;
       const loaded = (last.page + 1) * PAGE_SIZE;
       return loaded < last.total ? last.page + 1 : undefined;
     },
