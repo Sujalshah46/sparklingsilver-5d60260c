@@ -73,7 +73,9 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
           const sa = subOrder.get((a as { subcategory_id?: string }).subcategory_id ?? "") ?? 999;
           const sb = subOrder.get((b as { subcategory_id?: string }).subcategory_id ?? "") ?? 999;
           if (sa !== sb) return sa - sb;
-          return new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime();
+          const ta = (a as { created_at?: string }).created_at ?? "";
+          const tb = (b as { created_at?: string }).created_at ?? "";
+          return new Date(tb).getTime() - new Date(ta).getTime();
         });
         return { products, categories, total: count ?? 0, page: pageParam as number };
       }
