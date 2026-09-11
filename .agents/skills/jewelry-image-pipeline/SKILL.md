@@ -11,7 +11,8 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
 
 1. **Upscale**: Lovable AI via `imagegen--edit_image` with `width: 1920`, `height: 1920` (the tool has NO `model` parameter — passing one is rejected; it may return 2048px, which is fine). Prompt keeps the exact original metal color/tone and places the piece on a **fully uniform emerald green velvet** backdrop (`#0E5A3E` for CZ / long sets, `#0E3A2E` for antique — always confirm which category the batch belongs to). The velvet must extend edge-to-edge with **no reserved logo box, no rectangular patch, no shade variation, no watermark placeholder, no blurred square in any corner**. Subject centered and front-facing on its bust.
 2. **Pairs rule for earrings / tops**: when the source SKU is a pair product (for example Tops), the generated image must show **both earrings** together. Never output only one earring unless the source itself is intentionally a single-piece product.
-3. **Logo overlay is applied ONLY in the PIL post-step, never by the AI model.** Do NOT ask the model to reserve space, leave headroom, or draw a logo — that produces the blurred top-right square/patch artifact. Instead the AI prompt asks for a fully uniform emerald backdrop, and the PIL overlay drops the white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` in the **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. The PIL step is mandatory on every generated frame — never ship a raw generated image without running `overlay_logo.py` over it.
+3. **Pendant-set source fidelity (non-negotiable)**: treat the source photo as the complete product truth. If a Pendant Set (PS) source shows only a loose pendant, the result must show only that exact loose pendant as a flat lay — **no chain, no earrings, no bust, and no invented companion pieces**. If the source includes earrings, preserve those exact earrings; if it includes a chain, preserve that exact chain. Never infer missing set pieces from the SKU name or from similar products. The allowed changes are limited to resolution/sharpness, cleanup, and the approved emerald velvet background.
+4. **Logo overlay is applied ONLY in the PIL post-step, never by the AI model.** Do NOT ask the model to reserve space, leave headroom, or draw a logo — that produces the blurred top-right square/patch artifact. Instead the AI prompt asks for a fully uniform emerald backdrop, and the PIL overlay drops the white Sparkling Silver lockup from `/mnt/user-uploads/SPARKLING_SILVER_LOGO*.png` in the **top-right corner**, width = **14% of image width**, opacity **90%**, inset ~40px from top and right. The PIL step is mandatory on every generated frame — never ship a raw generated image without running `overlay_logo.py` over it.
 4. **No baked-in text**. Never render SKU, weight, price, or captions onto the pixels. Those belong in the database only.
 5. **Save**: JPEG quality 95, 4:4:4 chroma subsampling.
 6. **Excel sync**: user uploads an .xlsx with at minimum `SKU` and `Gross Weight` columns (accept common variants: `sku`, `Item Code`, `gross_weight`, `Gross Wt`, `GW`). For each processed image, match by SKU and UPDATE `public.products` setting `gross_weight` (numeric grams). Never overwrite `price`, `making_charge`, `gst`, or other pricing fields (see mem://preferences/no-auto-pricing). Product `name` stays as-is unless user asks; SKU is the join key, not something to write onto the image.
@@ -35,6 +36,8 @@ Use these verbatim. They were derived from repeatedly fixing the exact failure m
 - **Single-piece (necklace, long set, choker, matil, belt, pendant, tika):**
   `"Studio product photo of this exact jewellery piece on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ / long set, #0E3A2E for antique). The velvet fills the ENTIRE frame edge-to-edge as one continuous even field: NO horizon line, NO ledge, NO step, NO seam, NO table or surface edge, NO gradient, NO spotlight halo, NO lighter or darker band, NO shade variation, NO reserved logo area, NO rectangular patch or box in any corner, NO watermark, NO placeholder, NO blurred square. Even soft studio lighting across the whole backdrop. Preserve the original metal color and gemstone tones exactly — do not recolor. Center the piece front-facing, filling about the same share of the frame with equal margins on all sides. Sharp focus, no text, no props."`
 - **Pair (tops, earrings, jhumka):** same as above but replace "this exact jewellery piece" with "this exact pair of earrings" and add "Show BOTH earrings together, centered, symmetric, same size."
+- **Pendant-only PS source:**
+  `"Upscale and clean this exact loose pendant on a completely uniform, seamless flat emerald green velvet backdrop (#0E5A3E for CZ, #0E3A2E for antique). Preserve the pendant pixel-faithfully: identical outline, metal colours, gemstone colours and counts, motifs, settings, pearls, beads, drops, attachment loops and proportions. The source contains ONLY a loose pendant. Show ONLY that pendant as a flat lay. DO NOT add a chain, necklace, earrings, hooks, bust, stand, extra stones, extra drops, or any other jewellery. Do not redesign, complete, symmetrise, or infer missing set pieces. Only improve resolution, focus, lighting and background. The velvet fills the entire frame edge-to-edge as one even field: no horizon, ledge, seam, gradient, halo, vignette, text, watermark, logo, patch, box, or props. Centre the pendant at the same orientation and preserve its exact design."`
 
 ### Stand vs flat lay — per subcategory (LOCKED)
 
@@ -42,7 +45,8 @@ Match what is already shipped on the website. Two presentations only:
 
 | Subcategory | Presentation |
 | --- | --- |
-| Necklace (NK), Long Set (LS), Pendant Set (PS), Choker/Chik, Bridal | Tall emerald green velvet **bust stand**, piece hanging on it, earrings of the set placed symmetrically on the upper bust |
+| Necklace (NK), Long Set (LS), Choker/Chik, Bridal; Pendant Set (PS) only when its source includes a chain/set presentation | Tall emerald green velvet **bust stand**, preserving only the exact pieces visible in the source |
+| Pendant Set (PS) source showing only a loose pendant | **Flat lay** on seamless emerald velvet; pendant only, with no chain, earrings, bust, or invented pieces |
 | Jhumka (JH), Tops (TP), Earrings (ER), Bangle (BNG), Bracelet, Belt (BT), Matil (MT), Tikka, Baju, Finger ring | **Flat lay** on a seamless flat emerald velvet field, no stand, no bust |
 
 Never put a belt or matil on a bust, and never lay a necklace/long set flat. Pull the reference frame from an already-shipped image of the same presentation (e.g. `cz/long-set/*` for bust, `antique/jhumka/*` for flat) by downloading it from Storage with the service-role key, and keep one bust reference + one flat reference per run.
@@ -57,7 +61,7 @@ Prompt wording alone does NOT hold the backdrop steady — the model still alter
 
 One reference frame per category (antique / CZ) is reused across all its subcategories, so the whole catalogue matches. Store it at `/tmp/<batch>-src/reference-<category>.jpg`.
 
-**Fidelity guard**: the merge occasionally drops gemstone/bead drops from the source. Compare each merged output against its raw source and regenerate any frame that lost beads, pearls, drops, or stones.
+**Fidelity guard**: the merge can drop or invent gemstone/bead drops and companion pieces. Compare every output side-by-side against its raw source. Regenerate any frame that lost or added beads, pearls, drops, stones, chains, earrings, hooks, motifs, or other jewellery. For pendant-only sources, audit explicitly for zero chain pixels and zero earrings before upload.
 
 Use the SAME prompt string, verbatim, for every image in the batch — never reword per SKU, since wording drift is the main cause of backdrop drift.
 
@@ -97,6 +101,7 @@ Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declar
 - **Non-emerald bust (black, grey, beige, gold)**: model reverted the stand to the source photo's tone. Fix: prompt explicitly says "completely uniform emerald green velvet edge-to-edge, front-facing bust". Detect via HSV bottom-center sample and regenerate.
 - **Missing logo on shipped images**: happens when the AI-generated file is uploaded directly without running `overlay_logo.py`. Fix: pipeline is `gen/<sku>.jpg -> overlay -> final/<sku>.jpg -> upload`. Upload only from `final/`. Audit with white-pixel count in the top-right box.
 - **Shipping the batch before auditing**: every past fix cycle came from skipping the audit. The audit is not optional — run it before telling the user the batch is done.
+- **Invented chain/earrings on a pendant-only source**: caused by treating every PS SKU as a full set or putting every PS on a bust. Fix: source-first classification. A source with one loose pendant remains one loose pendant in a flat lay; never add a chain, earrings, or other jewellery.
 
 ## Excel parsing
 
