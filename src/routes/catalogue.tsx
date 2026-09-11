@@ -47,16 +47,42 @@ const catalogInfiniteQuery = (onlyNew: boolean) =>
       const to = from + PAGE_SIZE - 1;
       const categories = await fetchVisibleCategories();
       const visibleIds = categories.map((c) => c.id);
-      let qb = supabase
+      if (onlyNew) {
+        // New Arrivals shows the full new batch in one shot, grouped so the
+        // customer can browse sequence-wise: all Antique subcategories first
+        // (Baju, Bangles, Belt, ... in subcategory sort order), then all CZ.
+        // Server-side range pagination can't express this grouping, so we
+        // fetch every is_new row (bounded well above any batch size) and
+        // order in memory.
+        const [{ data, count }, { data: subs }] = await Promise.all([
+          supabase
+            .from("products")
+            .select(CARD_COLUMNS, { count: "exact" })
+            .in("category_id", visibleIds)
+            .eq("is_new", true)
+            .order("created_at", { ascending: false })
+            .limit(2000),
+          supabase.from("subcategories").select("id,sort_order"),
+        ]);
+        const catOrder = new Map(categories.map((c, i) => [c.id as string, i]));
+        const subOrder = new Map((subs ?? []).map((s) => [s.id as string, s.sort_order as number]));
+        const products = ((data ?? []) as CatalogProduct[]).sort((a, b) => {
+          const ca = catOrder.get(a.category_id) ?? 99;
+          const cb = catOrder.get(b.category_id) ?? 99;
+          if (ca !== cb) return ca - cb;
+          const sa = subOrder.get((a as { subcategory_id?: string }).subcategory_id ?? "") ?? 999;
+          const sb = subOrder.get((b as { subcategory_id?: string }).subcategory_id ?? "") ?? 999;
+          if (sa !== sb) return sa - sb;
+          return new Date(b.created_at as string).getTime() - new Date(a.created_at as string).getTime();
+        });
+        return { products, categories, total: count ?? 0, page: pageParam as number };
+      }
+      const { data, count } = await supabase
         .from("products")
         .select(CARD_COLUMNS, { count: "exact" })
-        .in("category_id", visibleIds);
-      if (onlyNew) {
-        qb = qb.eq("is_new", true).order("created_at", { ascending: false });
-      } else {
-        qb = qb.order("created_at", { ascending: false });
-      }
-      const { data, count } = await qb.range(from, to);
+        .in("category_id", visibleIds)
+        .order("created_at", { ascending: false })
+        .range(from, to);
       return {
         products: (data ?? []) as CatalogProduct[],
         categories,
