@@ -44,6 +44,8 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
         .select(CARD_COLUMNS)
         .eq("category_id", cat.id as string)
         .eq("subcategory_id", sub.id as string)
+        // Newest uploads first so freshly added designs surface at the top.
+        .order("created_at", { ascending: false })
         .limit(500);
       return {
         category: cat,
@@ -145,7 +147,15 @@ function SubcategoryPage() {
       case "weight_desc": arr.sort((a, b) => Number(b.gross_weight) - Number(a.gross_weight)); break;
       case "sku_asc": arr.sort((a, b) => String(a.sku).localeCompare(String(b.sku))); break;
       case "new": arr.sort((a, b) => (b.created_at ?? "").localeCompare(a.created_at ?? "")); break;
-      default: break;
+      default:
+        // Featured: newly added designs stay pinned at the top, then newest first.
+        arr.sort((a, b) => {
+          const an = a.is_new ? 1 : 0;
+          const bn = b.is_new ? 1 : 0;
+          if (an !== bn) return bn - an;
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+        });
+        break;
     }
     return arr;
   }, [data, sort, filters]);
