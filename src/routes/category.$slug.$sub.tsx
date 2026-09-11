@@ -44,6 +44,8 @@ const subcatQuery = (catSlug: string, subSlug: string) =>
         .select(CARD_COLUMNS)
         .eq("category_id", cat.id as string)
         .eq("subcategory_id", sub.id as string)
+        // Newest uploads first so freshly added designs surface at the top.
+        .order("created_at", { ascending: false })
         .limit(500);
       return {
         category: cat,
