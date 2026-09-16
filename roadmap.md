@@ -8,3 +8,4 @@
 - [ ] Approve the locked Long Set stand/template and fixed earring anchors (user review pending).
 - [x] Generate and validate five representative preview SKUs without live replacement.
 - [x] Update and activate the jewelry image pipeline skill with validated Long Set rules.
+- [ ] Remake the five Antique Long Set pilots in the polished style of the recent 147-image batch; keep exact source fidelity and do not publish before approval.
