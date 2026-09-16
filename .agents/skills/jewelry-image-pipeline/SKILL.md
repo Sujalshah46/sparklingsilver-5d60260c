@@ -29,6 +29,43 @@ Locked, approved recipe. Do NOT invent alternatives (no Real-ESRGAN, no LANCZOS,
    - Same emerald tone for the whole category (one hex per category — never mix `#0E3A2E` and `#0E5A3E` inside one batch).
    Any frame that differs from its siblings is regenerated, not shipped. Consistency is judged per subcategory AND against already-shipped images of the same subcategory.
 
+## Global product-accuracy rules
+
+`PRODUCT ACCURACY > VISUAL CREATIVITY.` These rules apply before category-specific styling:
+
+1. **Source of truth**: the original uploaded product photo is authoritative; never use a previous AI result as product truth.
+2. **Product fidelity**: preserve every chain link pattern, motif, pendant, stone, bead, pearl, drop, attachment, colour, and proportion visible in the original.
+3. **Category template**: identify category and subcategory before processing, then load only its approved template/configuration.
+4. **Length rule**: preserve the original vertical length and aspect ratio; never shorten, stretch, widen, or compress a necklace.
+5. **Safe margin**: retain 8–12% clear margin around the complete product; zoom out uniformly rather than crop.
+6. **Complete product**: every visible part of the source must remain visible in the final image.
+7. **Accessory count**: preserve the exact source piece count; never add, duplicate, remove, or infer earrings or accessories.
+8. **Earring position**: when one pair is present, show exactly two at the category's fixed equal-height symmetric anchors, clear of the necklace, pendant, edge, and logo.
+9. **Display stand**: use one approved, reusable stand for the category; do not regenerate a different stand per product.
+10. **Camera consistency**: lock one straight-on catalogue camera and framing for the category.
+11. **Colour preservation**: retain exact source metal and gemstone tones; never force a silver or gold colour.
+12. **Upscaling**: improve resolution and sharpness without reconstructing product geometry.
+13. **Non-generative first**: prefer segmentation, masking, exact-pixel compositing, and lossless/high-quality resizing. Use generative editing only where the source cannot be safely isolated, and never let it redraw jewellery.
+14. **Validation**: compare source and result side by side for geometry, length, piece count, colour, margins, framing, background, and logo before acceptance.
+15. **Backup and publish gate**: preserve original, previous-generated, and final versions; publish only outputs that pass every required validation and any requested review approval.
+
+## Category rules — Antique → Long Set only
+
+These settings are tested only for Antique Long Set. Never transfer them to another category without a separate five-image review.
+
+- Workflow order: read this skill → classify as `antique/long-set` → load `assets/antique-long-set.json` and the approved master template → analyze the original → segment exact source pixels → enhance/composite without reconstruction → run `scripts/audit_long_set.py` plus side-by-side review → publish only passing outputs.
+- Canvas: 2000×2000, 1:1. Stand width 48–58%, top 8–12%, bottom 78–82%, centered.
+- Locked template: one tall, clean, matte emerald velvet bust; one background, studio light, and straight-on camera for every SKU.
+- Preserve original necklace length and aspect ratio. `allow_chain_cropping=false`; safe margin is 8–12% on every side.
+- Earrings: when the source has one pair, preserve exactly two and place their centers at fixed anchors `(x=38%, y=17%)` and `(x=62%, y=17%)`. Keep equal Y, equal scale, symmetric spacing, and no overlap.
+- Backups: `products/antique/long-set/original/`, `products/antique/long-set/previous-generated/`, and `products/antique/long-set/final/`. Version as `ANT-LS-###-original.jpg`, `ANT-LS-###-v1-generated.jpg`, and `ANT-LS-###-v2-standardized.jpg`.
+- Pilot gate: process five representative products first—extremely long, medium-long, large pendant, detailed/beaded, and complex earrings. Do not bulk process or replace live images until the user approves the pilot.
+- Business data is immutable during this correction: do not change SKU, title, price, making charge, tax, weight, inventory, description, category, or orders. Later publishing may update only image fields and variants.
+
+### Antique Long Set pre-publish checklist
+
+Every item must pass: full chain visible; 8–12% safe margin; original length/aspect ratio preserved; pendant geometry unchanged; all stones/beads/drops retained; metal and stone colours unchanged; exact accessory count; exactly two earrings only when the source contains a pair; anchors aligned; no overlaps; approved stand/background/camera/lighting; no invented details; no cropped boundary; no baked-in SKU/text; PIL logo present; source comparison completed. Any failure blocks publishing.
+
 ## Prompt templates (locked)
 
 Use these verbatim. They were derived from repeatedly fixing the exact failure modes below.
@@ -84,7 +121,7 @@ Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declar
 
 1. Extract source zip to `/tmp/<batch>-src/`. Only touch raw originals.
 2. Parse the category Excel with pandas and normalize columns.
-3. For each raw image, call `imagegen--edit_image` with `model: "premium"`, `width: 1920`, `height: 1920`, using the locked prompt above.
+3. For each raw image, first use exact-source segmentation and compositing when possible. If generative cleanup is unavoidable, call `imagegen--edit_image` with `width: 1920`, `height: 1920` (the tool has no `model` field), using the locked prompt above, then reject any product-detail drift.
 4. Overlay logo with PIL (see `scripts/overlay_logo.py`) — MANDATORY on every generated frame.
 5. Save JPEG q95 subsampling=0.
 6. Run the post-generation audit (bust color, top-right patch, logo presence, uniform backdrop). Regenerate + re-overlay any flagged SKU until the audit is clean.
@@ -102,6 +139,7 @@ Keep the audit script per-batch under `/tmp/<batch>-src/audit.py`. Do not declar
 - **Missing logo on shipped images**: happens when the AI-generated file is uploaded directly without running `overlay_logo.py`. Fix: pipeline is `gen/<sku>.jpg -> overlay -> final/<sku>.jpg -> upload`. Upload only from `final/`. Audit with white-pixel count in the top-right box.
 - **Shipping the batch before auditing**: every past fix cycle came from skipping the audit. The audit is not optional — run it before telling the user the batch is done.
 - **Invented chain/earrings on a pendant-only source**: caused by treating every PS SKU as a full set or putting every PS on a bust. Fix: source-first classification. A source with one loose pendant remains one loose pendant in a flat lay; never add a chain, earrings, or other jewellery.
+- **Antique Long Set failures**: chain cropping; necklace shortening, stretching, widening, or compression; duplicate, missing, or wrong earrings; inconsistent earring placement; wrong or changing stand; changed pendant; changed stone colour; hallucinated stones; altered chain design; inconsistent framing, background, or proportions. Every one is a hard failure: restore from the original, reprocess with the locked Antique Long Set template, and rerun validation. Never publish a failed item.
 
 ## Excel parsing
 
