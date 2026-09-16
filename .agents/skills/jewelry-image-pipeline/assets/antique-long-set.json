@@ -1,0 +1,27 @@
+{
+  "category": "antique",
+  "subcategory": "long-set",
+  "product_accuracy_priority": true,
+  "canvas": { "width": 2000, "height": 2000, "aspect_ratio": "1:1" },
+  "preserve_original_length": true,
+  "allow_chain_cropping": false,
+  "safe_margin_percent": { "min": 8, "max": 12 },
+  "earring_positioning": {
+    "mode": "fixed_anchor",
+    "left": { "x_percent": 38, "y_percent": 17 },
+    "right": { "x_percent": 62, "y_percent": 17 },
+    "equal_y": true,
+    "symmetric": true,
+    "exact_source_count": true
+  },
+  "stand": { "locked": true, "width_percent": { "min": 48, "max": 58 }, "top_percent": { "min": 8, "max": 12 }, "bottom_percent": { "min": 78, "max": 82 } },
+  "camera": "locked-front-catalogue",
+  "background": "locked-dark-emerald-velvet",
+  "lighting": "locked-even-studio",
+  "prefer_non_generative": true,
+  "require_source_comparison": true,
+  "require_pre_publish_validation": true,
+  "pilot_count": 5,
+  "publish_requires_user_approval": true,
+  "mutable_database_fields": ["image_url", "image_path", "image_variants", "has_image"]
+}

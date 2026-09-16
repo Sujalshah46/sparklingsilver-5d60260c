@@ -3,3 +3,8 @@
 - [x] Add the pendant-only fidelity rule to the active jewelry image pipeline skill.
 
 - [x] Audit new Antique pendant sets against originals and remove invented chains or companion pieces.
+
+- [x] Audit five representative Antique Long Set originals against their corrected review images.
+- [ ] Approve the locked Long Set stand/template and fixed earring anchors (user review pending).
+- [x] Generate and validate five representative preview SKUs without live replacement.
+- [x] Update and activate the jewelry image pipeline skill with validated Long Set rules.
