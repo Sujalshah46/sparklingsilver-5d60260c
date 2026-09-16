@@ -10,8 +10,11 @@ def audit(path: Path) -> dict:
     im = Image.open(path).convert("RGB")
     a = np.asarray(im)
     h, w = a.shape[:2]
-    bright = a.max(axis=2) > 115
-    ys, xs = np.where(bright)
+    r, g, b = a[:, :, 0], a[:, :, 1], a[:, :, 2]
+    # Detect jewellery-coloured pixels, not the green set or white logo.
+    product = ((r > 75) & (r > g * 1.035) & (g > b * 1.08)) | ((r > 60) & (r > g * 1.2))
+    product[:, round(w * .80):] = False
+    ys, xs = np.where(product)
     margins = {
         "left": float(xs.min() / w * 100) if len(xs) else 0,
         "right": float((w - 1 - xs.max()) / w * 100) if len(xs) else 0,
