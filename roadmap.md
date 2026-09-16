@@ -10,4 +10,4 @@
 - [x] Update and activate the jewelry image pipeline skill with validated Long Set rules.
 - [x] Remake the five Antique Long Set pilots in the polished style of the recent 147-image batch; keep them unpublished pending user approval.
 ## Active audit
-- [ ] Audit all 147 recent New products against original source images, report every SKU, and fix confirmed image mismatches without changing commercial data.
+- [x] Audited all 147 recent New products against originals; 10 mismatches fixed and republished.
