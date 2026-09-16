@@ -22,7 +22,7 @@ def audit(path: Path) -> dict:
         "bottom": float((h - 1 - ys.max()) / h * 100) if len(ys) else 0,
     }
     logo = a[:round(h*.18), round(w*.82):]
-    white_logo_pixels = int(np.all(logo > 235, axis=2).sum())
+    white_logo_pixels = int(np.all(logo > 200, axis=2).sum())
     return {
         "file": path.name,
         "dimensions": [w, h],
